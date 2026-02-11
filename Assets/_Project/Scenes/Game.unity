@@ -1279,7 +1279,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 684d954e3aba55e4e8919099cb202806, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMover
-  _speed: 15
+  _speed: 5
   _waypoints:
   - {fileID: 254588737}
   - {fileID: 1625595433}
@@ -1502,7 +1502,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b21759dc70551b547a485bb35b18d54d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedMover
-  _speed: 150
+  _speed: 10
+  _smooth: 10
   _minX: -3.5
   _maxX: 3.5
 --- !u!114 &501089292

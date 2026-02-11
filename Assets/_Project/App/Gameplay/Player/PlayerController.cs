@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public sealed class PlayerController : MonoBehaviour
 
 {

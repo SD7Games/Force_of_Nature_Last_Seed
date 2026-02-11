@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DisallowMultipleComponent]
 public class InputReader : MonoBehaviour
 {
     public float MoveX { get; private set; }

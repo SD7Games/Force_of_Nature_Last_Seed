@@ -1405,13 +1405,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 501089287}
-  - component: {fileID: 501089289}
   - component: {fileID: 501089288}
   - component: {fileID: 501089290}
   - component: {fileID: 501089292}
-  - component: {fileID: 501089291}
+  - component: {fileID: 501089293}
   m_Layer: 0
-  m_Name: Seed
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1491,21 +1490,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &501089289
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 501089286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b21759dc70551b547a485bb35b18d54d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SeedMover
-  _speed: 6
-  _minX: -3.5
-  _maxX: 3.5
 --- !u!114 &501089290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1521,19 +1505,6 @@ MonoBehaviour:
   _speed: 150
   _minX: -3.5
   _maxX: 3.5
---- !u!114 &501089291
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 501089286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f51f9f87789169e4da3292ad80e921c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InputReader
-  <MoveX>k__BackingField: 0
 --- !u!114 &501089292
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1546,7 +1517,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98fdfa460b44c04cbf94ea15ab53182, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedController
-  _mover: {fileID: 501089289}
+  _mover: {fileID: 501089290}
+  _input: {fileID: 501089293}
+--- !u!114 &501089293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501089286}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c1cc985e8456b84bb9ad66447242b4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputReader
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

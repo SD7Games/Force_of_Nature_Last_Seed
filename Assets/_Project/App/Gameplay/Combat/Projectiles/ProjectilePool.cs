@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public class ProjectilePool : MonoBehaviour
+public sealed class ProjectilePool : MonoBehaviour
 {
     [Header("Prefab & Prewarm")]
     [SerializeField] private Projectile _prefab;
@@ -42,8 +41,14 @@ public class ProjectilePool : MonoBehaviour
     private Projectile CreateNew()
     {
         var projectile = Instantiate(_prefab, transform);
-        projectile.Init(this);
+
+        var movement = projectile.GetComponent<ProjectileMovement>();
+        var bounce = projectile.GetComponent<ProjectileBounce>();
+
+        bounce.Init(movement);
+        projectile.Init(this, movement, bounce);
         projectile.gameObject.SetActive(false);
+
         return projectile;
     }
 

@@ -4,6 +4,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class PlayerShooter : MonoBehaviour
 {
+    [SerializeField] private ProjectileConfig _config;
     [SerializeField] private ProjectilePool _pool;
     [SerializeField] private float _fireRate = 0.4f;
 
@@ -28,6 +29,7 @@ public sealed class PlayerShooter : MonoBehaviour
     private void Fire()
     {
         var projectile = _pool.Get();
+        projectile.ApplyConfig(_config);
         projectile.Activate(transform.position, Quaternion.identity);
     }
 }

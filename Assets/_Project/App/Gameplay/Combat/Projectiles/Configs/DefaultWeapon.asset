@@ -19,8 +19,10 @@ MonoBehaviour:
   _penetration: 0
   _lifeTime: 3
   _speed: 12
-  _bounceCount: 0
-  _bounceX: 0
-  _bounceY: 0
-  _splitCount: 0
+  _bounceCount: 2
+  _bounceX: 1
+  _bounceY: 1
+  _splitCount: 10
   _splitAngle: 15
+  _projectilesPerShot: 3
+  _spreadAngle: 43.9

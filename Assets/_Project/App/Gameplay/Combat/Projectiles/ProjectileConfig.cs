@@ -30,6 +30,11 @@ public sealed class ProjectileConfig : ScriptableObject
 
     [SerializeField] private float _splitAngle = 15f;
 
+    [Header("Shot Pattern")]
+    [SerializeField] private int _projectilesPerShot = 1;
+
+    [SerializeField] private float _spreadAngle = 0f;
+
     // === Public API (read-only) ===
 
     public Sprite Sprite => _sprite;
@@ -48,4 +53,7 @@ public sealed class ProjectileConfig : ScriptableObject
 
     public int SplitCount => _splitCount;
     public float SplitAngle => _splitAngle;
+
+    public int ProjectilesPerShot => _projectilesPerShot;
+    public float SpreadAngle => _spreadAngle;
 }

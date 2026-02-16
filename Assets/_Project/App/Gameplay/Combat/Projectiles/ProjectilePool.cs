@@ -41,14 +41,8 @@ public sealed class ProjectilePool : MonoBehaviour
     private Projectile CreateNew()
     {
         var projectile = Instantiate(_prefab, transform);
-
-        var movement = projectile.GetComponent<ProjectileMovement>();
-        var bounce = projectile.GetComponent<ProjectileBounce>();
-
-        bounce.Init(movement);
-        projectile.Init(this, movement, bounce);
+        projectile.Init(this);
         projectile.gameObject.SetActive(false);
-
         return projectile;
     }
 

@@ -1,35 +1,37 @@
-using System;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public sealed class PlayerShooter : MonoBehaviour
 {
-    [SerializeField] private ProjectileConfig _config;
-    [SerializeField] private ProjectilePool _pool;
-    [SerializeField] private float _fireRate = 0.4f;
+    [Header("Refs")]
+    [SerializeField] private ProjectileWeapon _weapon;
 
-    private float _timer;
+    [SerializeField] private ProjectilePool _pool;
+    [SerializeField] private Transform _firePoint;
+
+    [Header("Start Weapon")]
+    [SerializeField] private ProjectileConfig _startConfig;
+
+    private bool _canShoot;
+
+    private void Awake()
+    {
+        _weapon.Init(_pool, _firePoint);
+        _weapon.ApplyConfig(_startConfig);
+    }
+
+    private void Start()
+    {
+        _canShoot = true;
+    }
 
     private void Update()
     {
-        _timer -= Time.deltaTime;
-
-        if (_timer <= 0f)
-        {
-            Fire();
-            _timer = _fireRate;
-        }
+        if (!_canShoot) return;
+        _weapon.Tick();
     }
 
-    public void SetFireRate(float newFireRate)
-    {
-        _fireRate = Mathf.Max(0.02f, newFireRate);
-    }
+    public void EnableShooting() => _canShoot = true;
 
-    private void Fire()
-    {
-        var projectile = _pool.Get();
-        projectile.ApplyConfig(_config);
-        projectile.Activate(transform.position, Quaternion.identity);
-    }
+    public void DisableShooting() => _canShoot = false;
 }

@@ -2,16 +2,16 @@ using UnityEngine;
 
 public sealed class ProjectileBounce : MonoBehaviour
 {
-    [SerializeField] private int _maxBounces = 3;
-    [SerializeField] private bool _bounceX = true;
-    [SerializeField] private bool _bounceY = true;
-    private int _bouncesLeft;
+    private int _maxBounces;
+    private bool _bounceX;
+    private bool _bounceY;
 
+    private int _bouncesLeft;
     private ProjectileMovement _movement;
 
-    public void Init(ProjectileMovement movement)
+    private void Awake()
     {
-        _movement = movement;
+        _movement = GetComponent<ProjectileMovement>();
     }
 
     public void ResetBounces()
@@ -34,7 +34,7 @@ public sealed class ProjectileBounce : MonoBehaviour
             bounced = true;
         }
 
-        if (_bounceX && (pos.y >= ScreenBounds.Top || pos.y <= ScreenBounds.Bottom))
+        if (_bounceY && (pos.y >= ScreenBounds.Top || pos.y <= ScreenBounds.Bottom))
         {
             dir.y *= -1;
             bounced = true;

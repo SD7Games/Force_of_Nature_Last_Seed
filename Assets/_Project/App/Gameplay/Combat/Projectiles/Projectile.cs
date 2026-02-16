@@ -3,8 +3,9 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class Projectile : MonoBehaviour
 {
+    [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private LayerMask _hitMask;
-    [SerializeField] private float _lifeTime = 2f;
+    private float _lifeTime;
 
     private float _timer;
     private ProjectilePool _pool;
@@ -12,43 +13,60 @@ public sealed class Projectile : MonoBehaviour
 
     private ProjectileMovement _movement;
     private ProjectileBounce _bounce;
-    private ProjectileConfig _config;
 
-    public void Init(ProjectilePool pool, ProjectileMovement movement, ProjectileBounce bounce)
+    private void Awake()
     {
-        _pool = pool;
-        _movement = movement;
-        _bounce = bounce;
-    }
-
-    public void ApplyConfig(ProjectileConfig config)
-    {
-        _config = config;
-        _movement.SetSpeed(config.Speed);
-        _bounce.SetBounces(config.BounceCount, config.BounceX, config.BounceY);
-    }
-
-    public void Activate(Vector3 position, Quaternion rotation)
-    {
-        transform.SetPositionAndRotation(position, rotation);
-        _timer = _lifeTime;
-        _active = true;
-
-        _movement.SetDirection(Vector2.up);
-        _bounce?.ResetBounces();
-
-        gameObject.SetActive(true);
+        _movement = GetComponent<ProjectileMovement>();
+        _bounce = GetComponent<ProjectileBounce>();
+        if (_renderer == null)
+            Debug.LogError("Projectile: SpriteRenderer reference is not set.", this);
     }
 
     private void Update()
     {
         _timer -= Time.deltaTime;
 
-        if (_timer <= 0)
+        if (_timer <= 0f)
+        {
             ReleaseSelf();
+            return;
+        }
 
         _bounce?.Tick();
         _movement.Tick();
+    }
+
+    public void Init(ProjectilePool pool)
+    {
+        _pool = pool;
+    }
+
+    public void ApplyConfig(ProjectileConfig config)
+    {
+        _renderer.sprite = config.Sprite;
+        _renderer.transform.localRotation = Quaternion.Euler(0f, 0f, config.RotateSprite);
+
+        _lifeTime = Mathf.Max(0.05f, config.LifeTime);
+
+        _movement.SetSpeed(config.Speed);
+        _bounce.SetBounces(
+            config.BounceCount,
+            config.BounceX,
+            config.BounceY
+        );
+    }
+
+    public void Activate(Vector3 position, Quaternion rotation)
+    {
+        transform.SetPositionAndRotation(position, rotation);
+
+        _timer = _lifeTime;
+        _active = true;
+
+        _movement.SetDirection(transform.up);
+        _bounce?.ResetBounces();
+
+        gameObject.SetActive(true);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

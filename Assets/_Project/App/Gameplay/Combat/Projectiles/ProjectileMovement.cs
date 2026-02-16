@@ -3,7 +3,7 @@ using UnityEngine;
 public sealed class ProjectileMovement : MonoBehaviour
 {
     public Vector2 Direction { get; private set; }
-    [SerializeField] private float _speed = 8f;
+    private float _speed;
 
     public void SetDirection(Vector2 dir)
     {

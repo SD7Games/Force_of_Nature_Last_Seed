@@ -3,15 +3,49 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Combat/Projectile Config")]
 public sealed class ProjectileConfig : ScriptableObject
 {
-    [field: SerializeField] public float Speed { get; private set; } = 8f;
-    [field: SerializeField] public int BounceCount { get; private set; } = 0;
-    [field: SerializeField] public bool BounceX { get; private set; } = true;
-    [field: SerializeField] public bool BounceY { get; private set; } = false;
+    [Header("Visual")]
+    [SerializeField] private Sprite _sprite;
 
-    [field: SerializeField] public int SplitCount { get; private set; } = 0;
-    [field: SerializeField] public float SplitAngle { get; private set; } = 15f;
+    [SerializeField] private float _rotateSprite = 0f;
 
-    [field: SerializeField] public int Penetration { get; private set; } = 0;
-    [field: SerializeField] public float Damage { get; private set; } = 1f;
+    [Header("Weapon")]
+    [SerializeField] private float _fireRate = 0.8f;
 
+    [SerializeField] private int _damage = 5;
+    [SerializeField] private int _penetration = 0;
+
+    [Header("Movement")]
+    [SerializeField] private float _lifeTime = 2f;
+
+    [SerializeField] private float _speed = 6f;
+
+    [Header("Bounce")]
+    [SerializeField] private int _bounceCount = 0;
+
+    [SerializeField] private bool _bounceX = true;
+    [SerializeField] private bool _bounceY = false;
+
+    [Header("Split")]
+    [SerializeField] private int _splitCount = 0;
+
+    [SerializeField] private float _splitAngle = 15f;
+
+    // === Public API (read-only) ===
+
+    public Sprite Sprite => _sprite;
+    public float RotateSprite => _rotateSprite;
+
+    public float FireRate => _fireRate;
+    public int Damage => _damage;
+    public int Penetration => _penetration;
+
+    public float LifeTime => _lifeTime;
+    public float Speed => _speed;
+
+    public int BounceCount => _bounceCount;
+    public bool BounceX => _bounceX;
+    public bool BounceY => _bounceY;
+
+    public int SplitCount => _splitCount;
+    public float SplitAngle => _splitAngle;
 }

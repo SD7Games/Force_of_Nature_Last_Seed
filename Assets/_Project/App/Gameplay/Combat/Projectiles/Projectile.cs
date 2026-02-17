@@ -10,6 +10,7 @@ public sealed class Projectile : MonoBehaviour
     private float _timer;
     private ProjectilePool _pool;
     private bool _active;
+    private float _baseVisualRotation;
 
     private ProjectileMovement _movement;
     private ProjectileBounce _bounce;
@@ -34,6 +35,8 @@ public sealed class Projectile : MonoBehaviour
 
         _bounce?.Tick();
         _movement.Tick();
+
+        UpdateVisualRotation();
     }
 
     public void Init(ProjectilePool pool)
@@ -44,7 +47,7 @@ public sealed class Projectile : MonoBehaviour
     public void ApplyConfig(ProjectileConfig config)
     {
         _renderer.sprite = config.Sprite;
-        _renderer.transform.localRotation = Quaternion.Euler(0f, 0f, config.RotateSprite);
+        _baseVisualRotation = config.RotateSprite;
 
         _lifeTime = Mathf.Max(0.05f, config.LifeTime);
 
@@ -58,15 +61,30 @@ public sealed class Projectile : MonoBehaviour
 
     public void Activate(Vector3 position, Quaternion rotation)
     {
-        transform.SetPositionAndRotation(position, rotation);
+        transform.position = position;
+        transform.rotation = Quaternion.identity;
 
         _timer = _lifeTime;
         _active = true;
 
-        _movement.SetDirection(transform.up);
+        Vector2 direction = rotation * Vector2.up;
+        _movement.SetDirection(direction);
+
         _bounce?.ResetBounces();
 
         gameObject.SetActive(true);
+    }
+
+    private void UpdateVisualRotation()
+    {
+        if (_movement == null) return;
+
+        Vector2 dir = _movement.Direction;
+        if (dir.sqrMagnitude < 0.001f) return;
+
+        float angle = -Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
+
+        _renderer.transform.localRotation = Quaternion.Euler(0f, 0f, angle + _baseVisualRotation);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

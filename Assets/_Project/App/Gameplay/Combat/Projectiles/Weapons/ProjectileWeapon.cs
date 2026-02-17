@@ -10,13 +10,27 @@ public sealed class ProjectileWeapon : MonoBehaviour
 
     private float _cooldown;
 
-    private readonly List<IShotModifier> _modifiers = new();
+    private readonly List<RuntimeModifier> _modifiers = new();
     private readonly List<ShotSpawnData> _shots = new();
 
     public void Init(ProjectilePool pool, Transform firePoint)
     {
         _pool = pool;
         _firePoint = firePoint;
+    }
+
+    public void AddModifier(ShotModifierData data)
+    {
+        if (data == null) return;
+
+        var runtime = data.CreateRuntime();
+        _modifiers.Add(new RuntimeModifier(data, runtime));
+    }
+
+    public void RemoveModifier(ShotModifierData data)
+    {
+        if (data == null) return;
+        _modifiers.RemoveAll(m => m.Data == data);
     }
 
     public void ApplyConfig(WeaponConfig config)
@@ -29,7 +43,9 @@ public sealed class ProjectileWeapon : MonoBehaviour
         foreach (var modifierData in config.Modifiers)
         {
             if (modifierData == null) continue;
-            _modifiers.Add(modifierData.CreateRuntime());
+
+            var runtime = modifierData.CreateRuntime();
+            _modifiers.Add(new RuntimeModifier(modifierData, runtime));
         }
     }
 
@@ -54,7 +70,7 @@ public sealed class ProjectileWeapon : MonoBehaviour
         var context = new ShotContext(_firePoint, _pool, _config.Projectile);
 
         foreach (var modifier in _modifiers)
-            modifier.Apply(_shots, context);
+            modifier.Runtime.Apply(_shots, context);
 
         foreach (var shot in _shots)
             Spawn(shot);

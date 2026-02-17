@@ -17,9 +17,9 @@ MonoBehaviour:
   _damage: 5
   _penetration: 0
   _lifeTime: 3
-  _speed: 6
-  _bounceCount: 0
+  _speed: 8
+  _bounceCount: 5
   _bounceX: 1
-  _bounceY: 0
+  _bounceY: 1
   _splitCount: 0
   _splitAngle: 15

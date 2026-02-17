@@ -4,7 +4,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class ProjectileWeapon : MonoBehaviour
 {
-    private ProjectileConfig _config;
+    private WeaponConfig _config;
     private ProjectilePool _pool;
     private Transform _firePoint;
 
@@ -19,14 +19,18 @@ public sealed class ProjectileWeapon : MonoBehaviour
         _firePoint = firePoint;
     }
 
-    public void ApplyConfig(ProjectileConfig config)
+    public void ApplyConfig(WeaponConfig config)
     {
         _config = config;
         _cooldown = 0f;
 
         _modifiers.Clear();
-        _modifiers.Add(new SpreadModifier());
 
+        foreach (var modifierData in config.Modifiers)
+        {
+            if (modifierData == null) continue;
+            _modifiers.Add(modifierData.CreateRuntime());
+        }
     }
 
     public void Tick()
@@ -44,22 +48,22 @@ public sealed class ProjectileWeapon : MonoBehaviour
 
     private void Fire()
     {
-        var context = new ShotContext(_firePoint, _pool, _config);
-
         _shots.Clear();
         _shots.Add(new ShotSpawnData(_firePoint.position, _firePoint.rotation));
 
-        for (int i = 0; i < _modifiers.Count; i++)
-            _modifiers[i].Apply(_shots, context);
+        var context = new ShotContext(_firePoint, _pool, _config.Projectile);
 
-        for (int i = 0; i < _shots.Count; i++)
-            SpawnProjectile(_shots[i], _config);
+        foreach (var modifier in _modifiers)
+            modifier.Apply(_shots, context);
+
+        foreach (var shot in _shots)
+            Spawn(shot);
     }
 
-    private void SpawnProjectile(ShotSpawnData shot, ProjectileConfig config)
+    private void Spawn(ShotSpawnData shot)
     {
         var projectile = _pool.Get();
-        projectile.ApplyConfig(config);
+        projectile.ApplyConfig(_config.Projectile);
         projectile.Activate(shot.Position, shot.Rotation);
     }
 }

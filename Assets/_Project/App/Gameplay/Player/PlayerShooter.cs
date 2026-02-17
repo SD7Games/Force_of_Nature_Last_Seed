@@ -10,7 +10,7 @@ public sealed class PlayerShooter : MonoBehaviour
     [SerializeField] private Transform _firePoint;
 
     [Header("Start Weapon")]
-    [SerializeField] private ProjectileConfig _startConfig;
+    [SerializeField] private WeaponConfig _startConfig;
 
     private bool _canShoot;
 

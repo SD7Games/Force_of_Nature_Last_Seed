@@ -10,19 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e4fed19a2ea62a46baee5e188881071, type: 3}
-  m_Name: DefaultWeapon
+  m_Name: ProjectileConfig
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileConfig
   _sprite: {fileID: 21300000, guid: 77d482eee12c07f43a2f8583ee2be858, type: 3}
   _rotateSprite: -98
-  _fireRate: 1.4
   _damage: 5
   _penetration: 0
   _lifeTime: 3
-  _speed: 12
-  _bounceCount: 2
+  _speed: 6
+  _bounceCount: 0
   _bounceX: 1
-  _bounceY: 1
-  _splitCount: 10
+  _bounceY: 0
+  _splitCount: 0
   _splitAngle: 15
-  _projectilesPerShot: 3
-  _spreadAngle: 43.9

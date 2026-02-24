@@ -59,7 +59,7 @@ public sealed class Projectile : MonoBehaviour
         );
     }
 
-    public void Activate(Vector3 position, Quaternion rotation)
+    public void Activate(Vector3 position, Quaternion shotRotation)
     {
         transform.position = position;
         transform.rotation = Quaternion.identity;
@@ -67,10 +67,11 @@ public sealed class Projectile : MonoBehaviour
         _timer = _lifeTime;
         _active = true;
 
-        Vector2 direction = rotation * Vector2.up;
+        Vector2 direction = shotRotation * Vector2.up;
         _movement.SetDirection(direction);
 
         _bounce?.ResetBounces();
+        UpdateVisualRotation();
 
         gameObject.SetActive(true);
     }

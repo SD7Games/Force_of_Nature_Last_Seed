@@ -6,7 +6,7 @@ public sealed class PlayerShooter : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private ProjectileWeapon _weapon;
 
-    [SerializeField] private ProjectilePool _pool;
+    [SerializeField] private PoolRegistry _registry;
     [SerializeField] private Transform _firePoint;
 
     [Header("Start Weapon")]
@@ -16,7 +16,10 @@ public sealed class PlayerShooter : MonoBehaviour
 
     private void Awake()
     {
-        _weapon.Init(_pool, _firePoint);
+        var projectilePrefab = _startConfig.Projectile.Prefab;
+        var pool = _registry.GetPool(projectilePrefab);
+
+        _weapon.Init(pool, _firePoint);
         _weapon.ApplyConfig(_startConfig);
     }
 

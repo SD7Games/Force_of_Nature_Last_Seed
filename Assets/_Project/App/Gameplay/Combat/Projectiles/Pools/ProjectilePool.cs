@@ -4,29 +4,33 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class ProjectilePool : MonoBehaviour
 {
-    [Header("Prefab & Prewarm")]
-    [SerializeField] private Projectile _prefab;
+    [SerializeField] private int _prewarmCount = 40;
 
-    [SerializeField] private int _prewarmCount = 50;
-
+    private Projectile _prefab;
     private readonly Queue<Projectile> _pool = new();
+    private bool _initialized;
 
-    private void Awake()
+    public void SetPrefab(Projectile prefab)
     {
+        if (_initialized) return;
+
+        _prefab = prefab;
         Prewarm();
+        _initialized = true;
+    }
+
+    public Projectile Get()
+    {
+        if (_pool.Count == 0)
+            return CreateNew();
+
+        return _pool.Dequeue();
     }
 
     public void Release(Projectile projectile)
     {
         projectile.gameObject.SetActive(false);
         _pool.Enqueue(projectile);
-    }
-
-    public Projectile Get()
-    {
-        if (_pool.Count == 0) return CreateNew();
-
-        return _pool.Dequeue();
     }
 
     private void Prewarm()
@@ -40,10 +44,10 @@ public sealed class ProjectilePool : MonoBehaviour
 
     private Projectile CreateNew()
     {
+        Debug.Log("POOL EXPAND: Instantiate new Projectile");
         var projectile = Instantiate(_prefab, transform);
         projectile.Init(this);
         projectile.gameObject.SetActive(false);
         return projectile;
     }
-
 }

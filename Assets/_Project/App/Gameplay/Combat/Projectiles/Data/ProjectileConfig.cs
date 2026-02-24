@@ -3,6 +3,11 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Combat/Projectile Config")]
 public sealed class ProjectileConfig : ScriptableObject
 {
+    [Header("Prefab")]
+    [SerializeField] private Projectile _prefab;
+
+    public Projectile Prefab => _prefab;
+
     [Header("Visual")]
     [SerializeField] private Sprite _sprite;
 
@@ -28,8 +33,6 @@ public sealed class ProjectileConfig : ScriptableObject
     [SerializeField] private int _splitCount = 0;
 
     [SerializeField] private float _splitAngle = 15f;
-
-    // === Public API (read-only) ===
 
     public Sprite Sprite => _sprite;
     public float RotateSprite => _rotateSprite;

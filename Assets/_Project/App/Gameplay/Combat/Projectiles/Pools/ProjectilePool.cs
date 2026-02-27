@@ -44,7 +44,6 @@ public sealed class ProjectilePool : MonoBehaviour
 
     private Projectile CreateNew()
     {
-        Debug.Log("POOL EXPAND: Instantiate new Projectile");
         var projectile = Instantiate(_prefab, transform);
         projectile.Init(this);
         projectile.gameObject.SetActive(false);

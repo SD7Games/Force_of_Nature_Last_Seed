@@ -289,11 +289,11 @@ MonoBehaviour:
   _prewarmBody: 10
   _prewarmCocoon: 2
   _prewarmTail: 2
-  _totalLength: 200
+  _totalLength: 30
   _minBodyBeforeCocoon: 4
   _maxBodyBeforeCocoon: 10
-  _spawnDelayOverride: 0
-  _segmentSpacing: 0.6
+  _spawnDelayOverride: 0.2
+  _segmentSpacing: 0.5
 --- !u!1 &92243753
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,6 +4,11 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class EnemyRailMover : MonoBehaviour
 {
+    [Header("Visual")]
+    [SerializeField] private Transform _visualRoot;
+
+    [SerializeField] private float _rotationOffset = 0f;
+
     private Transform[] _waypoints;
     private float _speed;
     private int _currentIndex;
@@ -15,14 +20,22 @@ public sealed class EnemyRailMover : MonoBehaviour
     {
         if (!_isInitialized) return;
 
-        Movement();
+        Move();
     }
 
-    private void Movement()
+    private void Move()
     {
         Transform target = _waypoints[_currentIndex];
 
-        transform.position = Vector3.MoveTowards(transform.position, target.position, _speed * Time.deltaTime);
+        Vector3 direction = (target.position - transform.position).normalized;
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            target.position,
+            _speed * Time.deltaTime
+        );
+
+        RotateVisual(direction);
 
         if (Vector3.SqrMagnitude(transform.position - target.position) <= 0.05f * 0.05f)
         {
@@ -35,6 +48,19 @@ public sealed class EnemyRailMover : MonoBehaviour
                 Completed?.Invoke();
             }
         }
+    }
+
+    private void RotateVisual(Vector3 direction)
+    {
+        if (_visualRoot == null) return;
+
+        if (direction == Vector3.zero) return;
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        angle += _rotationOffset;
+
+        _visualRoot.localRotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     public void Initialize(Transform[] waypoints, float speed)
@@ -57,5 +83,4 @@ public sealed class EnemyRailMover : MonoBehaviour
         _isInitialized = false;
         enabled = false;
     }
-
 }

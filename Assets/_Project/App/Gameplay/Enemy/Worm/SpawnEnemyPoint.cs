@@ -19,21 +19,17 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
     [SerializeField] private WormSegment _tailPrefab;
 
     [Header("Prewarm")]
-    [Min(0)][SerializeField] private int _prewarmHead = 2;
+    [Min(0)][SerializeField] private int _prewarmHead = 1;
 
-    [Min(0)][SerializeField] private int _prewarmBody = 10;
-    [Min(0)][SerializeField] private int _prewarmCocoon = 2;
-    [Min(0)][SerializeField] private int _prewarmTail = 2;
+    [Min(0)][SerializeField] private int _prewarmBody = 50;
+    [Min(0)][SerializeField] private int _prewarmCocoon = 20;
+    [Min(0)][SerializeField] private int _prewarmTail = 1;
 
-    [Header("Spawn Pattern (order + counts)")]
-    [SerializeField]
-    private List<SpawnEntry> _pattern = new()
-    {
-        new SpawnEntry(WormSegmentType.Head, 1),
-        new SpawnEntry(WormSegmentType.Body, 6),
-        new SpawnEntry(WormSegmentType.Cocoon, 1),
-        new SpawnEntry(WormSegmentType.Tail, 1),
-    };
+    [Header("Worm Generation")]
+    [Min(3)][SerializeField] private int _totalLength = 30;
+
+    [Min(1)][SerializeField] private int _minBodyBeforeCocoon = 4;
+    [Min(1)][SerializeField] private int _maxBodyBeforeCocoon = 10;
 
     [Header("Spacing")]
     [Tooltip("Delay between segments. If 0, auto-calc from spacing/speed.")]
@@ -41,19 +37,6 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
 
     [Min(0.05f)]
     [SerializeField] private float _segmentSpacing = 0.6f;
-
-    [System.Serializable]
-    public struct SpawnEntry
-    {
-        public WormSegmentType Type;
-        [Min(1)] public int Count;
-
-        public SpawnEntry(WormSegmentType type, int count)
-        {
-            Type = type;
-            Count = count;
-        }
-    }
 
     private readonly Queue<WormSegment> _headPool = new();
     private readonly Queue<WormSegment> _bodyPool = new();
@@ -91,20 +74,53 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
             ? _spawnDelayOverride
             : Mathf.Max(0.01f, _segmentSpacing / Mathf.Max(0.01f, _moveSpeed));
 
-        for (int i = 0; i < _pattern.Count; i++)
+        List<WormSegmentType> pattern = BuildPattern();
+
+        for (int i = 0; i < pattern.Count; i++)
         {
-            SpawnEntry entry = _pattern[i];
+            WormSegment segment = GetFromPool(pattern[i]);
 
-            for (int j = 0; j < entry.Count; j++)
+            segment.SetupReturn(ReturnToPool);
+            segment.StartMove(_waypoints, _moveSpeed);
+
+            yield return new WaitForSeconds(delay);
+        }
+    }
+
+    private List<WormSegmentType> BuildPattern()
+    {
+        List<WormSegmentType> result = new();
+
+        if (_totalLength < 3)
+            _totalLength = 3;
+
+        result.Add(WormSegmentType.Head);
+
+        int currentCount = 1;
+
+        while (currentCount < _totalLength - 1)
+        {
+            int bodyCount = Random.Range(_minBodyBeforeCocoon, _maxBodyBeforeCocoon + 1);
+
+            for (int i = 0; i < bodyCount; i++)
             {
-                WormSegment segment = GetFromPool(entry.Type);
+                if (currentCount >= _totalLength - 1)
+                    break;
 
-                segment.SetupReturn(ReturnToPool);
-                segment.StartMove(_waypoints, _moveSpeed);
+                result.Add(WormSegmentType.Body);
+                currentCount++;
+            }
 
-                yield return new WaitForSeconds(delay);
+            if (currentCount < _totalLength - 1)
+            {
+                result.Add(WormSegmentType.Cocoon);
+                currentCount++;
             }
         }
+
+        result.Add(WormSegmentType.Tail);
+
+        return result;
     }
 
     private WormSegment GetFromPool(WormSegmentType type)
@@ -117,7 +133,6 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
         WormSegment prefab = GetPrefab(type);
         WormSegment created = Instantiate(prefab, transform);
         created.gameObject.SetActive(false);
-
         return created;
     }
 

@@ -46,8 +46,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5f99bb3b68bf004b8ebbb425f8ad3ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyRailMover
-  _visualRoot: {fileID: 0}
-  _rotationOffset: 0
 --- !u!114 &751699847138599696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,6 +59,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormSegment
   <Type>k__BackingField: 2
+  <VisualRoot>k__BackingField: {fileID: 4644839122981294600}
+  <RotationOffset>k__BackingField: 0
   _mover: {fileID: 4225861671172826699}
 --- !u!1 &9057880734587671930
 GameObject:

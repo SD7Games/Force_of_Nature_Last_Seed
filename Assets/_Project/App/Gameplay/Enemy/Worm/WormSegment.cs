@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public enum WormSegmentType
@@ -14,33 +13,36 @@ public sealed class WormSegment : MonoBehaviour
 {
     [field: SerializeField] public WormSegmentType Type { get; private set; }
 
+    [field: SerializeField] public Transform VisualRoot { get; private set; }
+
+    [field: SerializeField] public float RotationOffset { get; private set; }
+
     [SerializeField] private EnemyRailMover _mover;
 
-    private Action<WormSegment> _returnToPool;
+    private WormController _controller;
 
-    public void SetupReturn(Action<WormSegment> returnToPool)
+    public void AssignController(WormController controller)
     {
-        _returnToPool = returnToPool;
-
-        if (_mover != null)
-        {
-            _mover.Completed -= OnCompleted;
-            _mover.Completed += OnCompleted;
-        }
+        _controller = controller;
     }
 
     public void StartMove(Transform[] waypoints, float speed)
     {
         gameObject.SetActive(true);
 
-        if (_mover == null)
-            _mover = GetComponent<EnemyRailMover>();
-
-        _mover.Initialize(waypoints, speed);
+        if (Type == WormSegmentType.Head)
+        {
+            _mover.Initialize(waypoints, speed);
+        }
+        else
+        {
+            _mover.enabled = false;
+        }
     }
 
-    private void OnCompleted()
+    public void Die()
     {
-        _returnToPool?.Invoke(this);
+        _controller?.RemoveSegment(this);
+        gameObject.SetActive(false);
     }
 }

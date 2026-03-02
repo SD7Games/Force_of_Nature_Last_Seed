@@ -220,6 +220,7 @@ GameObject:
   m_Component:
   - component: {fileID: 91581454}
   - component: {fileID: 91581455}
+  - component: {fileID: 91581456}
   m_Layer: 0
   m_Name: EnemySpawnPoint
   m_TagString: Untagged
@@ -280,20 +281,30 @@ MonoBehaviour:
   - {fileID: 890024627}
   - {fileID: 409699732}
   - {fileID: 101219807}
-  _moveSpeed: 3
+  _moveSpeed: 20
   _headPrefab: {fileID: 1300043371089455902, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
   _bodyPrefab: {fileID: 5005386936780954391, guid: d793d0b4e9b2e00478b0d9799bab95d2, type: 3}
   _cocoonPrefab: {fileID: 751699847138599696, guid: 8abe174ccb30b4144ba3f60a4b72c902, type: 3}
   _tailPrefab: {fileID: 3075482384031948703, guid: 433d2a5fe533f854d92179c62851b028, type: 3}
-  _prewarmHead: 2
-  _prewarmBody: 10
-  _prewarmCocoon: 2
-  _prewarmTail: 2
-  _totalLength: 30
+  _wormController: {fileID: 91581456}
+  _totalLength: 150
   _minBodyBeforeCocoon: 4
-  _maxBodyBeforeCocoon: 10
-  _spawnDelayOverride: 0.2
+  _maxBodyBeforeCocoon: 7
+  _poolPadding: 200
+--- !u!114 &91581456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91581453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 195711e49e371794aa5cefe1ad087694, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WormController
   _segmentSpacing: 0.5
+  _historyCapacity: 2000
 --- !u!1 &92243753
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,60 +4,53 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class SpawnEnemyPoint : MonoBehaviour
 {
-    [Header("Waypoints (Rails)")]
-    [SerializeField] private Transform[] _waypoints;
-
-    [Header("Speed")]
-    [SerializeField] private float _moveSpeed = 2f;
-
-    [Header("Prefabs (4 segment types)")]
+    [Header("Prefabs")]
     [SerializeField] private WormSegment _headPrefab;
 
     [SerializeField] private WormSegment _bodyPrefab;
     [SerializeField] private WormSegment _cocoonPrefab;
     [SerializeField] private WormSegment _tailPrefab;
 
-    [Header("Worm Generation")]
+    [Header("Controllers")]
     [SerializeField] private WormController _wormController;
 
+    [SerializeField] private WormCombatController _wormCombat;
+
+    [Header("Generation")]
     [Min(3)]
-    [SerializeField] private int _totalLength = 30;
+    [SerializeField] private int _totalLength = 60;
 
-    [Min(1)]
-    [SerializeField] private int _minBodyBeforeCocoon = 4;
+    [Header("Cocoon spacing")]
+    [SerializeField] private int _minBodyBeforeCocoon = 5;
 
-    [Min(1)]
     [SerializeField] private int _maxBodyBeforeCocoon = 10;
 
     [Header("Pooling")]
-    [Tooltip("Extra pooled elements on top of Total Length (safety margin).")]
-    [Min(0)]
-    [SerializeField] private int _poolPadding = 5;
+    [SerializeField] private int _poolPadding = 10;
 
     private readonly Queue<WormSegment> _headPool = new();
     private readonly Queue<WormSegment> _bodyPool = new();
     private readonly Queue<WormSegment> _cocoonPool = new();
     private readonly Queue<WormSegment> _tailPool = new();
 
+    private bool _isSpawned;
+
     private void Awake()
     {
         if (_wormController == null)
-            Debug.LogError("WormController is not assigned!", this);
+            Debug.LogError("WormController not assigned", this);
 
-        if (_headPrefab == null || _bodyPrefab == null || _cocoonPrefab == null || _tailPrefab == null)
-            Debug.LogError("One or more worm prefabs are not assigned!", this);
+        if (_wormCombat == null)
+            Debug.LogError("WormCombatController not assigned", this);
 
         if (_minBodyBeforeCocoon > _maxBodyBeforeCocoon)
-        {
-            int tmp = _minBodyBeforeCocoon;
-            _minBodyBeforeCocoon = _maxBodyBeforeCocoon;
-            _maxBodyBeforeCocoon = tmp;
-        }
+            (_minBodyBeforeCocoon, _maxBodyBeforeCocoon) = (_maxBodyBeforeCocoon, _minBodyBeforeCocoon);
 
         int capacity = Mathf.Max(3, _totalLength) + _poolPadding;
 
         Prewarm(_headPrefab, 1, _headPool);
         Prewarm(_tailPrefab, 1, _tailPool);
+
         Prewarm(_bodyPrefab, capacity, _bodyPool);
         Prewarm(_cocoonPrefab, capacity, _cocoonPool);
     }
@@ -69,28 +62,79 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
 
     public void SpawnWorm()
     {
-        if (_waypoints == null || _waypoints.Length == 0)
-        {
-            Debug.LogWarning($"{name}: No waypoints assigned.");
+        if (_isSpawned)
             return;
-        }
 
         List<WormSegmentType> pattern = BuildPattern();
-        List<WormSegment> createdSegments = new(pattern.Count);
+
+        List<WormSegment> segments = new(pattern.Count);
+
+        WormSegment head = null;
+        WormSegment tail = null;
 
         for (int i = 0; i < pattern.Count; i++)
         {
-            WormSegment segment = GetFromPool(pattern[i]);
+            WormSegment seg = GetFromPool(pattern[i]);
 
-            segment.StartMove(_waypoints, _moveSpeed);
+            seg.Activate();
 
-            createdSegments.Add(segment);
+            if (seg.Type == WormSegmentType.Head)
+                head = seg;
+
+            if (seg.Type == WormSegmentType.Tail)
+                tail = seg;
+
+            segments.Add(seg);
         }
 
-        _wormController.Initialize(createdSegments);
+        _wormController.Initialize(segments);
 
-        for (int i = 0; i < createdSegments.Count; i++)
-            createdSegments[i].AssignController(_wormController);
+        List<WormSection> sections = BuildSectionsByCocoons(segments);
+
+        _wormCombat.Initialize(head, tail, sections);
+
+        foreach (var seg in segments)
+        {
+            var receiver = seg.GetComponent<WormSegmentDamageReceiver>();
+
+            if (receiver == null)
+                receiver = seg.gameObject.AddComponent<WormSegmentDamageReceiver>();
+
+            receiver.Initialize(_wormCombat, seg);
+        }
+
+        _isSpawned = true;
+    }
+
+    private List<WormSection> BuildSectionsByCocoons(List<WormSegment> segments)
+    {
+        List<WormSection> sections = new();
+
+        WormSection current = null;
+
+        for (int i = 0; i < segments.Count; i++)
+        {
+            WormSegment seg = segments[i];
+
+            if (seg.Type is WormSegmentType.Head or WormSegmentType.Tail)
+                continue;
+
+            if (current == null)
+            {
+                current = new WormSection();
+
+                current.Init(WormSectionHPGenerator.GetHP(sections.Count));
+
+                sections.Add(current);
+            }
+
+            current.AddSegment(seg);
+
+            if (seg.Type == WormSegmentType.Cocoon)
+                current = null;
+        }
+
+        return sections;
     }
 
     private List<WormSegmentType> BuildPattern()
@@ -102,29 +146,30 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
             WormSegmentType.Head
         };
 
-        int currentCount = 1;
+        int bodyCounter = 0;
 
-        while (currentCount < length - 1)
+        int nextCocoon = Random.Range(_minBodyBeforeCocoon, _maxBodyBeforeCocoon + 1);
+
+        while (result.Count < length - 1)
         {
-            int bodyCount = Random.Range(_minBodyBeforeCocoon, _maxBodyBeforeCocoon + 1);
+            bodyCounter++;
 
-            for (int i = 0; i < bodyCount; i++)
-            {
-                if (currentCount >= length - 1)
-                    break;
-
-                result.Add(WormSegmentType.Body);
-                currentCount++;
-            }
-
-            if (currentCount < length - 1)
+            if (bodyCounter >= nextCocoon)
             {
                 result.Add(WormSegmentType.Cocoon);
-                currentCount++;
+
+                bodyCounter = 0;
+
+                nextCocoon = Random.Range(_minBodyBeforeCocoon, _maxBodyBeforeCocoon + 1);
+            }
+            else
+            {
+                result.Add(WormSegmentType.Body);
             }
         }
 
         result.Add(WormSegmentType.Tail);
+
         return result;
     }
 
@@ -135,46 +180,43 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
         if (pool.Count > 0)
             return pool.Dequeue();
 
-        WormSegment prefab = GetPrefab(type);
-        WormSegment created = Instantiate(prefab, transform);
+        WormSegment created = Instantiate(GetPrefab(type), transform);
+
         created.gameObject.SetActive(false);
+
         return created;
     }
 
     private void Prewarm(WormSegment prefab, int count, Queue<WormSegment> pool)
     {
-        if (prefab == null || count <= 0)
+        if (prefab == null)
             return;
 
         for (int i = 0; i < count; i++)
         {
-            WormSegment created = Instantiate(prefab, transform);
-            created.gameObject.SetActive(false);
-            pool.Enqueue(created);
+            WormSegment seg = Instantiate(prefab, transform);
+
+            seg.gameObject.SetActive(false);
+
+            pool.Enqueue(seg);
         }
     }
 
-    private Queue<WormSegment> GetPool(WormSegmentType type)
+    private Queue<WormSegment> GetPool(WormSegmentType type) => type switch
     {
-        return type switch
-        {
-            WormSegmentType.Head => _headPool,
-            WormSegmentType.Body => _bodyPool,
-            WormSegmentType.Cocoon => _cocoonPool,
-            WormSegmentType.Tail => _tailPool,
-            _ => _bodyPool
-        };
-    }
+        WormSegmentType.Head => _headPool,
+        WormSegmentType.Body => _bodyPool,
+        WormSegmentType.Cocoon => _cocoonPool,
+        WormSegmentType.Tail => _tailPool,
+        _ => _bodyPool
+    };
 
-    private WormSegment GetPrefab(WormSegmentType type)
+    private WormSegment GetPrefab(WormSegmentType type) => type switch
     {
-        return type switch
-        {
-            WormSegmentType.Head => _headPrefab,
-            WormSegmentType.Body => _bodyPrefab,
-            WormSegmentType.Cocoon => _cocoonPrefab,
-            WormSegmentType.Tail => _tailPrefab,
-            _ => _bodyPrefab
-        };
-    }
+        WormSegmentType.Head => _headPrefab,
+        WormSegmentType.Body => _bodyPrefab,
+        WormSegmentType.Cocoon => _cocoonPrefab,
+        WormSegmentType.Tail => _tailPrefab,
+        _ => _bodyPrefab
+    };
 }

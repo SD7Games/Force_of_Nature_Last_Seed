@@ -221,7 +221,8 @@ GameObject:
   - component: {fileID: 91581454}
   - component: {fileID: 91581455}
   - component: {fileID: 91581456}
-  m_Layer: 0
+  - component: {fileID: 91581457}
+  m_Layer: 3
   m_Name: EnemySpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -255,38 +256,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 464cdcfe9f1ee7a46a362d0904048d78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnEnemyPoint
-  _waypoints:
-  - {fileID: 91581454}
-  - {fileID: 254588737}
-  - {fileID: 1625595433}
-  - {fileID: 1772874356}
-  - {fileID: 278159752}
-  - {fileID: 66787444}
-  - {fileID: 1828501330}
-  - {fileID: 92243754}
-  - {fileID: 282097039}
-  - {fileID: 352281320}
-  - {fileID: 955916830}
-  - {fileID: 2125292264}
-  - {fileID: 1264189001}
-  - {fileID: 1704535580}
-  - {fileID: 1948669682}
-  - {fileID: 459658385}
-  - {fileID: 1773726427}
-  - {fileID: 1756311599}
-  - {fileID: 1187327265}
-  - {fileID: 369919090}
-  - {fileID: 2074038577}
-  - {fileID: 1770584472}
-  - {fileID: 890024627}
-  - {fileID: 409699732}
-  - {fileID: 101219807}
-  _moveSpeed: 20
   _headPrefab: {fileID: 1300043371089455902, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
   _bodyPrefab: {fileID: 5005386936780954391, guid: d793d0b4e9b2e00478b0d9799bab95d2, type: 3}
   _cocoonPrefab: {fileID: 751699847138599696, guid: 8abe174ccb30b4144ba3f60a4b72c902, type: 3}
   _tailPrefab: {fileID: 3075482384031948703, guid: 433d2a5fe533f854d92179c62851b028, type: 3}
   _wormController: {fileID: 91581456}
+  _wormCombat: {fileID: 91581457}
   _totalLength: 150
   _minBodyBeforeCocoon: 4
   _maxBodyBeforeCocoon: 7
@@ -303,8 +278,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 195711e49e371794aa5cefe1ad087694, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormController
+  _rail: {fileID: 192453719}
+  _speed: 3
   _segmentSpacing: 0.5
-  _historyCapacity: 2000
+  _waveAmplitude: 0.15
+  _waveFrequency: 6
+  _waveSpeed: 2
+  _rollbackSpeed: 6
+--- !u!114 &91581457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 91581453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de842bcb64240634d87970b0d3ff1d4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WormCombatController
+  _wormController: {fileID: 91581456}
 --- !u!1 &92243753
 GameObject:
   m_ObjectHideFlags: 0
@@ -587,8 +580,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 192453718}
+  - component: {fileID: 192453719}
   m_Layer: 0
-  m_Name: WayPointsContainer
+  m_Name: WormRailPathPoints
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -633,6 +627,44 @@ Transform:
   - {fileID: 101219807}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &192453719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 192453717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6dbbfa34707c4e4d8282cc3a9f977a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RailPath
+  _waypoints:
+  - {fileID: 91581454}
+  - {fileID: 254588737}
+  - {fileID: 1625595433}
+  - {fileID: 1772874356}
+  - {fileID: 278159752}
+  - {fileID: 66787444}
+  - {fileID: 1828501330}
+  - {fileID: 92243754}
+  - {fileID: 282097039}
+  - {fileID: 352281320}
+  - {fileID: 955916830}
+  - {fileID: 2125292264}
+  - {fileID: 1264189001}
+  - {fileID: 1704535580}
+  - {fileID: 1948669682}
+  - {fileID: 459658385}
+  - {fileID: 1773726427}
+  - {fileID: 1756311599}
+  - {fileID: 1187327265}
+  - {fileID: 369919090}
+  - {fileID: 2074038577}
+  - {fileID: 1770584472}
+  - {fileID: 890024627}
+  - {fileID: 409699732}
+  - {fileID: 101219807}
 --- !u!1 &254588735
 GameObject:
   m_ObjectHideFlags: 0
@@ -1728,6 +1760,71 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619394800}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &784006861
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 784006864}
+  - component: {fileID: 784006863}
+  - component: {fileID: 784006862}
+  m_Layer: 0
+  m_Name: WormSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &784006862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 784006861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de842bcb64240634d87970b0d3ff1d4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WormCombatController
+  _wormController: {fileID: 784006863}
+--- !u!114 &784006863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 784006861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 195711e49e371794aa5cefe1ad087694, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WormController
+  _rail: {fileID: 192453719}
+  _speed: 3
+  _segmentSpacing: 0.5
+  _waveAmplitude: 0.15
+  _waveFrequency: 6
+  _waveSpeed: 2
+  _rollbackSpeed: 8
+--- !u!4 &784006864
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 784006861}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -3308,9 +3405,10 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 325148272}
+  - {fileID: 784006864}
+  - {fileID: 91581454}
   - {fileID: 192453718}
   - {fileID: 180835247}
-  - {fileID: 91581454}
   - {fileID: 501089287}
   - {fileID: 550759622}
   - {fileID: 1484343083}

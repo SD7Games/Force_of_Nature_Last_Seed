@@ -9,9 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4644839122981294600}
-  - component: {fileID: 4225861671172826699}
   - component: {fileID: 751699847138599696}
-  m_Layer: 0
+  - component: {fileID: 1746252478290392457}
+  - component: {fileID: 4970501805895600154}
+  m_Layer: 3
   m_Name: Cocoon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34,18 +35,6 @@ Transform:
   - {fileID: 2758914581641298737}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4225861671172826699
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5825644788373986622}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5f99bb3b68bf004b8ebbb425f8ad3ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyRailMover
 --- !u!114 &751699847138599696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,7 +50,66 @@ MonoBehaviour:
   <Type>k__BackingField: 2
   <VisualRoot>k__BackingField: {fileID: 4644839122981294600}
   <RotationOffset>k__BackingField: 0
-  _mover: {fileID: 4225861671172826699}
+  _hasReward: 1
+  _mover: {fileID: 6912160902156503861, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
+--- !u!114 &1746252478290392457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5825644788373986622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2486f12e2890634d93f8976e3052a4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WormSegmentDamageReceiver
+--- !u!61 &4970501805895600154
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5825644788373986622}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1.2, y: 1.2}
+  m_EdgeRadius: 0
 --- !u!1 &9057880734587671930
 GameObject:
   m_ObjectHideFlags: 0
@@ -72,7 +120,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2758914581641298737}
   - component: {fileID: 3439090744663343020}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

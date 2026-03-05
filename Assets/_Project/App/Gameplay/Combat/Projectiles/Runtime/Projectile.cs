@@ -5,9 +5,13 @@ public sealed class Projectile : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private LayerMask _hitMask;
-    private float _lifeTime;
 
+    private float _lifeTime;
     private float _timer;
+
+    private int _damage;
+    private int _penetrationLeft;
+
     private ProjectilePool _pool;
     private bool _active;
     private float _baseVisualRotation;
@@ -19,12 +23,16 @@ public sealed class Projectile : MonoBehaviour
     {
         _movement = GetComponent<ProjectileMovement>();
         _bounce = GetComponent<ProjectileBounce>();
+
         if (_renderer == null)
             Debug.LogError("Projectile: SpriteRenderer reference is not set.", this);
     }
 
     private void Update()
     {
+        if (!_active)
+            return;
+
         _timer -= Time.deltaTime;
 
         if (_timer <= 0f)
@@ -50,13 +58,19 @@ public sealed class Projectile : MonoBehaviour
         _baseVisualRotation = config.RotateSprite;
 
         _lifeTime = Mathf.Max(0.05f, config.LifeTime);
+        _damage = config.Damage;
+        _penetrationLeft = Mathf.Max(0, config.Penetration);
 
         _movement.SetSpeed(config.Speed);
-        _bounce.SetBounces(
-            config.BounceCount,
-            config.BounceX,
-            config.BounceY
-        );
+
+        if (_bounce != null)
+        {
+            _bounce.SetBounces(
+                config.BounceCount,
+                config.BounceX,
+                config.BounceY
+            );
+        }
     }
 
     public void Activate(Vector3 position, Quaternion shotRotation)
@@ -71,8 +85,8 @@ public sealed class Projectile : MonoBehaviour
         _movement.SetDirection(direction);
 
         _bounce?.ResetBounces();
-        UpdateVisualRotation();
 
+        UpdateVisualRotation();
         gameObject.SetActive(true);
     }
 
@@ -84,20 +98,37 @@ public sealed class Projectile : MonoBehaviour
         if (dir.sqrMagnitude < 0.001f) return;
 
         float angle = -Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg;
-
-        _renderer.transform.localRotation = Quaternion.Euler(0f, 0f, angle + _baseVisualRotation);
+        _renderer.transform.localRotation =
+            Quaternion.Euler(0f, 0f, angle + _baseVisualRotation);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (((1 << collision.gameObject.layer) & _hitMask) == 0) return;
+        if (!_active)
+            return;
+
+        if (((1 << collision.gameObject.layer) & _hitMask) == 0)
+            return;
+
+        if (collision.TryGetComponent<IDamageable>(out var damageable))
+        {
+            damageable.TakeDamage(_damage);
+
+            if (_penetrationLeft > 0)
+            {
+                _penetrationLeft--;
+                return;
+            }
+        }
 
         ReleaseSelf();
     }
 
     private void ReleaseSelf()
     {
-        if (!_active) return;
+        if (!_active)
+            return;
+
         _active = false;
         _pool.Release(this);
     }

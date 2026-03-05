@@ -8,41 +8,40 @@ public enum WormSegmentType
     Tail
 }
 
-[DisallowMultipleComponent]
 public sealed class WormSegment : MonoBehaviour
 {
     [field: SerializeField] public WormSegmentType Type { get; private set; }
-
     [field: SerializeField] public Transform VisualRoot { get; private set; }
 
-    [field: SerializeField] public float RotationOffset { get; private set; }
+    [SerializeField] private bool _hasReward = true;
 
-    [SerializeField] private EnemyRailMover _mover;
+    public bool HasReward => _hasReward;
 
-    private WormController _controller;
+    public bool IsAlive { get; private set; } = true;
 
-    public void AssignController(WormController controller)
-    {
-        _controller = controller;
-    }
-
-    public void StartMove(Transform[] waypoints, float speed)
+    public void Activate()
     {
         gameObject.SetActive(true);
 
-        if (Type == WormSegmentType.Head)
-        {
-            _mover.Initialize(waypoints, speed);
-        }
-        else
-        {
-            _mover.enabled = false;
-        }
+        IsAlive = true;
+
+        if (VisualRoot != null)
+            VisualRoot.gameObject.SetActive(true);
+
+        var col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = true;
     }
 
-    public void Die()
+    public void KillVisualAndCollision()
     {
-        _controller?.RemoveSegment(this);
-        gameObject.SetActive(false);
+        IsAlive = false;
+
+        if (VisualRoot != null)
+            VisualRoot.gameObject.SetActive(false);
+
+        var col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = false;
     }
 }

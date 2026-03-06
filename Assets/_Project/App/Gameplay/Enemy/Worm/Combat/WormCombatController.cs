@@ -28,7 +28,7 @@ public sealed class WormCombatController : MonoBehaviour
         if (segment.Type is WormSegmentType.Head or WormSegmentType.Tail)
             return;
 
-        var section = segment.Section;
+        WormSection section = segment.Section;
 
         if (section == null)
             return;
@@ -47,10 +47,9 @@ public sealed class WormCombatController : MonoBehaviour
             return;
 
         bool rewardTriggered = false;
-
         List<WormSegment> destroyedSegments = new();
 
-        foreach (var seg in section.Segments)
+        foreach (WormSegment seg in section.Segments)
         {
             if (seg == null || !seg.IsAlive)
                 continue;

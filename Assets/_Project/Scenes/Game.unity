@@ -223,7 +223,7 @@ GameObject:
   - component: {fileID: 91581456}
   - component: {fileID: 91581457}
   m_Layer: 3
-  m_Name: EnemySpawnPoint
+  m_Name: WormSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -264,7 +264,7 @@ MonoBehaviour:
   _wormCombat: {fileID: 91581457}
   _totalLength: 150
   _minBodyBeforeCocoon: 4
-  _maxBodyBeforeCocoon: 7
+  _maxBodyBeforeCocoon: 10
   _poolPadding: 200
 --- !u!114 &91581456
 MonoBehaviour:
@@ -279,11 +279,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormController
   _rail: {fileID: 192453719}
-  _speed: 3
+  _speed: 1
   _segmentSpacing: 0.5
-  _waveAmplitude: 0.15
-  _waveFrequency: 6
-  _waveSpeed: 2
+  _waveAmplitude: 0.05
+  _waveFrequency: 8
+  _waveSpeed: 1
   _rollbackSpeed: 6
 --- !u!114 &91581457
 MonoBehaviour:
@@ -1760,71 +1760,6 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619394800}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &784006861
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 784006864}
-  - component: {fileID: 784006863}
-  - component: {fileID: 784006862}
-  m_Layer: 0
-  m_Name: WormSystem
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &784006862
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784006861}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de842bcb64240634d87970b0d3ff1d4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WormCombatController
-  _wormController: {fileID: 784006863}
---- !u!114 &784006863
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784006861}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 195711e49e371794aa5cefe1ad087694, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WormController
-  _rail: {fileID: 192453719}
-  _speed: 3
-  _segmentSpacing: 0.5
-  _waveAmplitude: 0.15
-  _waveFrequency: 6
-  _waveSpeed: 2
-  _rollbackSpeed: 0.1
---- !u!4 &784006864
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 784006861}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -3404,11 +3339,10 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
+  - {fileID: 180835247}
   - {fileID: 325148272}
-  - {fileID: 784006864}
   - {fileID: 91581454}
   - {fileID: 192453718}
-  - {fileID: 180835247}
   - {fileID: 501089287}
   - {fileID: 550759622}
   - {fileID: 1484343083}

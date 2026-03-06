@@ -13,7 +13,7 @@ public sealed class WormController : MonoBehaviour
     [Header("Segments")]
     [SerializeField] private float _segmentSpacing = 0.5f;
 
-    [Header("Realistic Move Segments")]
+    [Header("Wave")]
     [SerializeField] private float _waveAmplitude = 0.15f;
 
     [SerializeField] private float _waveFrequency = 6f;
@@ -31,6 +31,8 @@ public sealed class WormController : MonoBehaviour
     private int _rollbackSplitIndex = -1;
     private int _rollbackRemovedCount;
     private float _rollbackStartHeadDistance;
+
+    private Vector3 _tmpEuler;
 
     public void Init(List<WormSegment> segments)
     {
@@ -58,6 +60,8 @@ public sealed class WormController : MonoBehaviour
 
     private void UpdateSegments()
     {
+        float timeWave = Time.time * _waveSpeed;
+
         for (int i = 0; i < _segments.Count; i++)
         {
             WormSegment segment = _segments[i];
@@ -68,11 +72,14 @@ public sealed class WormController : MonoBehaviour
 
             Vector3 pos = _rail.GetPoint(distance);
 
-            float wave = Mathf.Sin(distance * _waveFrequency + Time.time * _waveSpeed);
-            Vector3 offset = Vector3.up * wave * _waveAmplitude;
+            float wave = Mathf.Sin(distance * _waveFrequency + timeWave);
+            pos.y += wave * _waveAmplitude;
 
-            Vector3 finalPos = pos + offset;
-            segment.transform.position = finalPos;
+            Transform tr = segment.CachedTransform;
+            Vector3 currentPos = tr.position;
+
+            if ((currentPos - pos).sqrMagnitude > 0.000001f)
+                tr.position = pos;
 
             if (i > 0)
             {
@@ -80,7 +87,7 @@ public sealed class WormController : MonoBehaviour
                 if (previous == null)
                     continue;
 
-                Vector3 dir = previous.transform.position - finalPos;
+                Vector3 dir = previous.CachedTransform.position - pos;
 
                 if (dir.sqrMagnitude > 0.0001f)
                 {
@@ -88,7 +95,15 @@ public sealed class WormController : MonoBehaviour
 
                     Transform visual = segment.VisualRoot;
                     if (visual != null)
-                        visual.rotation = Quaternion.Euler(0f, 0f, angle);
+                    {
+                        Vector3 currentEuler = visual.localEulerAngles;
+
+                        if (Mathf.Abs(Mathf.DeltaAngle(currentEuler.z, angle)) > 0.1f)
+                        {
+                            _tmpEuler.z = angle;
+                            visual.localEulerAngles = _tmpEuler;
+                        }
+                    }
                 }
             }
         }
@@ -108,23 +123,22 @@ public sealed class WormController : MonoBehaviour
     public int RemoveDestroyedSectionSegments(List<WormSegment> destroyed, out int firstRemovedIndex)
     {
         firstRemovedIndex = -1;
-        int removed = 0;
 
-        foreach (WormSegment seg in destroyed)
+        if (destroyed == null || destroyed.Count == 0)
+            return 0;
+
+        HashSet<WormSegment> destroyedSet = new(destroyed);
+
+        for (int i = 0; i < _segments.Count; i++)
         {
-            if (seg == null)
-                continue;
-
-            int index = _segments.IndexOf(seg);
-            if (index < 0)
-                continue;
-
-            if (firstRemovedIndex == -1 || index < firstRemovedIndex)
-                firstRemovedIndex = index;
-
-            _segments.RemoveAt(index);
-            removed++;
+            if (destroyedSet.Contains(_segments[i]))
+            {
+                firstRemovedIndex = i;
+                break;
+            }
         }
+
+        int removed = _segments.RemoveAll(seg => seg != null && destroyedSet.Contains(seg));
 
         return removed;
     }

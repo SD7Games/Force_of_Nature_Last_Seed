@@ -93,9 +93,9 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
 
         _wormCombat.Init(head, tail, sections);
 
-        foreach (var seg in segments)
+        foreach (WormSegment seg in segments)
         {
-            var receiver = seg.GetComponent<WormSegmentDamageReceiver>();
+            WormSegmentDamageReceiver receiver = seg.GetComponent<WormSegmentDamageReceiver>();
 
             if (receiver == null)
                 receiver = seg.gameObject.AddComponent<WormSegmentDamageReceiver>();

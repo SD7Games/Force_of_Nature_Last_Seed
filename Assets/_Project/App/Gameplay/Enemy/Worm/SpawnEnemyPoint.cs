@@ -87,11 +87,11 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
             segments.Add(seg);
         }
 
-        _wormController.Initialize(segments);
+        _wormController.Init(segments);
 
         List<WormSection> sections = BuildSectionsByCocoons(segments);
 
-        _wormCombat.Initialize(head, tail, sections);
+        _wormCombat.Init(head, tail, sections);
 
         foreach (var seg in segments)
         {
@@ -129,6 +129,8 @@ public sealed class SpawnEnemyPoint : MonoBehaviour
             }
 
             current.AddSegment(seg);
+
+            seg.Section = current;
 
             if (seg.Type == WormSegmentType.Cocoon)
                 current = null;

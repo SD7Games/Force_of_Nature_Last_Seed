@@ -10,6 +10,8 @@ public enum WormSegmentType
 
 public sealed class WormSegment : MonoBehaviour
 {
+    public WormSection Section { get; set; }
+
     [field: SerializeField] public WormSegmentType Type { get; private set; }
     [field: SerializeField] public Transform VisualRoot { get; private set; }
 

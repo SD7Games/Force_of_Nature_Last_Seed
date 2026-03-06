@@ -7,26 +7,17 @@ public sealed class WormCombatController : MonoBehaviour
     [SerializeField] private WormController _wormController;
 
     private readonly List<WormSection> _sections = new();
-    private readonly Dictionary<WormSegment, WormSection> _segmentToSection = new();
 
     private WormSegment _head;
     private WormSegment _tail;
 
-    public void Initialize(WormSegment head, WormSegment tail, List<WormSection> sections)
+    public void Init(WormSegment head, WormSegment tail, List<WormSection> sections)
     {
         _head = head;
         _tail = tail;
 
         _sections.Clear();
         _sections.AddRange(sections);
-
-        _segmentToSection.Clear();
-
-        foreach (var section in _sections)
-        {
-            foreach (var seg in section.Segments)
-                _segmentToSection[seg] = section;
-        }
     }
 
     public void RegisterHit(WormSegment segment, int damage)
@@ -37,7 +28,9 @@ public sealed class WormCombatController : MonoBehaviour
         if (segment.Type is WormSegmentType.Head or WormSegmentType.Tail)
             return;
 
-        if (!_segmentToSection.TryGetValue(segment, out var section))
+        var section = segment.Section;
+
+        if (section == null)
             return;
 
         section.Damage(damage);
@@ -69,21 +62,19 @@ public sealed class WormCombatController : MonoBehaviour
                 continue;
 
             seg.KillVisualAndCollision();
-
             destroyedSegments.Add(seg);
-
-            _segmentToSection.Remove(seg);
         }
 
         _sections.Remove(section);
 
         int removedFromChain = 0;
+        int firstRemovedIndex = -1;
 
         if (_wormController != null)
-            removedFromChain = _wormController.RemoveDestroyedSectionSegments(destroyedSegments);
+            removedFromChain = _wormController.RemoveDestroyedSectionSegments(destroyedSegments, out firstRemovedIndex);
 
         if (_wormController != null && removedFromChain > 0)
-            _wormController.RollbackBySegments(removedFromChain);
+            _wormController.RollbackDestroyedGap(removedFromChain, firstRemovedIndex);
 
         if (rewardTriggered)
             Debug.Log("Reward popup should be shown (cocoon destroyed)");

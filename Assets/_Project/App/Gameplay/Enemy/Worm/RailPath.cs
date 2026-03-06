@@ -27,12 +27,12 @@ public sealed class RailPath : MonoBehaviour
 
         for (int i = 1; i < _waypoints.Length; i++)
         {
-            float d = Vector3.Distance(
+            float direction = Vector3.Distance(
                 _waypoints[i - 1].position,
                 _waypoints[i].position
             );
 
-            _distances[i] = _distances[i - 1] + d;
+            _distances[i] = _distances[i - 1] + direction;
         }
 
         _totalLength = _distances[^1];

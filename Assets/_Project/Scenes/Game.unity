@@ -1817,7 +1817,7 @@ MonoBehaviour:
   _waveAmplitude: 0.15
   _waveFrequency: 6
   _waveSpeed: 2
-  _rollbackSpeed: 8
+  _rollbackSpeed: 0.1
 --- !u!4 &784006864
 Transform:
   m_ObjectHideFlags: 0

@@ -15,7 +15,7 @@ public sealed class PlayerMover : MonoBehaviour
         _currentInput = Mathf.Lerp(_currentInput, inputX, _smooth * Time.deltaTime);
 
         Vector3 pos = transform.position;
-        pos.x += inputX * _speed * Time.deltaTime;
+        pos.x += _currentInput * _speed * Time.deltaTime;
         pos.x = Mathf.Clamp(pos.x, _minX, _maxX);
         transform.position = pos;
     }

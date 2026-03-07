@@ -282,9 +282,9 @@ MonoBehaviour:
   _speed: 1
   _segmentSpacing: 0.5
   _waveAmplitude: 0.05
-  _waveFrequency: 8
+  _waveFrequency: 4
   _waveSpeed: 1
-  _rollbackSpeed: 6
+  _rollbackSpeed: 9
 --- !u!114 &91581457
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -665,6 +665,7 @@ MonoBehaviour:
   - {fileID: 890024627}
   - {fileID: 409699732}
   - {fileID: 101219807}
+  _sampleStep: 0.1
 --- !u!1 &254588735
 GameObject:
   m_ObjectHideFlags: 0

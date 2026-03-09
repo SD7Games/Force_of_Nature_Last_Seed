@@ -131,9 +131,6 @@ The structure is designed to keep **gameplay systems modular and maintainable**.
 
 <p align="center">
   <img src="gameplay1.png" width="260" />
-</p>
-
-<p align="center">
   <img src="gameplay2.png" width="260" />
   <img src="gameplay3.png" width="260" />
 </p>

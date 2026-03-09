@@ -1446,7 +1446,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedMover
   _speed: 8
-  _smooth: 10
+  _smooth: 100
   _minX: -3.5
   _maxX: 3.5
 --- !u!114 &501089292

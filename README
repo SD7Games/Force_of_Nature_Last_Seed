@@ -1,0 +1,96 @@
+# Force of Nature: Last Seed
+
+Auto-shooter survival game prototype developed in **Unity**.
+
+This project demonstrates **clean architecture**, modular gameplay systems, and scalable enemy mechanics designed for mobile gameplay.
+
+---
+
+## Gameplay Preview
+
+<p align="center">
+  <img src="Assets/Docs/gameplay1.png" width="260">
+  <img src="Assets/Docs/gameplay2.png" width="260">
+  <img src="Assets/Docs/gameplay3.png" width="260">
+</p>
+
+---
+
+## About the Game
+
+**Force of Nature: Last Seed** is an auto-shooter survival prototype where the player controls a magical seed defending against giant segmented worms.
+
+The core gameplay focuses on:
+
+* automatic shooting mechanics
+* modular weapon upgrades
+* destructible segmented enemies
+* scalable combat systems for mobile gameplay
+
+The project is designed both as a **portfolio architecture showcase** and a **future mobile game release**.
+
+---
+
+## Features
+
+* Modular **weapon system**
+* **Projectile pooling** system
+* Enemy **worm with segmented destruction**
+* **Data-driven modifiers**
+* Event-driven gameplay logic
+* Clean architecture (**SRP / MVC principles**)
+
+---
+
+## Tech Stack
+
+* **Unity 6**
+* **C#**
+* Object Pooling
+* ScriptableObjects
+* Event-driven architecture
+* Modular gameplay systems
+
+---
+
+## Architecture Highlights
+
+The project focuses on scalable and maintainable architecture.
+
+Key systems implemented:
+
+* modular **weapon pipeline**
+* centralized **pool registry**
+* segmented **worm enemy system**
+* event-driven gameplay logic
+* runtime/data separation
+
+The codebase follows **SRP and modular component design**, making it easy to expand gameplay systems.
+
+---
+
+## Status
+
+Project is currently **in active development**.
+
+Planned release:
+
+* Google Play
+* Apple App Store
+
+---
+
+## Author
+
+Oleksandr Tokarev
+Unity Gameplay Developer
+
+GitHub: https://github.com/SD7games
+
+---
+
+## License
+
+Source available for **portfolio and educational purposes only**.
+
+You may view and study the source code, but redistribution, commercial use, or publishing the game (or modified versions) is not allowed without written permission from the author.

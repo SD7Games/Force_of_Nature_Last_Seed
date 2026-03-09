@@ -219,8 +219,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 91581454}
-  - component: {fileID: 91581455}
   - component: {fileID: 91581456}
+  - component: {fileID: 91581455}
   - component: {fileID: 91581457}
   m_Layer: 3
   m_Name: WormSpawner
@@ -279,7 +279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormController
   _rail: {fileID: 192453719}
-  _speed: 1
+  _speed: 3
   _segmentSpacing: 0.5
   _waveAmplitude: 0.05
   _waveFrequency: 4

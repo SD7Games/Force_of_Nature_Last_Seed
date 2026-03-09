@@ -9,9 +9,9 @@ This project demonstrates **clean architecture**, modular gameplay systems and s
 ## Gameplay Preview
 
 <p align="center">
-  <img src="docs/screenshots/gameplay1.png" width="260">
-  <img src="docs/screenshots/gameplay2.png" width="260">
-  <img src="docs/screenshots/gameplay3.png" width="260">
+  <img src="gameplay1.png" width="260">
+  <img src="gameplay2.png" width="260">
+  <img src="gameplay3.png" width="260">
 </p>
 
 ---

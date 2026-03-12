@@ -279,7 +279,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormController
   _rail: {fileID: 192453719}
-  _speed: 3
+  _speed: 1.2
   _segmentSpacing: 0.5
   _waveAmplitude: 0.05
   _waveFrequency: 4

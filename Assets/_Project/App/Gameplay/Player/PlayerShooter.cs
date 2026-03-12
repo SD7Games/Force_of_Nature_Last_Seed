@@ -1,5 +1,14 @@
 using UnityEngine;
 
+/// <summary>
+/// Controls player's weapon firing logic.
+///
+/// The shooter owns a weapon instance that handles projectile spawning
+/// and firing behaviour. Weapon configuration is defined using
+/// WeaponConfig ScriptableObjects.
+///
+/// Shooting is tick-based and executed every frame while enabled.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerShooter : MonoBehaviour
 {
@@ -14,6 +23,10 @@ public sealed class PlayerShooter : MonoBehaviour
 
     private bool _canShoot;
 
+    /// <summary>
+    /// Initializes weapon and retrieves the required projectile pool
+    /// from PoolRegistry.
+    /// </summary>
     private void Awake()
     {
         var projectilePrefab = _startConfig.Projectile.Prefab;
@@ -28,6 +41,9 @@ public sealed class PlayerShooter : MonoBehaviour
         _canShoot = true;
     }
 
+    /// <summary>
+    /// Updates weapon firing logic every frame while shooting is enabled.
+    /// </summary>
     private void Update()
     {
         if (!_canShoot) return;

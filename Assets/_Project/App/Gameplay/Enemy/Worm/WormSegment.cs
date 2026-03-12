@@ -1,5 +1,15 @@
 using UnityEngine;
 
+/// <summary>
+/// Represents a single worm segment instance.
+///
+/// Segments are pooled objects that can be reused multiple times.
+/// Each segment belongs to a WormSection which allows grouped
+/// destruction logic for the worm enemy.
+///
+/// The segment can disable its visuals and collider when destroyed
+/// without immediately removing the object.
+/// </summary>
 public enum WormSegmentType
 {
     Head,
@@ -28,6 +38,9 @@ public sealed class WormSegment : MonoBehaviour
         _cachedCollider = GetComponent<Collider2D>();
     }
 
+    /// <summary>
+    /// Activates segment after being taken from the pool.
+    /// </summary>
     public void Activate()
     {
         gameObject.SetActive(true);
@@ -40,6 +53,10 @@ public sealed class WormSegment : MonoBehaviour
             _cachedCollider.enabled = true;
     }
 
+    /// <summary>
+    /// Disables visual representation and collision for this segment
+    /// when it gets destroyed.
+    /// </summary>
     public void KillVisualAndCollision()
     {
         IsAlive = false;

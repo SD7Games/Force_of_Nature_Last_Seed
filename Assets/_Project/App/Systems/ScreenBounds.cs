@@ -10,8 +10,8 @@ public static class ScreenBounds
 
     public static void Calculate(Camera cam)
     {
-        Vector3 bottomLeft = cam.ViewportToWorldPoint(new Vector3(0, 0));
-        Vector3 topRight = cam.ViewportToWorldPoint(new Vector3(1, 1));
+        Vector3 bottomLeft = cam.ViewportToWorldPoint(new Vector3(0, 0, cam.nearClipPlane));
+        Vector3 topRight = cam.ViewportToWorldPoint(new Vector3(1, 1, cam.nearClipPlane));
 
         Left = bottomLeft.x;
         Bottom = bottomLeft.y;

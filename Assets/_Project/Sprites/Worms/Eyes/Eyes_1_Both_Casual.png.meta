@@ -1,0 +1,678 @@
+fileFormatVersion: 2
+guid: c92e4afa9a3077d44811c0531b773afd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1715958274744286583
+    second: Eyes_1_Both_Casual_0
+  - first:
+      213: -7918184952950942560
+    second: Eyes_1_Both_Casual_1
+  - first:
+      213: 4891480134269778181
+    second: Eyes_1_Both_Casual_2
+  - first:
+      213: 6438184529206763817
+    second: Eyes_1_Both_Casual_3
+  - first:
+      213: -4626509991433322857
+    second: Eyes_1_Both_Casual_4
+  - first:
+      213: -3196391070874478972
+    second: Eyes_1_Both_Casual_5
+  - first:
+      213: -8574055729532332417
+    second: Eyes_1_Both_Casual_6
+  - first:
+      213: 2292524780972677960
+    second: Eyes_1_Both_Casual_7
+  - first:
+      213: -8164077923458611545
+    second: Eyes_1_Both_Casual_8
+  - first:
+      213: 4162166175234416130
+    second: Eyes_1_Both_Casual_9
+  - first:
+      213: -7253593237469376076
+    second: Eyes_1_Both_Casual_10
+  - first:
+      213: -8229110025413943975
+    second: Eyes_1_Both_Casual_11
+  - first:
+      213: 8565061644737866614
+    second: Eyes_1_Both_Casual_12
+  - first:
+      213: 6637920375725999836
+    second: Eyes_1_Both_Casual_13
+  - first:
+      213: 7802927237350812337
+    second: Eyes_1_Both_Casual_14
+  - first:
+      213: 2633006165371640829
+    second: Eyes_1_Both_Casual_15
+  - first:
+      213: 7207691170427225132
+    second: Eyes_1_Both_Casual_16
+  - first:
+      213: -2762518268842799441
+    second: Eyes_1_Both_Casual_17
+  - first:
+      213: -8801614940230136314
+    second: Eyes_1_Both_Casual_18
+  - first:
+      213: 3711484675953640040
+    second: Eyes_1_Both_Casual_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_0
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 738
+        width: 185
+        height: 163
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98289786a01bf28e0800000000000000
+      internalID: -1715958274744286583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_1
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 752
+        width: 206
+        height: 110
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a41485dcb4fc1290800000000000000
+      internalID: -7918184952950942560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_2
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 745
+        width: 178
+        height: 125
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 509b705144702e340800000000000000
+      internalID: 4891480134269778181
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_3
+      rect:
+        serializedVersion: 2
+        x: 758
+        y: 752
+        width: 193
+        height: 119
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 921e8c5e7b6095950800000000000000
+      internalID: 6438184529206763817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_4
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 860
+        width: 5
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79e32d2dca55bcfb0800000000000000
+      internalID: -4626509991433322857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_5
+      rect:
+        serializedVersion: 2
+        x: 1248
+        y: 753
+        width: 200
+        height: 121
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 486db49914324a3d0800000000000000
+      internalID: -3196391070874478972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_6
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 826
+        width: 4
+        height: 5
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7692d4cdb5d20980800000000000000
+      internalID: -8574055729532332417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_7
+      rect:
+        serializedVersion: 2
+        x: 1030
+        y: 740
+        width: 190
+        height: 119
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84b18a8542fa0df10800000000000000
+      internalID: 2292524780972677960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_8
+      rect:
+        serializedVersion: 2
+        x: 62
+        y: 456
+        width: 200
+        height: 130
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a604ad326e53be80800000000000000
+      internalID: -8164077923458611545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_9
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 460
+        width: 227
+        height: 127
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20e5ef2951cf2c930800000000000000
+      internalID: 4162166175234416130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_10
+      rect:
+        serializedVersion: 2
+        x: 552
+        y: 468
+        width: 207
+        height: 108
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b15677b16f065b90800000000000000
+      internalID: -7253593237469376076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_11
+      rect:
+        serializedVersion: 2
+        x: 776
+        y: 458
+        width: 243
+        height: 113
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95d989518045ccd80800000000000000
+      internalID: -8229110025413943975
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_12
+      rect:
+        serializedVersion: 2
+        x: 1039
+        y: 460
+        width: 186
+        height: 117
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67b6cedaf263dd670800000000000000
+      internalID: 8565061644737866614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_13
+      rect:
+        serializedVersion: 2
+        x: 1258
+        y: 473
+        width: 206
+        height: 109
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd6c97a9961ae1c50800000000000000
+      internalID: 6637920375725999836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_14
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 182
+        width: 200
+        height: 164
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bae38e0bf0994c60800000000000000
+      internalID: 7802927237350812337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_15
+      rect:
+        serializedVersion: 2
+        x: 296
+        y: 190
+        width: 193
+        height: 156
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfbd36a38215a8420800000000000000
+      internalID: 2633006165371640829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_16
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 183
+        width: 202
+        height: 153
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c24c8087eecd60460800000000000000
+      internalID: 7207691170427225132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_17
+      rect:
+        serializedVersion: 2
+        x: 777
+        y: 189
+        width: 206
+        height: 154
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fae091c554099a9d0800000000000000
+      internalID: -2762518268842799441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_18
+      rect:
+        serializedVersion: 2
+        x: 1026
+        y: 192
+        width: 190
+        height: 151
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60ecfc548d16ad580800000000000000
+      internalID: -8801614940230136314
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Eyes_1_Both_Casual_19
+      rect:
+        serializedVersion: 2
+        x: 1248
+        y: 199
+        width: 189
+        height: 144
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 862c58306a7d18330800000000000000
+      internalID: 3711484675953640040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 176942b88163cf54387dfd5d9e561dea
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":456.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Eyes_1_Both_Casual_0: -1715958274744286583
+      Eyes_1_Both_Casual_1: -7918184952950942560
+      Eyes_1_Both_Casual_10: -7253593237469376076
+      Eyes_1_Both_Casual_11: -8229110025413943975
+      Eyes_1_Both_Casual_12: 8565061644737866614
+      Eyes_1_Both_Casual_13: 6637920375725999836
+      Eyes_1_Both_Casual_14: 7802927237350812337
+      Eyes_1_Both_Casual_15: 2633006165371640829
+      Eyes_1_Both_Casual_16: 7207691170427225132
+      Eyes_1_Both_Casual_17: -2762518268842799441
+      Eyes_1_Both_Casual_18: -8801614940230136314
+      Eyes_1_Both_Casual_19: 3711484675953640040
+      Eyes_1_Both_Casual_2: 4891480134269778181
+      Eyes_1_Both_Casual_3: 6438184529206763817
+      Eyes_1_Both_Casual_4: -4626509991433322857
+      Eyes_1_Both_Casual_5: -3196391070874478972
+      Eyes_1_Both_Casual_6: -8574055729532332417
+      Eyes_1_Both_Casual_7: 2292524780972677960
+      Eyes_1_Both_Casual_8: -8164077923458611545
+      Eyes_1_Both_Casual_9: 4162166175234416130
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

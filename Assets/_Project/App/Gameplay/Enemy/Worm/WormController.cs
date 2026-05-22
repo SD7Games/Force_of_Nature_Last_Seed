@@ -36,6 +36,10 @@ public sealed class WormController : MonoBehaviour
     [SerializeField][Min(0f)] private float _combatBurstSpeed = 2f;
     [SerializeField][Min(0.1f)] private float _combatBurstInterval = 10f;
     [SerializeField][Min(0.1f)] private float _combatBurstDuration = 2.5f;
+    [Tooltip("RailPath control point index that disables combat speed bursts. Set -1 to use path progress instead.")]
+    [SerializeField][Min(-1)] private int _combatBurstDisableRailPointIndex = -1;
+    [SerializeField][Range(0f, 1f)] private float _combatBurstDisablePathProgress = 0.9f;
+    [SerializeField][Min(0.01f)] private float _combatBurstSlowdownDuration = 0.35f;
 
     [Header("Segments")]
     [SerializeField] private float _segmentSpacing = 0.5f;
@@ -87,6 +91,7 @@ public sealed class WormController : MonoBehaviour
     private bool _hasReachedPathEnd;
     private float _combatBurstTimer;
     private float _combatBurstRemainingTime;
+    private float _currentForwardSpeed;
     private float _reviveVisualYOffset;
 
     private Vector3 _tmpEuler;
@@ -96,6 +101,9 @@ public sealed class WormController : MonoBehaviour
     private RailPath _cachedReviveRollbackRail;
     private int _cachedReviveRollbackRailPointIndex = -2;
     private float _cachedReviveRollbackRailPointDistance;
+    private RailPath _cachedCombatBurstDisableRail;
+    private int _cachedCombatBurstDisableRailPointIndex = -2;
+    private float _cachedCombatBurstDisableDistance;
 
     public event Action PathCompleted;
 
@@ -145,6 +153,9 @@ public sealed class WormController : MonoBehaviour
         if (_catchUpRailPointIndex < 0)
             _catchUpRailPointIndex = 0;
 
+        if (_combatBurstDisableRailPointIndex < -1)
+            _combatBurstDisableRailPointIndex = -1;
+
         if (_rail != null && _rail.PointCount > 0)
         {
             _catchUpRailPointIndex = Mathf.Min(_catchUpRailPointIndex, _rail.PointCount - 1);
@@ -154,8 +165,17 @@ public sealed class WormController : MonoBehaviour
                     _reviveRollbackRailPointIndex,
                     _rail.PointCount - 1);
             }
+
+            if (_combatBurstDisableRailPointIndex >= 0)
+            {
+                _combatBurstDisableRailPointIndex = Mathf.Min(
+                    _combatBurstDisableRailPointIndex,
+                    _rail.PointCount - 1);
+            }
         }
 
+        _combatBurstDisablePathProgress = Mathf.Clamp01(_combatBurstDisablePathProgress);
+        _combatBurstSlowdownDuration = Mathf.Max(0.01f, _combatBurstSlowdownDuration);
         ClearTargetDistanceCaches();
     }
 
@@ -194,6 +214,7 @@ public sealed class WormController : MonoBehaviour
         _hasReachedPathEnd = false;
         _combatBurstTimer = 0f;
         _combatBurstRemainingTime = 0f;
+        _currentForwardSpeed = Mathf.Max(0f, _speed);
         ClearTargetDistanceCaches();
         IsCatchingUpToCombatStart = TryGetCatchUpTargetDistance(out _);
 
@@ -228,6 +249,7 @@ public sealed class WormController : MonoBehaviour
         _hasReachedPathEnd = false;
         _combatBurstTimer = 0f;
         _combatBurstRemainingTime = 0f;
+        _currentForwardSpeed = Mathf.Max(0f, _speed);
         IsCatchingUpToCombatStart = false;
         ClearTargetDistanceCaches();
     }
@@ -270,14 +292,26 @@ public sealed class WormController : MonoBehaviour
         IsCatchingUpToCombatStart = ShouldCatchUp();
 
         if (IsCatchingUpToCombatStart)
-            return Mathf.Max(_speed, _catchUpSpeed);
+        {
+            StopCombatBurst();
+            _currentForwardSpeed = Mathf.Max(0f, _speed);
+            return Mathf.Max(_currentForwardSpeed, _catchUpSpeed);
+        }
 
         UpdateCombatBurst(deltaTime);
 
-        if (_combatBurstRemainingTime > 0f)
-            return Mathf.Max(_speed, _combatBurstSpeed);
+        float baseSpeed = Mathf.Max(0f, _speed);
+        float targetSpeed = _combatBurstRemainingTime > 0f
+            ? Mathf.Max(baseSpeed, _combatBurstSpeed)
+            : baseSpeed;
 
-        return _speed;
+        if (targetSpeed > baseSpeed)
+        {
+            _currentForwardSpeed = targetSpeed;
+            return _currentForwardSpeed;
+        }
+
+        return DecelerateToBaseSpeed(deltaTime, baseSpeed);
     }
 
     private bool ShouldCatchUp()
@@ -355,18 +389,30 @@ public sealed class WormController : MonoBehaviour
         _cachedReviveRollbackRail = null;
         _cachedReviveRollbackRailPointIndex = -2;
         _cachedReviveRollbackRailPointDistance = 0f;
+        _cachedCombatBurstDisableRail = null;
+        _cachedCombatBurstDisableRailPointIndex = -2;
+        _cachedCombatBurstDisableDistance = 0f;
     }
 
     private void UpdateCombatBurst(float deltaTime)
     {
         if (!_enableCombatSpeedBursts || deltaTime <= 0f)
+        {
+            StopCombatBurst();
             return;
+        }
 
         if (!_hasReachedCombatStart)
         {
             _hasReachedCombatStart = true;
             _combatBurstTimer = 0f;
             _combatBurstRemainingTime = 0f;
+            return;
+        }
+
+        if (!CanUseCombatBurst(deltaTime))
+        {
+            StopCombatBurst();
             return;
         }
 
@@ -385,6 +431,72 @@ public sealed class WormController : MonoBehaviour
 
         _combatBurstTimer = 0f;
         _combatBurstRemainingTime = _combatBurstDuration;
+    }
+
+    private bool CanUseCombatBurst(float deltaTime)
+    {
+        if (!TryGetCombatBurstDisableDistance(out float disableDistance))
+            return true;
+
+        float projectedDistance = _headDistance +
+            (Mathf.Max(_speed, _combatBurstSpeed) * Mathf.Max(0f, deltaTime));
+
+        return projectedDistance < disableDistance;
+    }
+
+    private bool TryGetCombatBurstDisableDistance(out float distance)
+    {
+        distance = 0f;
+
+        if (_rail == null || _rail.TotalLength <= 0f)
+            return false;
+
+        if (_combatBurstDisableRailPointIndex >= 0)
+        {
+            if (_cachedCombatBurstDisableRail == _rail &&
+                _cachedCombatBurstDisableRailPointIndex == _combatBurstDisableRailPointIndex)
+            {
+                distance = _cachedCombatBurstDisableDistance;
+                return true;
+            }
+
+            if (_rail.TryGetControlPointDistance(_combatBurstDisableRailPointIndex, out distance))
+            {
+                _cachedCombatBurstDisableRail = _rail;
+                _cachedCombatBurstDisableRailPointIndex = _combatBurstDisableRailPointIndex;
+                _cachedCombatBurstDisableDistance = distance;
+                return true;
+            }
+        }
+
+        distance = Mathf.Clamp01(_combatBurstDisablePathProgress) * _rail.TotalLength;
+        return true;
+    }
+
+    private void StopCombatBurst()
+    {
+        _combatBurstTimer = 0f;
+        _combatBurstRemainingTime = 0f;
+    }
+
+    private float DecelerateToBaseSpeed(float deltaTime, float baseSpeed)
+    {
+        if (_currentForwardSpeed <= baseSpeed || deltaTime <= 0f)
+        {
+            _currentForwardSpeed = baseSpeed;
+            return baseSpeed;
+        }
+
+        float maxBurstSpeed = Mathf.Max(baseSpeed, _combatBurstSpeed);
+        float decelerationRate = (maxBurstSpeed - baseSpeed) /
+            Mathf.Max(0.01f, _combatBurstSlowdownDuration);
+
+        _currentForwardSpeed = Mathf.MoveTowards(
+            _currentForwardSpeed,
+            baseSpeed,
+            decelerationRate * deltaTime);
+
+        return Mathf.Max(baseSpeed, _currentForwardSpeed);
     }
 
     /// <summary>

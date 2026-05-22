@@ -186,6 +186,9 @@ public sealed class RewardFlowController : IDisposable
         if (_currentChoices == null || _currentChoices.Count == 0)
             return;
 
+        if (!RewardAdRerollPolicy.CanOfferTakeAll(_currentRollContext))
+            return;
+
         if (_takeAllAttemptsLeft <= 0 || _isRewardedAdPending)
             return;
 
@@ -324,6 +327,10 @@ public sealed class RewardFlowController : IDisposable
             return false;
         }
 
+        bool canTakeAll = _takeAllAttemptsLeft > 0
+            && !_isRewardedAdPending
+            && RewardAdRerollPolicy.CanOfferTakeAll(_currentRollContext);
+
         bool isBound = _popup.Bind(
             _currentChoices,
             new RewardPopupState(
@@ -336,8 +343,7 @@ public sealed class RewardFlowController : IDisposable
                 _freeRerollAttemptsLeft <= 0
                     && _adRerollAttemptsLeft > 0
                     && !_isRewardedAdPending,
-                _takeAllAttemptsLeft > 0
-                    && !_isRewardedAdPending),
+                canTakeAll),
             animateChoiceChanges);
 
         if (!isBound)

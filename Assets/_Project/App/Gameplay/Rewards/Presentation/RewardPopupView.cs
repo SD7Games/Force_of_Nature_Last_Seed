@@ -78,6 +78,9 @@ public sealed class RewardPopupView : PopupView
     [SerializeField] private string _guaranteeFormat = "guarantee: {0}";
     [SerializeField] private string _adGuaranteeFormat = "guarantee: {0}";
 
+    [Header("Action Layout")]
+    [SerializeField] private float _singleActionButtonAnchoredX = 350f;
+
     [Header("Text Colors")]
     [SerializeField] private Color32 _numberColor = new(105, 255, 120, 255);
     [SerializeField] private Color32 _commonRarityColor = new(95, 220, 130, 255);
@@ -91,6 +94,9 @@ public sealed class RewardPopupView : PopupView
 
     private RectTransformState[] _topGroupStates;
     private RectTransformState[] _actionButtonStates;
+    private RectTransformState _rerollAttemptsTextState;
+    private RectTransformState _adRerollAttemptsTextState;
+    private RectTransformState _takeAllAttemptsTextState;
     private Sequence _showSequence;
     private Sequence _refreshSequence;
     private Sequence _dismissSequence;
@@ -430,6 +436,7 @@ public sealed class RewardPopupView : PopupView
         _hasCurrentState = true;
 
         ApplyRerollButtonMode(state);
+        ApplyTakeAllButtonMode(state);
         ApplyAttemptsText(_rerollAttemptsText, state.FreeRerollAttemptsLeft);
         ApplyAttemptsText(_adRerollAttemptsText, state.AdRerollAttemptsLeft);
         ApplyAttemptsText(_takeAllAttemptsText, state.TakeAllAttemptsLeft);
@@ -452,6 +459,17 @@ public sealed class RewardPopupView : PopupView
 
         if (_adRerollButton != null)
             _adRerollButton.gameObject.SetActive(!showFreeReroll);
+    }
+
+    private void ApplyTakeAllButtonMode(RewardPopupState state)
+    {
+        bool showTakeAll = state.UseTakeAllButton;
+
+        if (_takeAllButton != null)
+            _takeAllButton.gameObject.SetActive(showTakeAll);
+
+        if (_takeAllAttemptsText != null)
+            _takeAllAttemptsText.gameObject.SetActive(showTakeAll);
     }
 
     private void ApplyGuaranteeText(TMP_Text text, RewardRarity rarity)
@@ -570,6 +588,9 @@ public sealed class RewardPopupView : PopupView
 
         _topGroupStates = CreateStates(_topSlideGroups);
         _actionButtonStates = CreateActionButtonStates();
+        _rerollAttemptsTextState = new RectTransformState(GetRectTransform(_rerollAttemptsText));
+        _adRerollAttemptsTextState = new RectTransformState(GetRectTransform(_adRerollAttemptsText));
+        _takeAllAttemptsTextState = new RectTransformState(GetRectTransform(_takeAllAttemptsText));
         _hasCachedAnimationState = true;
     }
 
@@ -637,6 +658,13 @@ public sealed class RewardPopupView : PopupView
             : null;
     }
 
+    private static RectTransform GetRectTransform(TMP_Text text)
+    {
+        return text != null
+            ? text.transform as RectTransform
+            : null;
+    }
+
     private void PrepareTopGroupsForEnter()
     {
         for (int i = 0; i < _topGroupStates.Length; i++)
@@ -663,7 +691,10 @@ public sealed class RewardPopupView : PopupView
         for (int i = 0; i < _actionButtonStates.Length; i++)
         {
             _actionButtonStates[i].Kill();
-            _actionButtonStates[i].Prepare(_actionEnterOffset, 0.98f);
+            _actionButtonStates[i].Prepare(
+                GetActionButtonTargetPosition(_actionButtonStates[i]),
+                _actionEnterOffset,
+                0.98f);
         }
     }
 
@@ -713,6 +744,7 @@ public sealed class RewardPopupView : PopupView
             sequence.Insert(
                 startTime + activeIndex * 0.035f,
                 _actionButtonStates[i].CreateEnterTween(
+                    GetActionButtonTargetPosition(_actionButtonStates[i]),
                     _actionEnterDuration,
                     Ease.OutCubic,
                     Ease.OutBack));
@@ -799,6 +831,7 @@ public sealed class RewardPopupView : PopupView
             sequence.Insert(
                 startTime + activeIndex * 0.035f,
                 _actionButtonStates[i].CreateExitTween(
+                    GetActionButtonTargetPosition(_actionButtonStates[i]),
                     _actionExitOffset,
                     0.98f,
                     _actionEnterDuration,
@@ -855,7 +888,81 @@ public sealed class RewardPopupView : PopupView
             return;
 
         for (int i = 0; i < _actionButtonStates.Length; i++)
-            _actionButtonStates[i].Reset();
+            _actionButtonStates[i].Reset(GetActionButtonTargetPosition(_actionButtonStates[i]));
+
+        ResetActionAttemptTextsToLayout();
+    }
+
+    private void ResetActionAttemptTextsToLayout()
+    {
+        _rerollAttemptsTextState.Reset(GetRerollAttemptsTargetPosition(_rerollAttemptsTextState));
+        _adRerollAttemptsTextState.Reset(GetRerollAttemptsTargetPosition(_adRerollAttemptsTextState));
+        _takeAllAttemptsTextState.Reset();
+    }
+
+    private Vector2 GetActionButtonTargetPosition(RectTransformState state)
+    {
+        if (!ShouldUseSingleActionLayout())
+            return state.BaseAnchoredPosition;
+
+        RectTransform activeReroll = _currentState.UseFreeRerollButton
+            ? GetRectTransform(_rerollButton)
+            : GetRectTransform(_adRerollButton);
+
+        if (state.RectTransform != activeReroll)
+            return state.BaseAnchoredPosition;
+
+        return new Vector2(
+            _singleActionButtonAnchoredX,
+            state.BaseAnchoredPosition.y);
+    }
+
+    private Vector2 GetRerollAttemptsTargetPosition(RectTransformState state)
+    {
+        if (!ShouldUseSingleActionLayout())
+            return state.BaseAnchoredPosition;
+
+        RectTransform activeAttempts = _currentState.UseFreeRerollButton
+            ? GetRectTransform(_rerollAttemptsText)
+            : GetRectTransform(_adRerollAttemptsText);
+
+        if (state.RectTransform != activeAttempts)
+            return state.BaseAnchoredPosition;
+
+        RectTransform activeButton = _currentState.UseFreeRerollButton
+            ? GetRectTransform(_rerollButton)
+            : GetRectTransform(_adRerollButton);
+
+        if (!TryGetActionButtonState(activeButton, out RectTransformState activeButtonState))
+            return state.BaseAnchoredPosition;
+
+        float xOffset = _singleActionButtonAnchoredX - activeButtonState.BaseAnchoredPosition.x;
+        return state.BaseAnchoredPosition + new Vector2(xOffset, 0f);
+    }
+
+    private bool TryGetActionButtonState(
+        RectTransform rectTransform,
+        out RectTransformState state)
+    {
+        if (_actionButtonStates != null)
+        {
+            for (int i = 0; i < _actionButtonStates.Length; i++)
+            {
+                if (_actionButtonStates[i].RectTransform != rectTransform)
+                    continue;
+
+                state = _actionButtonStates[i];
+                return true;
+            }
+        }
+
+        state = default;
+        return false;
+    }
+
+    private bool ShouldUseSingleActionLayout()
+    {
+        return _hasCurrentState && !_currentState.UseTakeAllButton;
     }
 
     private void KillAnimations()
@@ -954,25 +1061,44 @@ public sealed class RewardPopupView : PopupView
                 : Vector3.one;
         }
 
+        public RectTransform RectTransform => _rectTransform;
+        public Vector2 BaseAnchoredPosition => _anchoredPosition;
         public bool IsActive => _rectTransform != null && _rectTransform.gameObject.activeSelf;
 
         public void Prepare(float yOffset, float scaleMultiplier)
         {
+            Prepare(_anchoredPosition, yOffset, scaleMultiplier);
+        }
+
+        public void Prepare(
+            Vector2 targetAnchoredPosition,
+            float yOffset,
+            float scaleMultiplier)
+        {
             if (_rectTransform == null)
                 return;
 
-            _rectTransform.anchoredPosition = _anchoredPosition + new Vector2(0f, yOffset);
+            _rectTransform.anchoredPosition = targetAnchoredPosition + new Vector2(0f, yOffset);
             _rectTransform.localScale = _localScale * scaleMultiplier;
         }
 
         public Tween CreateEnterTween(float duration, Ease moveEase, Ease scaleEase)
+        {
+            return CreateEnterTween(_anchoredPosition, duration, moveEase, scaleEase);
+        }
+
+        public Tween CreateEnterTween(
+            Vector2 targetAnchoredPosition,
+            float duration,
+            Ease moveEase,
+            Ease scaleEase)
         {
             Sequence sequence = DOTween.Sequence();
 
             if (_rectTransform == null)
                 return sequence;
 
-            sequence.Join(_rectTransform.DOAnchorPos(_anchoredPosition, duration).SetEase(moveEase));
+            sequence.Join(_rectTransform.DOAnchorPos(targetAnchoredPosition, duration).SetEase(moveEase));
             sequence.Join(_rectTransform.DOScale(_localScale, duration).SetEase(scaleEase));
             return sequence;
         }
@@ -984,23 +1110,45 @@ public sealed class RewardPopupView : PopupView
             Ease moveEase,
             Ease scaleEase)
         {
+            return CreateExitTween(
+                _anchoredPosition,
+                yOffset,
+                scaleMultiplier,
+                duration,
+                moveEase,
+                scaleEase);
+        }
+
+        public Tween CreateExitTween(
+            Vector2 targetAnchoredPosition,
+            float yOffset,
+            float scaleMultiplier,
+            float duration,
+            Ease moveEase,
+            Ease scaleEase)
+        {
             Sequence sequence = DOTween.Sequence();
 
             if (_rectTransform == null)
                 return sequence;
 
-            sequence.Join(_rectTransform.DOAnchorPos(_anchoredPosition + new Vector2(0f, yOffset), duration).SetEase(moveEase));
+            sequence.Join(_rectTransform.DOAnchorPos(targetAnchoredPosition + new Vector2(0f, yOffset), duration).SetEase(moveEase));
             sequence.Join(_rectTransform.DOScale(_localScale * scaleMultiplier, duration).SetEase(scaleEase));
             return sequence;
         }
 
         public void Reset()
         {
+            Reset(_anchoredPosition);
+        }
+
+        public void Reset(Vector2 targetAnchoredPosition)
+        {
             if (_rectTransform == null)
                 return;
 
             Kill();
-            _rectTransform.anchoredPosition = _anchoredPosition;
+            _rectTransform.anchoredPosition = targetAnchoredPosition;
             _rectTransform.localScale = _localScale;
         }
 

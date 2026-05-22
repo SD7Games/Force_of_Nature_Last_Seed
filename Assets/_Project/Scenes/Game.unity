@@ -261,6 +261,9 @@ MonoBehaviour:
   _combatBurstSpeed: 2.5
   _combatBurstInterval: 10
   _combatBurstDuration: 2.5
+  _combatBurstDisableRailPointIndex: -1
+  _combatBurstDisablePathProgress: 0.9
+  _combatBurstSlowdownDuration: 0.35
   _segmentSpacing: 0.5
   _tailVisualSpacingMultiplier: 1
   _headBridgeSpacingMultiplier: 1.25
@@ -2203,14 +2206,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1474514290}
     m_Modifications:
-    - target: {fileID: 644602212612592750, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0.333
-      objectReference: {fileID: 0}
-    - target: {fileID: 644602212612592750, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2626705792760502667, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2293,23 +2288,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5158860398019954923, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
       propertyPath: m_Name
-      value: ResurrentPopup
-      objectReference: {fileID: 0}
-    - target: {fileID: 5158860398019954923, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6927837233894008116, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0.333
-      objectReference: {fileID: 0}
-    - target: {fileID: 6927837233894008116, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6927837233894008116, guid: 7a1f4e3835b5b814c812c0f752004049, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0.333
+      value: RevivePopup
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2327,10 +2306,6 @@ PrefabInstance:
     - target: {fileID: 1532346906640716998, guid: a10686d642ceb324386a4769b767de9a, type: 3}
       propertyPath: m_Name
       value: WinPopup
-      objectReference: {fileID: 0}
-    - target: {fileID: 1532346906640716998, guid: a10686d642ceb324386a4769b767de9a, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2345891251903163430, guid: a10686d642ceb324386a4769b767de9a, type: 3}
       propertyPath: m_Pivot.x

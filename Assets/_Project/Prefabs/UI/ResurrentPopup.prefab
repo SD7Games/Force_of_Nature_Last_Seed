@@ -904,7 +904,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2626705792760502667
 RectTransform:
   m_ObjectHideFlags: 0
@@ -985,6 +985,7 @@ MonoBehaviour:
   _root: {fileID: 5158860398019954923}
   _reviveButton: {fileID: 7623616282367392126}
   _giveUpButton: {fileID: 4912544844833787224}
+  _animatedContentRoot: {fileID: 0}
   _remainingSlider: {fileID: 202452679981016511}
   _progressText: {fileID: 3054840640649756184}
   _percentText: {fileID: 8685351938400523254}
@@ -1145,7 +1146,7 @@ RectTransform:
   m_Father: {fileID: 3551674591304189233}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 0.333, y: 1}
   m_AnchoredPosition: {x: 2.4999998, y: -3}
   m_SizeDelta: {x: 15, y: 4}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -1879,8 +1880,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 322303383806200625}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.333, y: 0}
+  m_AnchorMax: {x: 0.333, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: -44}
   m_Pivot: {x: 0.5, y: 0.5}

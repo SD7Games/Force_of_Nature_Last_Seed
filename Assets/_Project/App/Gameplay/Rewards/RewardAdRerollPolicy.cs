@@ -2,10 +2,11 @@ using UnityEngine;
 
 public static class RewardAdRerollPolicy
 {
-    public const float LegendaryChanceMinDestructionProgress = 0.5f;
+    public const float LegendaryChanceMinDestructionProgress = 0.65f;
+    public const float TakeAllMinHeadPathProgress = 0.7f;
 
-    private const float LockedAdditionalWeaponLegendaryChance = 0.15f;
-    private const float UnlockedAdditionalWeaponLegendaryChance = 0.25f;
+    private const float LockedAdditionalWeaponLegendaryChance = 0.1f;
+    private const float UnlockedAdditionalWeaponLegendaryChance = 0.18f;
 
     public static RewardRarity GetDisplayedGuaranteeRarity(CocoonRewardProfile cocoonProfile)
     {
@@ -37,6 +38,18 @@ public static class RewardAdRerollPolicy
         return HasAdditionalWeaponUnlocked(context)
             ? UnlockedAdditionalWeaponLegendaryChance
             : LockedAdditionalWeaponLegendaryChance;
+    }
+
+    public static bool CanOfferTakeAll(RewardRollContext rollContext)
+    {
+        return CanOfferTakeAll(rollContext, TakeAllMinHeadPathProgress);
+    }
+
+    public static bool CanOfferTakeAll(
+        RewardRollContext rollContext,
+        float minHeadPathProgress)
+    {
+        return rollContext.HeadPathProgressNormalized >= Mathf.Clamp01(minHeadPathProgress);
     }
 
     private static bool IsLegendaryCocoon(CocoonRewardProfile cocoonProfile)

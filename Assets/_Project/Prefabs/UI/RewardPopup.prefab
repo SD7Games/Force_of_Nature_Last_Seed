@@ -2243,6 +2243,21 @@ MonoBehaviour:
   _refreshInDuration: 0.22
   _refreshOutEase: 8
   _refreshInEase: 27
+  _selectionFocusDuration: 0.22
+  _selectionGrowDuration: 0.16
+  _selectionExitDuration: 0.22
+  _selectionScaleMultiplier: 1.05
+  _selectionExitScaleMultiplier: 0.96
+  _selectionExitOffset: -230
+  _unselectedExitDuration: 0.22
+  _unselectedExitStagger: 0.045
+  _unselectedExitScaleMultiplier: 0.96
+  _unselectedExitOffset: -230
+  _topExitOffset: 160
+  _actionExitOffset: -90
+  _selectionFocusEase: 27
+  _selectionExitEase: 8
+  _unselectedExitEase: 8
   _animationAudioSource: {fileID: 0}
   _showWhooshClip: {fileID: 0}
   _showSettleClip: {fileID: 0}
@@ -2257,6 +2272,7 @@ MonoBehaviour:
   _attemptsFormat: 'attempts left: x{0}'
   _guaranteeFormat: 'guarantee: {0}'
   _adGuaranteeFormat: 'guarantee: {0}'
+  _singleActionButtonAnchoredX: 350
   _numberColor:
     serializedVersion: 2
     rgba: 4286119785
@@ -2291,8 +2307,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b7c1c482eaf24fcf9fd1f9ee050bfe24, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3828823590337980753
 GameObject:
   m_ObjectHideFlags: 0

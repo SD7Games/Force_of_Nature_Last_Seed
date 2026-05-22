@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -16,6 +15,8 @@ public sealed class WormBalanceLabWindow : EditorWindow
     private const float DefaultWormSpeed = 1f;
     private const float DefaultSegmentSpacing = 0.5f;
     private const float DefaultReviveRollbackProgress = 0.12f;
+    private const float LegacyTakeAllMinTotalDpsGainRatio = 0.7f;
+    private const float DefaultTakeAllMinTotalDpsGainRatio = 1.15f;
     private const string RewardDatabasePath = "Assets/_Project/App/Gameplay/Rewards/RewardDatabase_Main.asset";
     private const string HpConfigPath = "Assets/_Project/App/Gameplay/Enemy/Worm/Balance/WormHpScalingConfig_Default.asset";
     private const string PressureConfigPath = "Assets/_Project/App/Gameplay/Enemy/Worm/Balance/WormPressureConfig_Default.asset";
@@ -42,7 +43,6 @@ public sealed class WormBalanceLabWindow : EditorWindow
     [SerializeField] private bool _simulatePlayerXFollow = true;
     [SerializeField] private bool _useRuntimePressure = true;
     [SerializeField] private bool _applySectionRollback = true;
-    [SerializeField] private bool _writeCsvLog = true;
     [SerializeField] private bool _logEachRunToConsole;
     [SerializeField] private WormBalanceRewardPickStrategy _rewardPickStrategy = WormBalanceRewardPickStrategy.HighestEstimatedDpsGain;
     [SerializeField] private WormBalanceAdSimulationMode _adSimulationMode = WormBalanceAdSimulationMode.CompareNoAdsAndAdsAssist;
@@ -53,7 +53,8 @@ public sealed class WormBalanceLabWindow : EditorWindow
     [SerializeField] private float _reviveRollbackProgress = DefaultReviveRollbackProgress;
     [SerializeField] private float _freeRerollMinDpsGainRatio = 0.12f;
     [SerializeField] private float _adRerollMinDpsGainRatio = 0.25f;
-    [SerializeField] private float _takeAllMinTotalDpsGainRatio = 0.7f;
+    [SerializeField] private float _takeAllMinTotalDpsGainRatio = DefaultTakeAllMinTotalDpsGainRatio;
+    [SerializeField] private float _takeAllMinHeadPathProgress = RewardAdRerollPolicy.TakeAllMinHeadPathProgress;
 
     private Vector2 _windowScroll;
     private Vector2 _resultScroll;
@@ -67,8 +68,18 @@ public sealed class WormBalanceLabWindow : EditorWindow
 
     private void OnEnable()
     {
+        MigrateSimulationDefaults();
         LoadDefaultAssets();
         LoadOpenSceneValues();
+    }
+
+    private void MigrateSimulationDefaults()
+    {
+        if (Mathf.Approximately(_takeAllMinTotalDpsGainRatio, LegacyTakeAllMinTotalDpsGainRatio))
+            _takeAllMinTotalDpsGainRatio = DefaultTakeAllMinTotalDpsGainRatio;
+
+        if (_takeAllMinHeadPathProgress <= 0f)
+            _takeAllMinHeadPathProgress = RewardAdRerollPolicy.TakeAllMinHeadPathProgress;
     }
 
     private void OnGUI()
@@ -205,9 +216,10 @@ public sealed class WormBalanceLabWindow : EditorWindow
             EditorGUILayout.Slider("Take All Min Total DPS Gain", _takeAllMinTotalDpsGainRatio, 0f, 3f),
             0f,
             3f);
+        _takeAllMinHeadPathProgress = Mathf.Clamp01(
+            EditorGUILayout.Slider("Take All Min Path Progress", _takeAllMinHeadPathProgress, 0f, 1f));
         _useRuntimePressure = EditorGUILayout.Toggle("Runtime Pressure", _useRuntimePressure);
         _applySectionRollback = EditorGUILayout.Toggle("Section Rollback", _applySectionRollback);
-        _writeCsvLog = EditorGUILayout.Toggle("Write CSV Log", _writeCsvLog);
         _logEachRunToConsole = EditorGUILayout.Toggle("Log Each Run", _logEachRunToConsole);
     }
 
@@ -284,11 +296,6 @@ public sealed class WormBalanceLabWindow : EditorWindow
                 Debug.Log(runs[i].BuildDebugLine());
         }
 
-        if (_writeCsvLog)
-        {
-            string csvPath = WormBalanceCsvWriter.Write(report);
-            Debug.Log($"Worm Balance Lab CSV: {csvPath}");
-        }
     }
 
     private WormBalanceSimulationSettings BuildSettings(int runCount)
@@ -322,6 +329,7 @@ public sealed class WormBalanceLabWindow : EditorWindow
             _freeRerollMinDpsGainRatio,
             _adRerollMinDpsGainRatio,
             _takeAllMinTotalDpsGainRatio,
+            _takeAllMinHeadPathProgress,
             WormBalancePathMetrics.FromRailPath(
                 _railPath,
                 _pathTimeLimitSeconds,
@@ -472,6 +480,7 @@ internal sealed class WormBalanceSimulationSettings
     public readonly float FreeRerollMinDpsGainRatio;
     public readonly float AdRerollMinDpsGainRatio;
     public readonly float TakeAllMinTotalDpsGainRatio;
+    public readonly float TakeAllMinHeadPathProgress;
     public readonly WormBalancePathMetrics PathMetrics;
 
     public WormBalanceSimulationSettings(
@@ -503,6 +512,7 @@ internal sealed class WormBalanceSimulationSettings
         float freeRerollMinDpsGainRatio,
         float adRerollMinDpsGainRatio,
         float takeAllMinTotalDpsGainRatio,
+        float takeAllMinHeadPathProgress,
         WormBalancePathMetrics pathMetrics)
     {
         RewardDatabase = rewardDatabase;
@@ -537,6 +547,7 @@ internal sealed class WormBalanceSimulationSettings
         FreeRerollMinDpsGainRatio = Mathf.Max(0f, freeRerollMinDpsGainRatio);
         AdRerollMinDpsGainRatio = Mathf.Max(0f, adRerollMinDpsGainRatio);
         TakeAllMinTotalDpsGainRatio = Mathf.Max(0f, takeAllMinTotalDpsGainRatio);
+        TakeAllMinHeadPathProgress = Mathf.Clamp01(takeAllMinHeadPathProgress);
     }
 
     public bool IncludesScenario(WormBalanceScenario scenario)
@@ -1344,7 +1355,12 @@ internal static class WormBalanceSimulator
         }
 
         if (adSession != null
-            && ShouldTakeAll(offer, currentDps, settings.TakeAllMinTotalDpsGainRatio)
+            && ShouldTakeAll(
+                offer,
+                rollContext,
+                currentDps,
+                settings.TakeAllMinTotalDpsGainRatio,
+                settings.TakeAllMinHeadPathProgress)
             && adSession.TryUseTakeAll())
         {
             return offer.CreateTakeAllSelection();
@@ -1418,10 +1434,15 @@ internal static class WormBalanceSimulator
 
     private static bool ShouldTakeAll(
         WormBalanceRewardOffer offer,
+        RewardRollContext rollContext,
         float currentDps,
-        float minTotalDpsGainRatio)
+        float minTotalDpsGainRatio,
+        float minHeadPathProgress)
     {
         if (offer == null || offer.BeneficialRewardCount < 2)
+            return false;
+
+        if (!RewardAdRerollPolicy.CanOfferTakeAll(rollContext, minHeadPathProgress))
             return false;
 
         float minimumTotalDpsGain = Mathf.Max(0.01f, currentDps * minTotalDpsGainRatio);
@@ -2186,6 +2207,13 @@ internal sealed class WormBalanceRunResult
 
 internal sealed class WormBalanceSimulationReport
 {
+    private const float NoAdsTargetMinWinRate = 0.6f;
+    private const float NoAdsTargetMaxWinRate = 0.7f;
+    private const float AdsAssistTargetMinWinRate = 0.7f;
+    private const float AdsAssistTargetMaxWinRate = 0.8f;
+    private const float MinHealthyAdUplift = 0.08f;
+    private const float MaxHealthyAdUplift = 0.18f;
+
     public readonly WormBalanceSimulationSettings Settings;
     public readonly List<WormBalanceRunResult> Runs;
 
@@ -2201,28 +2229,27 @@ internal sealed class WormBalanceSimulationReport
     {
         StringBuilder builder = new();
         builder.AppendLine("Worm Balance Lab");
-        builder.AppendLine($"Runs: {Settings.RunCount} per scenario ({Runs.Count} simulated rows)");
-        builder.AppendLine($"Reward pick: {Settings.RewardPickStrategy}");
-        builder.AppendLine($"Ad simulation: {Settings.AdSimulationMode}");
+        builder.AppendLine($"Simulated games: {Runs.Count} ({Settings.RunCount} per scenario)");
+        builder.AppendLine($"Targets: No Ads {NoAdsTargetMinWinRate * 100f:0}-{NoAdsTargetMaxWinRate * 100f:0}% wins, Ad Assist {AdsAssistTargetMinWinRate * 100f:0}-{AdsAssistTargetMaxWinRate * 100f:0}% wins");
         builder.AppendLine(
-            $"Worm settings: length={Settings.TotalLength}, sections={WormCocoonRules.CountGameplaySections(Mathf.Max(1, Settings.TotalLength - 2))}, speed={Settings.WormSpeed:0.00}, path={Settings.PathMetrics.PathLength:0.00}u / {Settings.PathTimeLimitSeconds:0.0}s");
+            $"Setup: reward={Settings.RewardPickStrategy}, ads={Settings.AdSimulationMode}, worm={Settings.TotalLength} length / {WormCocoonRules.CountGameplaySections(Mathf.Max(1, Settings.TotalLength - 2))} sections / {Settings.PathTimeLimitSeconds:0.0}s path");
         builder.AppendLine(
-            $"Damage model: estimated weapon DPS x hit efficiency {Settings.HitEfficiency:0.00}, rollback={(Settings.ApplySectionRollback ? "ON" : "OFF")}, runtime pressure={(Settings.UseRuntimePressure ? "ON" : "OFF")}");
-        builder.AppendLine("Reward randomness: legendary cocoons roll only after 50% worm progress at fixed 3%; new weapon unlocks start after 30% worm destruction; unlocked weapon rewards are weighted toward the lower estimated DPS weapon.");
-        builder.AppendLine("Ad reward power: ad reroll guarantees a rare-or-better slot; after 50% worm destruction this slot can upgrade to legendary. Take all uses its session attempt only.");
-        builder.AppendLine($"Ad limits: free reroll={Settings.FreeRerollAttemptsPerSession}, ad reroll={Settings.AdRerollAttemptsPerSession}, take all={Settings.TakeAllAttemptsPerSession}, revive={Settings.ReviveAttemptsPerSession}, revive rollback={Settings.ReviveRollbackProgress * 100f:0.0}% path");
-        builder.AppendLine("Ad buttons: availability follows session attempts only; attempts reset on run restart, not revive.");
-        builder.AppendLine("Targets: 45-55% no-ads wins, 70-80% ad-assist wins, and no paywall feeling.");
+            $"Damage: estimated DPS x {Settings.HitEfficiency:0.00}, rollback={(Settings.ApplySectionRollback ? "ON" : "OFF")}, pressure={(Settings.UseRuntimePressure ? "ON" : "OFF")}");
+        builder.AppendLine(
+            $"Ad power: reroll rare+, legendary after {RewardAdRerollPolicy.LegendaryChanceMinDestructionProgress * 100f:0}% destruction, take all after {Settings.TakeAllMinHeadPathProgress * 100f:0}% path and {Settings.TakeAllMinTotalDpsGainRatio:0.00}x total DPS gain");
+        builder.AppendLine($"Ad limits: free reroll={Settings.FreeRerollAttemptsPerSession}, ad reroll={Settings.AdRerollAttemptsPerSession}, take all={Settings.TakeAllAttemptsPerSession}, revive={Settings.ReviveAttemptsPerSession}");
         builder.AppendLine(Settings.SimulatePlayerXFollow
             ? "Player X follow: ON, instant head X match"
             : "Player X follow: OFF");
         builder.AppendLine();
 
         if (Settings.IncludesScenario(WormBalanceScenario.NoAds))
-            AppendScenarioSummary(builder, WormBalanceScenario.NoAds, "No Ads baseline", 0.45f, 0.55f);
+            AppendScenarioSummary(builder, WormBalanceScenario.NoAds, "No Ads", NoAdsTargetMinWinRate, NoAdsTargetMaxWinRate);
 
         if (Settings.IncludesScenario(WormBalanceScenario.AdsAssist))
-            AppendScenarioSummary(builder, WormBalanceScenario.AdsAssist, "Ad Assist", 0.7f, 0.8f);
+            AppendScenarioSummary(builder, WormBalanceScenario.AdsAssist, "Ad Assist", AdsAssistTargetMinWinRate, AdsAssistTargetMaxWinRate);
+
+        AppendAdUplift(builder);
 
         return builder.ToString();
     }
@@ -2242,17 +2269,13 @@ internal sealed class WormBalanceSimulationReport
         float totalTime = 0f;
         float totalRewards = 0f;
         float totalFirstRewardTime = 0f;
-        float totalMaxPlayerXError = 0f;
         float totalAdsWatched = 0f;
-        float totalFreeRerolls = 0f;
         float totalAdRerolls = 0f;
         float totalTakeAllAds = 0f;
         float totalRevives = 0f;
         List<float> adsWatched = new();
         List<float> lossProgress = new();
         List<float> lossHeadProgress = new();
-        List<float> winTimes = new();
-        List<float> winHeadProgress = new();
 
         for (int i = 0; i < Runs.Count; i++)
         {
@@ -2264,9 +2287,7 @@ internal sealed class WormBalanceSimulationReport
             sampleCount++;
             totalTime += run.TimeSeconds;
             totalRewards += run.RewardsTaken;
-            totalMaxPlayerXError += run.MaxPlayerXError;
             totalAdsWatched += run.AdStats.AdsWatched;
-            totalFreeRerolls += run.AdStats.FreeRerollsUsed;
             totalAdRerolls += run.AdStats.AdRerollsUsed;
             totalTakeAllAds += run.AdStats.TakeAllAdsUsed;
             totalRevives += run.AdStats.RevivesUsed;
@@ -2284,8 +2305,6 @@ internal sealed class WormBalanceSimulationReport
             if (run.Won)
             {
                 winCount++;
-                winTimes.Add(run.TimeSeconds);
-                winHeadProgress.Add(run.HeadProgress);
             }
             else
             {
@@ -2314,49 +2333,154 @@ internal sealed class WormBalanceSimulationReport
         adsWatched.Sort();
         lossProgress.Sort();
         lossHeadProgress.Sort();
-        winTimes.Sort();
-        winHeadProgress.Sort();
 
-        builder.AppendLine($"Result: {winCount} wins / {lossCount} losses ({winRate * 100f:0.0}% win rate, target {targetMinWinRate * 100f:0}-{targetMaxWinRate * 100f:0}%)");
-        builder.AppendLine($"Average time: {totalTime / samples:0.0}s");
-        builder.AppendLine($"Average rewards: {averageRewards:0.00}");
+        builder.AppendLine(
+            $"Wins: {winCount}/{sampleCount} ({winRate * 100f:0.0}%) | Losses: {lossCount}/{sampleCount} ({(1f - winRate) * 100f:0.0}%) | Target: {targetMinWinRate * 100f:0}-{targetMaxWinRate * 100f:0}% | {GetWinRateVerdict(winRate, targetMinWinRate, targetMaxWinRate)}");
         builder.AppendLine(firstRewardSamples > 0
-            ? $"Average first reward: {averageFirstRewardTime:0.0}s"
-            : "Average first reward: none");
-        builder.AppendLine(
-            $"Ads watched: avg={totalAdsWatched / samples:0.00}, p50={Percentile(adsWatched, 0.5f):0.0}, p90={Percentile(adsWatched, 0.9f):0.0}, sessions with ads={adSessionCount / samples * 100f:0.0}%");
-        builder.AppendLine(
-            $"Attempts used: free reroll={totalFreeRerolls / samples:0.00}, ad reroll={totalAdRerolls / samples:0.00}, take all={totalTakeAllAds / samples:0.00}, revive={totalRevives / samples:0.00}");
+            ? $"Avg: time={totalTime / samples:0.0}s, rewards={averageRewards:0.00}, first reward={averageFirstRewardTime:0.0}s"
+            : $"Avg: time={totalTime / samples:0.0}s, rewards={averageRewards:0.00}, first reward=none");
 
-        if (Settings.SimulatePlayerXFollow)
-            builder.AppendLine($"Player X avg max error: {totalMaxPlayerXError / samples:0.00}");
+        if (scenario == WormBalanceScenario.AdsAssist)
+        {
+            builder.AppendLine(
+                $"Ads: avg={totalAdsWatched / samples:0.00}, p50={Percentile(adsWatched, 0.5f):0.0}, p90={Percentile(adsWatched, 0.9f):0.0}, sessions={adSessionCount / samples * 100f:0.0}% | uses: ad reroll={totalAdRerolls / samples:0.00}, take all={totalTakeAllAds / samples:0.00}, revive={totalRevives / samples:0.00}");
+        }
 
         if (lossCount > 0)
         {
             builder.AppendLine(
-                $"Loss: destroyed avg={Average(lossProgress) * 100f:0.0}% p50={Percentile(lossProgress, 0.5f) * 100f:0.0}%, path avg={Average(lossHeadProgress) * 100f:0.0}% p50={Percentile(lossHeadProgress, 0.5f) * 100f:0.0}%");
+                $"Loss tension: destroyed avg={Average(lossProgress) * 100f:0.0}%, path avg={Average(lossHeadProgress) * 100f:0.0}%");
         }
 
-        if (winCount > 0)
-        {
-            builder.AppendLine(
-                $"Win: time avg={Average(winTimes):0.0}s p50={Percentile(winTimes, 0.5f):0.0}s, kill path avg={Average(winHeadProgress) * 100f:0.0}% p50={Percentile(winHeadProgress, 0.5f) * 100f:0.0}%");
-        }
-
-        AppendScenarioVerdict(
-            builder,
-            scenario,
-            winRate,
-            targetMinWinRate,
-            targetMaxWinRate,
-            averageRewards,
-            averageFirstRewardTime,
-            totalAdsWatched / samples,
-            adSessionCount / samples,
-            lossCount,
-            lossProgress,
-            lossHeadProgress);
+        builder.AppendLine(
+            $"Verdict: {BuildCompactScenarioVerdict(scenario, winRate, targetMinWinRate, targetMaxWinRate, averageRewards, averageFirstRewardTime, totalAdsWatched / samples, adSessionCount / samples, lossCount, lossProgress, lossHeadProgress)}");
         builder.AppendLine();
+    }
+
+    private void AppendAdUplift(StringBuilder builder)
+    {
+        if (!TryGetWinRate(WormBalanceScenario.NoAds, out float noAdsWinRate)
+            || !TryGetWinRate(WormBalanceScenario.AdsAssist, out float adsAssistWinRate))
+        {
+            return;
+        }
+
+        float uplift = adsAssistWinRate - noAdsWinRate;
+        string verdict;
+
+        if (uplift < MinHealthyAdUplift)
+            verdict = "ads may feel too weak";
+        else if (uplift > MaxHealthyAdUplift)
+            verdict = "ads are carrying too much of the win rate";
+        else
+            verdict = "healthy optional boost";
+
+        builder.AppendLine(
+            $"Ad uplift: +{uplift * 100f:0.0} pp (healthy target {MinHealthyAdUplift * 100f:0}-{MaxHealthyAdUplift * 100f:0} pp) | {verdict}");
+    }
+
+    private bool TryGetWinRate(
+        WormBalanceScenario scenario,
+        out float winRate)
+    {
+        int sampleCount = 0;
+        int winCount = 0;
+
+        for (int i = 0; i < Runs.Count; i++)
+        {
+            WormBalanceRunResult run = Runs[i];
+
+            if (run.Scenario != scenario)
+                continue;
+
+            sampleCount++;
+
+            if (run.Won)
+                winCount++;
+        }
+
+        if (sampleCount <= 0)
+        {
+            winRate = 0f;
+            return false;
+        }
+
+        winRate = winCount / (float)sampleCount;
+        return true;
+    }
+
+    private static string GetWinRateVerdict(
+        float winRate,
+        float targetMinWinRate,
+        float targetMaxWinRate)
+    {
+        if (winRate < targetMinWinRate)
+            return "too hard";
+
+        if (winRate > targetMaxWinRate)
+            return "too easy";
+
+        return "OK";
+    }
+
+    private static string BuildCompactScenarioVerdict(
+        WormBalanceScenario scenario,
+        float winRate,
+        float targetMinWinRate,
+        float targetMaxWinRate,
+        float averageRewards,
+        float averageFirstRewardTime,
+        float averageAdsWatched,
+        float adSessionRate,
+        int lossCount,
+        List<float> lossProgress,
+        List<float> lossHeadProgress)
+    {
+        List<string> notes = new();
+
+        if (winRate < targetMinWinRate)
+            notes.Add(scenario == WormBalanceScenario.NoAds
+                ? "raise baseline by lowering mid/end HP"
+                : "ad assist is still under target");
+        else if (winRate > targetMaxWinRate)
+            notes.Add(scenario == WormBalanceScenario.AdsAssist
+                ? "ad assist is too strong"
+                : "baseline is too easy");
+        else
+            notes.Add("win rate is in target");
+
+        if (averageFirstRewardTime < 0f)
+            notes.Add("first reward is unreachable");
+        else if (averageFirstRewardTime > 12f)
+            notes.Add("first reward is late");
+        else if (averageFirstRewardTime <= 6f)
+            notes.Add("first reward is very early");
+
+        if (averageRewards > 14f)
+            notes.Add("reward count is high");
+        else if (averageRewards < 4f)
+            notes.Add("reward count is low");
+
+        if (scenario == WormBalanceScenario.AdsAssist)
+        {
+            if (averageAdsWatched > 2f)
+                notes.Add("ads are frequent");
+            else if (averageAdsWatched < 0.6f || adSessionRate < 0.5f)
+                notes.Add("ads may feel underused");
+        }
+
+        if (lossCount > 0)
+        {
+            float averageLossDestroyed = Average(lossProgress);
+            float averageLossPath = Average(lossHeadProgress);
+
+            if (averageLossPath >= 0.85f && averageLossDestroyed >= 0.75f)
+                notes.Add("losses are late and close");
+            else if (averageLossPath >= 0.95f && averageLossDestroyed < 0.55f)
+                notes.Add("mid/end HP is probably too high");
+        }
+
+        return string.Join("; ", notes);
     }
 
     private static void AppendScenarioVerdict(
@@ -2706,97 +2830,5 @@ internal sealed class WormBalanceSimulationReport
             sortedValues[lower],
             sortedValues[upper],
             position - lower);
-    }
-}
-
-internal static class WormBalanceCsvWriter
-{
-    public static string Write(WormBalanceSimulationReport report)
-    {
-        string directory = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp"));
-        Directory.CreateDirectory(directory);
-
-        string path = Path.Combine(
-            directory,
-            $"WormBalanceLab_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
-
-        File.WriteAllText(path, BuildCsv(report), Encoding.UTF8);
-        return path;
-    }
-
-    private static string BuildCsv(WormBalanceSimulationReport report)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("scenario,run,result,reason,time_seconds,destruction_progress,head_progress,path_bucket,rail_control_point,rail_control_point_progress,sections_destroyed,last_section_index,rewards_taken,first_reward_time,final_dps,ads_watched,free_rerolls_used,ad_rerolls_used,take_all_ads_used,revives_used,end_player_x,end_head_x,max_player_x_error,reward_log");
-
-        IReadOnlyList<WormBalanceRunResult> runs = report.Runs;
-
-        for (int i = 0; i < runs.Count; i++)
-        {
-            WormBalanceRunResult run = runs[i];
-            builder.Append(run.Scenario);
-            builder.Append(',');
-            builder.Append(run.RunIndex);
-            builder.Append(',');
-            builder.Append(run.Won ? "WIN" : "LOSS");
-            builder.Append(',');
-            AppendCsv(builder, run.Reason);
-            builder.Append(',');
-            AppendFloat(builder, run.TimeSeconds);
-            builder.Append(',');
-            AppendFloat(builder, run.DestructionProgress);
-            builder.Append(',');
-            AppendFloat(builder, run.HeadProgress);
-            builder.Append(',');
-            AppendCsv(builder, run.EndLocation.BucketLabel);
-            builder.Append(',');
-            builder.Append(run.EndLocation.ControlPointIndex);
-            builder.Append(',');
-            AppendFloat(builder, run.EndLocation.ControlPointProgress);
-            builder.Append(',');
-            builder.Append(run.SectionsDestroyed);
-            builder.Append(',');
-            builder.Append(run.LastSectionIndex);
-            builder.Append(',');
-            builder.Append(run.RewardsTaken);
-            builder.Append(',');
-            AppendFloat(builder, run.FirstRewardTime);
-            builder.Append(',');
-            AppendFloat(builder, run.FinalDps);
-            builder.Append(',');
-            builder.Append(run.AdStats.AdsWatched);
-            builder.Append(',');
-            builder.Append(run.AdStats.FreeRerollsUsed);
-            builder.Append(',');
-            builder.Append(run.AdStats.AdRerollsUsed);
-            builder.Append(',');
-            builder.Append(run.AdStats.TakeAllAdsUsed);
-            builder.Append(',');
-            builder.Append(run.AdStats.RevivesUsed);
-            builder.Append(',');
-            AppendFloat(builder, run.EndPlayerX);
-            builder.Append(',');
-            AppendFloat(builder, run.EndHeadX);
-            builder.Append(',');
-            AppendFloat(builder, run.MaxPlayerXError);
-            builder.Append(',');
-            AppendCsv(builder, run.RewardLog);
-            builder.AppendLine();
-        }
-
-        return builder.ToString();
-    }
-
-    private static void AppendFloat(StringBuilder builder, float value)
-    {
-        builder.Append(value.ToString("0.###", CultureInfo.InvariantCulture));
-    }
-
-    private static void AppendCsv(StringBuilder builder, string value)
-    {
-        value ??= string.Empty;
-        builder.Append('"');
-        builder.Append(value.Replace("\"", "\"\""));
-        builder.Append('"');
     }
 }

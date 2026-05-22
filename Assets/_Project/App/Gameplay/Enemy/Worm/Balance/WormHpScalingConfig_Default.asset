@@ -91,9 +91,9 @@ MonoBehaviour:
   _maxDynamicHpMultiplier: 900
   _useBaseHpAsFloor: 1
   _levelMultiplier: 1.12
-  _hpMultiplier: 1.9
+  _hpMultiplier: 1.6
   _startPressureMultiplier: 1
-  _endPressureMultiplier: 1.2
+  _endPressureMultiplier: 1.5
   _usePressureCurve: 1
   _pressureByProgress:
     serializedVersion: 2
@@ -168,6 +168,6 @@ MonoBehaviour:
   _strongHeadPressureUntilProgress: 0.5
   _minimumHeadPressureFromProgress: 0.75
   _earlyHeadPressureMultiplier: 1
-  _lateHeadPressureMultiplier: 1.1
+  _lateHeadPressureMultiplier: 1.65
   _minHp: 4
   _maxHp: 9999999

@@ -14,6 +14,8 @@ public sealed class WinPopupView : PopupView
     [SerializeField] private RectTransform _animatedContentRoot;
     [SerializeField] private bool _closeOnAccept = true;
     [SerializeField] private bool _closeOnDoubleReward = true;
+    [SerializeField, Min(0f)] private float _showAnimationDuration = 0.55f;
+    [SerializeField, Range(0.5f, 1f)] private float _showAnimationStartScale = 0.92f;
     [SerializeField, Min(0f)] private float _restartAnimationDuration = 0.55f;
     [SerializeField, Range(0.5f, 1f)] private float _restartAnimationTargetScale = 0.92f;
 
@@ -27,6 +29,8 @@ public sealed class WinPopupView : PopupView
     private Image _backgroundImage;
     private float _backgroundBaseAlpha = 1f;
     private Vector3 _contentBaseScale = Vector3.one;
+    private bool _hasContentBaseScale;
+    private Sequence _showSequence;
     private Sequence _restartSequence;
 
     private void OnEnable()
@@ -42,6 +46,9 @@ public sealed class WinPopupView : PopupView
 
     private void OnDisable()
     {
+        _showSequence?.Kill();
+        _showSequence = null;
+
         _restartSequence?.Kill();
         _restartSequence = null;
 
@@ -55,8 +62,8 @@ public sealed class WinPopupView : PopupView
     protected override void OnShown()
     {
         _restartRequested = false;
-        ResetAnimationState();
         SetButtonsInteractable(true);
+        PlayShowAnimation();
     }
 
     private void HandleAcceptClicked()
@@ -92,6 +99,9 @@ public sealed class WinPopupView : PopupView
     private void PlayRestartAnimation(Action onComplete)
     {
         EnsureAnimationRefs();
+        _showSequence?.Kill();
+        _showSequence = null;
+
         _restartSequence?.Kill();
 
         float safeDuration = Mathf.Max(0f, _restartAnimationDuration);
@@ -132,6 +142,53 @@ public sealed class WinPopupView : PopupView
         _restartSequence.OnComplete(() => onComplete?.Invoke());
     }
 
+    private void PlayShowAnimation()
+    {
+        EnsureAnimationRefs();
+        _showSequence?.Kill();
+        _restartSequence?.Kill();
+        _restartSequence = null;
+
+        float safeDuration = Mathf.Max(0f, _showAnimationDuration);
+        float safeScale = Mathf.Clamp(_showAnimationStartScale, 0.5f, 1f);
+
+        if (safeDuration <= 0f)
+        {
+            ResetAnimationState();
+            return;
+        }
+
+        SetAnimationState(safeScale, 0f, 0f);
+
+        _showSequence = DOTween.Sequence().SetUpdate(true);
+
+        if (_animatedContentRoot != null)
+        {
+            _showSequence.Join(
+                _animatedContentRoot
+                    .DOScale(_contentBaseScale, safeDuration)
+                    .SetEase(Ease.InOutSine));
+        }
+
+        if (_contentCanvasGroup != null)
+        {
+            _showSequence.Join(
+                _contentCanvasGroup
+                    .DOFade(1f, safeDuration)
+                    .SetEase(Ease.OutSine));
+        }
+
+        if (_backgroundImage != null && _backgroundBaseAlpha > 0f)
+        {
+            _showSequence.Join(
+                _backgroundImage
+                    .DOFade(_backgroundBaseAlpha, safeDuration)
+                    .SetEase(Ease.OutSine));
+        }
+
+        _showSequence.OnComplete(() => _showSequence = null);
+    }
+
     private void SetButtonsInteractable(bool interactable)
     {
         if (_acceptButton != null)
@@ -148,7 +205,11 @@ public sealed class WinPopupView : PopupView
 
         if (_animatedContentRoot != null)
         {
-            _contentBaseScale = _animatedContentRoot.localScale;
+            if (!_hasContentBaseScale)
+            {
+                _contentBaseScale = _animatedContentRoot.localScale;
+                _hasContentBaseScale = true;
+            }
 
             if (!_animatedContentRoot.TryGetComponent(out _contentCanvasGroup))
                 _contentCanvasGroup = _animatedContentRoot.gameObject.AddComponent<CanvasGroup>();
@@ -161,19 +222,32 @@ public sealed class WinPopupView : PopupView
     private void ResetAnimationState()
     {
         EnsureAnimationRefs();
+        _showSequence?.Kill();
+        _showSequence = null;
+
         _restartSequence?.Kill();
         _restartSequence = null;
 
+        SetAnimationState(1f, 1f, _backgroundBaseAlpha);
+    }
+
+    private void SetAnimationState(
+        float contentScaleMultiplier,
+        float contentAlpha,
+        float backgroundAlpha)
+    {
+        float safeScale = Mathf.Clamp(contentScaleMultiplier, 0.5f, 1f);
+
         if (_animatedContentRoot != null)
-            _animatedContentRoot.localScale = _contentBaseScale;
+            _animatedContentRoot.localScale = _contentBaseScale * safeScale;
 
         if (_contentCanvasGroup != null)
-            _contentCanvasGroup.alpha = 1f;
+            _contentCanvasGroup.alpha = Mathf.Clamp01(contentAlpha);
 
         if (_backgroundImage != null)
         {
             Color color = _backgroundImage.color;
-            color.a = _backgroundBaseAlpha;
+            color.a = Mathf.Clamp01(backgroundAlpha);
             _backgroundImage.color = color;
         }
     }

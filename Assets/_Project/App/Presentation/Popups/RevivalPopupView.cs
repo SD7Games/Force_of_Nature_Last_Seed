@@ -18,6 +18,8 @@ public sealed class RevivalPopupView : PopupView
     [SerializeField] private TMP_Text _attemptsText;
     [SerializeField] private string _progressFormat = "Only {0}% of the level remains.";
     [SerializeField] private string _attemptsFormat = "attempts left: x{0}";
+    [SerializeField, Min(0f)] private float _showAnimationDuration = 0.55f;
+    [SerializeField, Range(0.5f, 1f)] private float _showAnimationStartScale = 0.92f;
 
     public event Action ReviveRequested;
     public event Action GiveUpRequested;
@@ -28,6 +30,8 @@ public sealed class RevivalPopupView : PopupView
     private Image _backgroundImage;
     private float _backgroundBaseAlpha = 1f;
     private Vector3 _contentBaseScale = Vector3.one;
+    private bool _hasContentBaseScale;
+    private Sequence _showSequence;
     private Sequence _closeSequence;
 
     private void OnEnable()
@@ -43,6 +47,9 @@ public sealed class RevivalPopupView : PopupView
 
     private void OnDisable()
     {
+        _showSequence?.Kill();
+        _showSequence = null;
+
         _closeSequence?.Kill();
         _closeSequence = null;
 
@@ -55,7 +62,7 @@ public sealed class RevivalPopupView : PopupView
 
     protected override void OnShown()
     {
-        ResetAnimationState();
+        PlayShowAnimation();
     }
 
     public void Bind(
@@ -113,6 +120,9 @@ public sealed class RevivalPopupView : PopupView
     {
         EnsureAnimationRefs();
         SetWaitingForAd(true);
+        _showSequence?.Kill();
+        _showSequence = null;
+
         _closeSequence?.Kill();
 
         float safeDuration = Mathf.Max(0f, duration);
@@ -153,6 +163,53 @@ public sealed class RevivalPopupView : PopupView
         _closeSequence.OnComplete(() => onComplete?.Invoke());
     }
 
+    private void PlayShowAnimation()
+    {
+        EnsureAnimationRefs();
+        _showSequence?.Kill();
+        _closeSequence?.Kill();
+        _closeSequence = null;
+
+        float safeDuration = Mathf.Max(0f, _showAnimationDuration);
+        float safeScale = Mathf.Clamp(_showAnimationStartScale, 0.5f, 1f);
+
+        if (safeDuration <= 0f)
+        {
+            ResetAnimationState();
+            return;
+        }
+
+        SetAnimationState(safeScale, 0f, 0f);
+
+        _showSequence = DOTween.Sequence().SetUpdate(true);
+
+        if (_animatedContentRoot != null)
+        {
+            _showSequence.Join(
+                _animatedContentRoot
+                    .DOScale(_contentBaseScale, safeDuration)
+                    .SetEase(Ease.InOutSine));
+        }
+
+        if (_contentCanvasGroup != null)
+        {
+            _showSequence.Join(
+                _contentCanvasGroup
+                    .DOFade(1f, safeDuration)
+                    .SetEase(Ease.OutSine));
+        }
+
+        if (_backgroundImage != null && _backgroundBaseAlpha > 0f)
+        {
+            _showSequence.Join(
+                _backgroundImage
+                    .DOFade(_backgroundBaseAlpha, safeDuration)
+                    .SetEase(Ease.OutSine));
+        }
+
+        _showSequence.OnComplete(() => _showSequence = null);
+    }
+
     private void EnsureAnimationRefs()
     {
         if (_animatedContentRoot == null)
@@ -160,7 +217,11 @@ public sealed class RevivalPopupView : PopupView
 
         if (_animatedContentRoot != null)
         {
-            _contentBaseScale = _animatedContentRoot.localScale;
+            if (!_hasContentBaseScale)
+            {
+                _contentBaseScale = _animatedContentRoot.localScale;
+                _hasContentBaseScale = true;
+            }
 
             if (!_animatedContentRoot.TryGetComponent(out _contentCanvasGroup))
                 _contentCanvasGroup = _animatedContentRoot.gameObject.AddComponent<CanvasGroup>();
@@ -173,19 +234,32 @@ public sealed class RevivalPopupView : PopupView
     private void ResetAnimationState()
     {
         EnsureAnimationRefs();
+        _showSequence?.Kill();
+        _showSequence = null;
+
         _closeSequence?.Kill();
         _closeSequence = null;
 
+        SetAnimationState(1f, 1f, _backgroundBaseAlpha);
+    }
+
+    private void SetAnimationState(
+        float contentScaleMultiplier,
+        float contentAlpha,
+        float backgroundAlpha)
+    {
+        float safeScale = Mathf.Clamp(contentScaleMultiplier, 0.5f, 1f);
+
         if (_animatedContentRoot != null)
-            _animatedContentRoot.localScale = _contentBaseScale;
+            _animatedContentRoot.localScale = _contentBaseScale * safeScale;
 
         if (_contentCanvasGroup != null)
-            _contentCanvasGroup.alpha = 1f;
+            _contentCanvasGroup.alpha = Mathf.Clamp01(contentAlpha);
 
         if (_backgroundImage != null)
         {
             Color color = _backgroundImage.color;
-            color.a = _backgroundBaseAlpha;
+            color.a = Mathf.Clamp01(backgroundAlpha);
             _backgroundImage.color = color;
         }
     }

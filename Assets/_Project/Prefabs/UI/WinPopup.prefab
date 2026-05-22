@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2345891251903163430
 RectTransform:
   m_ObjectHideFlags: 0
@@ -222,6 +222,7 @@ MonoBehaviour:
   _root: {fileID: 1532346906640716998}
   _acceptButton: {fileID: 745244332203476494}
   _doubleRewardButton: {fileID: 2461159143561428596}
+  _animatedContentRoot: {fileID: 0}
   _closeOnAccept: 1
   _closeOnDoubleReward: 1
   _restartAnimationDuration: 0.55

@@ -29,4 +29,5 @@ public readonly struct RewardPopupState
     public bool CanAdReroll { get; }
     public bool CanTakeAll { get; }
     public bool UseFreeRerollButton => FreeRerollAttemptsLeft > 0;
+    public bool UseTakeAllButton => TakeAllAttemptsLeft > 0 && CanTakeAll;
 }

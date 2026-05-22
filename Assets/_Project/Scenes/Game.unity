@@ -2480,9 +2480,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3719295704336943645, guid: 7712e70d83db61b44bbc030864f9d40c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3733543865146059221, guid: 7712e70d83db61b44bbc030864f9d40c, type: 3}
       propertyPath: m_Name
       value: RewardPopup
+      objectReference: {fileID: 0}
+    - target: {fileID: 3733543865146059221, guid: 7712e70d83db61b44bbc030864f9d40c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

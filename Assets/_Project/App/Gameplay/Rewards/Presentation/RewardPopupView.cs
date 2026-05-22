@@ -895,8 +895,8 @@ public sealed class RewardPopupView : PopupView
 
     private void ResetActionAttemptTextsToLayout()
     {
-        _rerollAttemptsTextState.Reset(GetRerollAttemptsTargetPosition(_rerollAttemptsTextState));
-        _adRerollAttemptsTextState.Reset(GetRerollAttemptsTargetPosition(_adRerollAttemptsTextState));
+        _rerollAttemptsTextState.Reset();
+        _adRerollAttemptsTextState.Reset();
         _takeAllAttemptsTextState.Reset();
     }
 
@@ -915,49 +915,6 @@ public sealed class RewardPopupView : PopupView
         return new Vector2(
             _singleActionButtonAnchoredX,
             state.BaseAnchoredPosition.y);
-    }
-
-    private Vector2 GetRerollAttemptsTargetPosition(RectTransformState state)
-    {
-        if (!ShouldUseSingleActionLayout())
-            return state.BaseAnchoredPosition;
-
-        RectTransform activeAttempts = _currentState.UseFreeRerollButton
-            ? GetRectTransform(_rerollAttemptsText)
-            : GetRectTransform(_adRerollAttemptsText);
-
-        if (state.RectTransform != activeAttempts)
-            return state.BaseAnchoredPosition;
-
-        RectTransform activeButton = _currentState.UseFreeRerollButton
-            ? GetRectTransform(_rerollButton)
-            : GetRectTransform(_adRerollButton);
-
-        if (!TryGetActionButtonState(activeButton, out RectTransformState activeButtonState))
-            return state.BaseAnchoredPosition;
-
-        float xOffset = _singleActionButtonAnchoredX - activeButtonState.BaseAnchoredPosition.x;
-        return state.BaseAnchoredPosition + new Vector2(xOffset, 0f);
-    }
-
-    private bool TryGetActionButtonState(
-        RectTransform rectTransform,
-        out RectTransformState state)
-    {
-        if (_actionButtonStates != null)
-        {
-            for (int i = 0; i < _actionButtonStates.Length; i++)
-            {
-                if (_actionButtonStates[i].RectTransform != rectTransform)
-                    continue;
-
-                state = _actionButtonStates[i];
-                return true;
-            }
-        }
-
-        state = default;
-        return false;
     }
 
     private bool ShouldUseSingleActionLayout()

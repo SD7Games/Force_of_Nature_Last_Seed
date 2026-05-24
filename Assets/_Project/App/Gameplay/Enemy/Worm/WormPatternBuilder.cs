@@ -17,25 +17,30 @@ public readonly struct WormPatternEntry
 /// </summary>
 public static class WormPatternBuilder
 {
-    public static List<WormPatternEntry> BuildPattern(int totalLength)
+    public static int GetBodySegmentCount(int sectionCount)
     {
-        int length = Mathf.Max(3, totalLength);
+        return Mathf.Max(1, sectionCount) * WormCocoonRules.SectionSize;
+    }
 
-        List<WormPatternEntry> result = new(length)
+    public static List<WormPatternEntry> BuildPattern(int sectionCount)
+    {
+        int bodySegmentCount = GetBodySegmentCount(sectionCount);
+
+        List<WormPatternEntry> result = new(bodySegmentCount + 2)
         {
             new(WormSegmentType.Head)
         };
 
-        while (result.Count < length - 1)
+        int remainingBodySegments = bodySegmentCount;
+
+        while (remainingBodySegments > 0)
         {
             int bodyCount = Random.Range(4, 6);
 
-            for (int i = 0; i < bodyCount; i++)
+            for (int i = 0; i < bodyCount && remainingBodySegments > 0; i++)
             {
-                if (result.Count >= length - 1)
-                    break;
-
                 result.Add(new WormPatternEntry(WormSegmentType.Body));
+                remainingBodySegments--;
             }
         }
 

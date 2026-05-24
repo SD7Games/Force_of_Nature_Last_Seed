@@ -236,7 +236,7 @@ MonoBehaviour:
   _adaptiveRebalanceUpgradeInterval: 1
   _adaptiveRebalanceMinInterval: 2
   _levelNumber: 1
-  _totalLength: 400
+  _sectionCount: 10
   _poolPadding: 32
   _prewarmBatchSize: 64
 --- !u!114 &91581456
@@ -264,7 +264,7 @@ MonoBehaviour:
   _combatBurstDisableRailPointIndex: -1
   _combatBurstDisablePathProgress: 0.9
   _combatBurstSlowdownDuration: 0.35
-  _segmentSpacing: 0.5
+  _segmentSpacing: 0.6
   _tailVisualSpacingMultiplier: 1
   _headBridgeSpacingMultiplier: 1.25
   _activeDistancePadding: 0.5

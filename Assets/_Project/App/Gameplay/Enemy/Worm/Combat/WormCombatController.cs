@@ -25,6 +25,7 @@ public sealed class WormCombatController : MonoBehaviour
     private WormSegment _tail;
     private int _totalProgressSegments;
     private int _destroyedProgressSegments;
+    private bool _isWormDead;
 
     public int TotalProgressSegments => _totalProgressSegments;
     public int DestroyedProgressSegments => _destroyedProgressSegments;
@@ -47,6 +48,7 @@ public sealed class WormCombatController : MonoBehaviour
 
         _totalProgressSegments = CountProgressSegments(_sections);
         _destroyedProgressSegments = 0;
+        _isWormDead = false;
 
         NotifyDestructionProgressChanged();
     }
@@ -58,11 +60,15 @@ public sealed class WormCombatController : MonoBehaviour
         _sections.Clear();
         _totalProgressSegments = 0;
         _destroyedProgressSegments = 0;
+        _isWormDead = false;
         NotifyDestructionProgressChanged();
     }
 
     public void RegisterHit(WormSegment segment, in DamageInfo damageInfo)
     {
+        if (_isWormDead)
+            return;
+
         WormSection section = ResolveDamageSection(segment);
 
         if (section == null || section.IsDestroyed)
@@ -80,6 +86,7 @@ public sealed class WormCombatController : MonoBehaviour
 
     private void DestroySection(WormSection section)
     {
+        bool isFinalSection = IsFinalAliveSection(section);
         bool rewardTriggered = section.HasReward;
         CocoonRewardProfile rewardProfile = section.CocoonProfile;
 
@@ -105,6 +112,12 @@ public sealed class WormCombatController : MonoBehaviour
 
         NotifyDestructionProgressChanged();
 
+        if (isFinalSection)
+        {
+            KillWholeWorm();
+            return;
+        }
+
         int removedFromChain = 0;
         int firstRemovedIndex = -1;
 
@@ -125,21 +138,13 @@ public sealed class WormCombatController : MonoBehaviour
                 headProgress,
                 DestructionProgressNormalized);
         }
-
-        if (_sections.Count == 0)
-        {
-            if (_head != null && _head.IsAlive)
-                _head.KillVisualAndCollision();
-
-            if (_tail != null && _tail.IsAlive)
-                _tail.KillVisualAndCollision();
-
-            OnWormDied?.Invoke();
-        }
     }
 
     public WormSection ResolveDamageSection(WormSegment segment)
     {
+        if (_isWormDead)
+            return null;
+
         if (segment == null || !segment.IsAlive)
             return null;
 
@@ -150,7 +155,7 @@ public sealed class WormCombatController : MonoBehaviour
             return GetFirstAliveSection();
 
         if (segment.Type == WormSegmentType.Tail)
-            return null;
+            return GetLastAliveSection();
 
         WormSection section = segment.Section;
 
@@ -171,6 +176,60 @@ public sealed class WormCombatController : MonoBehaviour
         }
 
         return null;
+    }
+
+    private WormSection GetLastAliveSection()
+    {
+        for (int i = _sections.Count - 1; i >= 0; i--)
+        {
+            WormSection section = _sections[i];
+
+            if (section != null && !section.IsDestroyed)
+                return section;
+        }
+
+        return null;
+    }
+
+    private bool IsFinalAliveSection(WormSection destroyedSection)
+    {
+        if (destroyedSection == null)
+            return false;
+
+        bool containsDestroyedSection = false;
+
+        for (int i = 0; i < _sections.Count; i++)
+        {
+            WormSection section = _sections[i];
+
+            if (section == destroyedSection)
+            {
+                containsDestroyedSection = true;
+                continue;
+            }
+
+            if (section != null && !section.IsDestroyed)
+                return false;
+        }
+
+        return containsDestroyedSection;
+    }
+
+    private void KillWholeWorm()
+    {
+        if (_isWormDead)
+            return;
+
+        _isWormDead = true;
+
+        if (_head != null && _head.IsAlive)
+            _head.KillVisualAndCollision();
+
+        if (_tail != null && _tail.IsAlive)
+            _tail.KillVisualAndCollision();
+
+        _wormController?.ClearWorm();
+        OnWormDied?.Invoke();
     }
 
     private void NotifyDestructionProgressChanged()

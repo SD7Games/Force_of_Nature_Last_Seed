@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 public sealed class WormSpawner : MonoBehaviour
@@ -35,8 +36,10 @@ public sealed class WormSpawner : MonoBehaviour
     [Header("Generation")]
     [SerializeField][Min(1)] private int _levelNumber = 1;
 
-    [Min(3)]
-    [SerializeField] private int _totalLength = 60;
+    [Tooltip("Gameplay HP sections. Each section contains WormCocoonRules.SectionSize body segments. Head and tail are added separately.")]
+    [Min(1)]
+    [FormerlySerializedAs("_totalLength")]
+    [SerializeField] private int _sectionCount = 9;
 
     [Header("Pooling")]
     [SerializeField] private int _poolPadding = 10;
@@ -54,11 +57,12 @@ public sealed class WormSpawner : MonoBehaviour
     private int _pendingAdaptiveUpgradeChanges;
     private float _lastAdaptiveRebalanceTime;
     private bool _hasAppliedAdaptiveUpgradeRebalance;
+    private WormFaceVisualController _activeFaceVisual;
 
 #if UNITY_EDITOR
     public WormHpScalingConfig EditorHpScalingConfig => _hpScalingConfig;
     public int EditorLevelNumber => _levelNumber;
-    public int EditorTotalLength => _totalLength;
+    public int EditorSectionCount => _sectionCount;
 #endif
 
     private void OnEnable()
@@ -68,6 +72,9 @@ public sealed class WormSpawner : MonoBehaviour
 
         if (_acaciaThornWeapon != null)
             _acaciaThornWeapon.RuntimeStatsChanged += OnWeaponRuntimeStatsChanged;
+
+        if (_isSpawned)
+            BindWormFace(GetSpawnedHead());
     }
 
     private void OnDisable()
@@ -77,6 +84,8 @@ public sealed class WormSpawner : MonoBehaviour
 
         if (_acaciaThornWeapon != null)
             _acaciaThornWeapon.RuntimeStatsChanged -= OnWeaponRuntimeStatsChanged;
+
+        UnbindWormFace();
     }
 
     private void Awake()
@@ -87,7 +96,7 @@ public sealed class WormSpawner : MonoBehaviour
         if (_wormCombat == null)
             Debug.LogError("WormCombatController not assigned", this);
 
-        _bodyPoolCapacity = Mathf.Max(1, Mathf.Max(3, _totalLength) - 2 + _poolPadding);
+        _bodyPoolCapacity = WormPatternBuilder.GetBodySegmentCount(_sectionCount) + _poolPadding;
         _hpResolver = new WormSectionHpResolver(_hpScalingConfig);
 
         _segmentPool = new WormSegmentPool(
@@ -113,7 +122,7 @@ public sealed class WormSpawner : MonoBehaviour
             return;
 
         List<WormPatternEntry> pattern =
-            WormPatternBuilder.BuildPattern(_totalLength);
+            WormPatternBuilder.BuildPattern(_sectionCount);
 
         List<WormSegment> segments =
             _wormFactory.CreateSegments(
@@ -146,6 +155,7 @@ public sealed class WormSpawner : MonoBehaviour
         _wormFactory.AttachDamageReceivers(segments, _wormCombat);
 
         _wormController.Init(segments);
+        BindWormFace(head);
         _wormCombat.Init(head, tail, sections);
         _hpPresenter.BindSections(sections);
 
@@ -160,6 +170,8 @@ public sealed class WormSpawner : MonoBehaviour
 
     public void DespawnWorm()
     {
+        UnbindWormFace();
+
         _hpPresenter?.Clear();
         _wormCombat?.Clear();
         _wormController?.ClearWorm();
@@ -177,6 +189,51 @@ public sealed class WormSpawner : MonoBehaviour
         _lastAdaptiveRebalanceTime = Time.time;
         _hasAppliedAdaptiveUpgradeRebalance = false;
         _isSpawned = false;
+    }
+
+    private void BindWormFace(WormSegment head)
+    {
+        UnbindWormFace();
+
+        if (_wormController == null || head == null)
+            return;
+
+        _activeFaceVisual = head.GetComponentInChildren<WormFaceVisualController>(true);
+        if (_activeFaceVisual == null)
+            return;
+
+        _activeFaceVisual.SetBoostActive(_wormController.IsCombatBurstActive);
+        _wormController.CombatBurstStateChanged += OnCombatBurstStateChanged;
+    }
+
+    private void UnbindWormFace()
+    {
+        if (_wormController != null)
+            _wormController.CombatBurstStateChanged -= OnCombatBurstStateChanged;
+
+        if (_activeFaceVisual != null)
+            _activeFaceVisual.SetBoostActive(false);
+
+        _activeFaceVisual = null;
+    }
+
+    private void OnCombatBurstStateChanged(bool isActive)
+    {
+        if (_activeFaceVisual != null)
+            _activeFaceVisual.SetBoostActive(isActive);
+    }
+
+    private WormSegment GetSpawnedHead()
+    {
+        for (int i = 0; i < _spawnedSegments.Count; i++)
+        {
+            WormSegment segment = _spawnedSegments[i];
+
+            if (segment != null && segment.Type == WormSegmentType.Head)
+                return segment;
+        }
+
+        return null;
     }
 
     private void AssignSectionsHP(List<WormSection> sections)

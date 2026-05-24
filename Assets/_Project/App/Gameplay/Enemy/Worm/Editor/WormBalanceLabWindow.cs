@@ -11,7 +11,7 @@ public sealed class WormBalanceLabWindow : EditorWindow
     private const float MinResultViewHeight = 220f;
     private const float MaxResultViewHeight = 520f;
     private const float EstimatedControlsHeight = 560f;
-    private const int DefaultTotalLength = 60;
+    private const int DefaultSectionCount = 9;
     private const float DefaultWormSpeed = 1f;
     private const float DefaultSegmentSpacing = 0.5f;
     private const float DefaultReviveRollbackProgress = 0.12f;
@@ -33,7 +33,7 @@ public sealed class WormBalanceLabWindow : EditorWindow
     [SerializeField] private int _simulationCount = 1000;
     [SerializeField] private int _seed = 12345;
     [SerializeField] private int _levelNumber = 1;
-    [SerializeField] private int _totalLength = DefaultTotalLength;
+    [SerializeField] private int _sectionCount = DefaultSectionCount;
     [SerializeField] private float _pathTimeLimitSeconds = 75f;
     [SerializeField] private bool _derivePathTimeFromRail = true;
     [SerializeField] private float _wormSpeed = DefaultWormSpeed;
@@ -153,7 +153,7 @@ public sealed class WormBalanceLabWindow : EditorWindow
         _simulationCount = Mathf.Max(1, EditorGUILayout.IntField("Auto Test Runs", _simulationCount));
         _seed = EditorGUILayout.IntField("Seed", _seed);
         _levelNumber = Mathf.Max(1, EditorGUILayout.IntField("Level Number", _levelNumber));
-        _totalLength = Mathf.Max(3, EditorGUILayout.IntField("Worm Total Length", _totalLength));
+        _sectionCount = Mathf.Max(1, EditorGUILayout.IntField("Worm Sections", _sectionCount));
         _wormSpeed = Mathf.Max(0.01f, EditorGUILayout.FloatField("Worm Speed", _wormSpeed));
         _derivePathTimeFromRail = EditorGUILayout.Toggle("Use Rail Length", _derivePathTimeFromRail);
         using (new EditorGUI.DisabledScope(_derivePathTimeFromRail && _railPath != null))
@@ -309,7 +309,7 @@ public sealed class WormBalanceLabWindow : EditorWindow
             Mathf.Max(1, runCount),
             _seed,
             _levelNumber,
-            _totalLength,
+            _sectionCount,
             _pathTimeLimitSeconds,
             _derivePathTimeFromRail,
             _wormSpeed,
@@ -367,8 +367,8 @@ public sealed class WormBalanceLabWindow : EditorWindow
             if (force || _levelNumber <= 1)
                 _levelNumber = spawner.EditorLevelNumber;
 
-            if (force || _totalLength == DefaultTotalLength)
-                _totalLength = spawner.EditorTotalLength;
+            if (force || _sectionCount == DefaultSectionCount)
+                _sectionCount = spawner.EditorSectionCount;
         }
 
         WormController controller = FindOpenSceneObject<WormController>();
@@ -460,7 +460,7 @@ internal sealed class WormBalanceSimulationSettings
     public readonly int RunCount;
     public readonly int Seed;
     public readonly int LevelNumber;
-    public readonly int TotalLength;
+    public readonly int SectionCount;
     public readonly float PathTimeLimitSeconds;
     public readonly bool DerivePathTimeFromRail;
     public readonly float WormSpeed;
@@ -492,7 +492,7 @@ internal sealed class WormBalanceSimulationSettings
         int runCount,
         int seed,
         int levelNumber,
-        int totalLength,
+        int sectionCount,
         float pathTimeLimitSeconds,
         bool derivePathTimeFromRail,
         float wormSpeed,
@@ -523,7 +523,7 @@ internal sealed class WormBalanceSimulationSettings
         RunCount = Mathf.Max(1, runCount);
         Seed = seed;
         LevelNumber = Mathf.Max(1, levelNumber);
-        TotalLength = Mathf.Max(3, totalLength);
+        SectionCount = Mathf.Max(1, sectionCount);
         DerivePathTimeFromRail = derivePathTimeFromRail;
         WormSpeed = Mathf.Max(0.01f, wormSpeed);
         PathMetrics = pathMetrics ?? WormBalancePathMetrics.CreateFallback(
@@ -1090,7 +1090,7 @@ internal static class WormBalanceSimulator
     private static WormBalanceSectionState[] BuildSections(
         WormBalanceSimulationSettings settings)
     {
-        int bodySegmentCount = Mathf.Max(1, settings.TotalLength - 2);
+        int bodySegmentCount = WormPatternBuilder.GetBodySegmentCount(settings.SectionCount);
         int totalSections = WormCocoonRules.CountGameplaySections(bodySegmentCount);
         var sections = new WormBalanceSectionState[totalSections];
         int remainingSegments = bodySegmentCount;
@@ -2232,7 +2232,7 @@ internal sealed class WormBalanceSimulationReport
         builder.AppendLine($"Simulated games: {Runs.Count} ({Settings.RunCount} per scenario)");
         builder.AppendLine($"Targets: No Ads {NoAdsTargetMinWinRate * 100f:0}-{NoAdsTargetMaxWinRate * 100f:0}% wins, Ad Assist {AdsAssistTargetMinWinRate * 100f:0}-{AdsAssistTargetMaxWinRate * 100f:0}% wins");
         builder.AppendLine(
-            $"Setup: reward={Settings.RewardPickStrategy}, ads={Settings.AdSimulationMode}, worm={Settings.TotalLength} length / {WormCocoonRules.CountGameplaySections(Mathf.Max(1, Settings.TotalLength - 2))} sections / {Settings.PathTimeLimitSeconds:0.0}s path");
+            $"Setup: reward={Settings.RewardPickStrategy}, ads={Settings.AdSimulationMode}, worm={Settings.SectionCount} sections / {WormPatternBuilder.GetBodySegmentCount(Settings.SectionCount)} body segments / {Settings.PathTimeLimitSeconds:0.0}s path");
         builder.AppendLine(
             $"Damage: estimated DPS x {Settings.HitEfficiency:0.00}, rollback={(Settings.ApplySectionRollback ? "ON" : "OFF")}, pressure={(Settings.UseRuntimePressure ? "ON" : "OFF")}");
         builder.AppendLine(

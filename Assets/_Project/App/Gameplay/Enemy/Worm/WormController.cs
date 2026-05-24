@@ -106,9 +106,11 @@ public sealed class WormController : MonoBehaviour
     private float _cachedCombatBurstDisableDistance;
 
     public event Action PathCompleted;
+    public event Action<bool> CombatBurstStateChanged;
 
     public bool HasWorm => _segments.Count > 0;
     public bool IsCatchingUpToCombatStart { get; private set; }
+    public bool IsCombatBurstActive { get; private set; }
 
 #if UNITY_EDITOR
     public RailPath EditorRail => _rail;
@@ -215,6 +217,7 @@ public sealed class WormController : MonoBehaviour
         _combatBurstTimer = 0f;
         _combatBurstRemainingTime = 0f;
         _currentForwardSpeed = Mathf.Max(0f, _speed);
+        SetCombatBurstActive(false);
         ClearTargetDistanceCaches();
         IsCatchingUpToCombatStart = TryGetCatchUpTargetDistance(out _);
 
@@ -250,6 +253,7 @@ public sealed class WormController : MonoBehaviour
         _combatBurstTimer = 0f;
         _combatBurstRemainingTime = 0f;
         _currentForwardSpeed = Mathf.Max(0f, _speed);
+        SetCombatBurstActive(false);
         IsCatchingUpToCombatStart = false;
         ClearTargetDistanceCaches();
     }
@@ -295,6 +299,7 @@ public sealed class WormController : MonoBehaviour
         {
             StopCombatBurst();
             _currentForwardSpeed = Mathf.Max(0f, _speed);
+            SetCombatBurstActive(false);
             return Mathf.Max(_currentForwardSpeed, _catchUpSpeed);
         }
 
@@ -308,10 +313,13 @@ public sealed class WormController : MonoBehaviour
         if (targetSpeed > baseSpeed)
         {
             _currentForwardSpeed = targetSpeed;
+            SetCombatBurstActive(true);
             return _currentForwardSpeed;
         }
 
-        return DecelerateToBaseSpeed(deltaTime, baseSpeed);
+        float forwardSpeed = DecelerateToBaseSpeed(deltaTime, baseSpeed);
+        SetCombatBurstActive(forwardSpeed > baseSpeed + 0.01f);
+        return forwardSpeed;
     }
 
     private bool ShouldCatchUp()
@@ -477,6 +485,16 @@ public sealed class WormController : MonoBehaviour
     {
         _combatBurstTimer = 0f;
         _combatBurstRemainingTime = 0f;
+        SetCombatBurstActive(false);
+    }
+
+    private void SetCombatBurstActive(bool active)
+    {
+        if (IsCombatBurstActive == active)
+            return;
+
+        IsCombatBurstActive = active;
+        CombatBurstStateChanged?.Invoke(active);
     }
 
     private float DecelerateToBaseSpeed(float deltaTime, float baseSpeed)

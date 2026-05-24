@@ -1,25 +1,10 @@
 fileFormatVersion: 2
-guid: d1cbb75eade37704b878f302f9bcd9a8
+guid: 8df4e119d0b94244088166fa927f6657
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7199661311398357026
-    second: Eyes_1_0
-  - first:
-      213: 1525849061290653360
-    second: Eyes_1_1
-  - first:
-      213: 187893496086644852
-    second: Eyes_1_2
-  - first:
-      213: -3314274972455044737
-    second: Eyes_1_3
-  - first:
-      213: 4194452451628562793
-    second: Eyes_1_4
-  - first:
-      213: 4988569717566497770
-    second: Eyes_1_5
+      213: -8726659136796814493
+    second: boost_right_eye_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -154,13 +139,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Eyes_1_0
+      name: boost_right_eye_0
       rect:
         serializedVersion: 2
-        x: 54
-        y: 688
-        width: 472
-        height: 267
+        x: 17
+        y: 17
+        width: 266
+        height: 195
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,118 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ed75af6ce2aa51c90800000000000000
-      internalID: -7199661311398357026
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Eyes_1_1
-      rect:
-        serializedVersion: 2
-        x: 555
-        y: 745
-        width: 436
-        height: 194
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0b6b71f03a7ec2510800000000000000
-      internalID: 1525849061290653360
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Eyes_1_2
-      rect:
-        serializedVersion: 2
-        x: 22
-        y: 67
-        width: 497
-        height: 328
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 478c9d1a3288b9200800000000000000
-      internalID: 187893496086644852
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Eyes_1_3
-      rect:
-        serializedVersion: 2
-        x: 55
-        y: 432
-        width: 474
-        height: 243
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f7979dae8745102d0800000000000000
-      internalID: -3314274972455044737
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Eyes_1_4
-      rect:
-        serializedVersion: 2
-        x: 531
-        y: 378
-        width: 491
-        height: 297
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 96936961840b53a30800000000000000
-      internalID: 4194452451628562793
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Eyes_1_5
-      rect:
-        serializedVersion: 2
-        x: 540
-        y: 51
-        width: 450
-        height: 286
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ae362d04ab5fa3540800000000000000
-      internalID: 4988569717566497770
+      spriteID: 3631f4b30cda4e680800000000000000
+      internalID: -8726659136796814493
       vertices: []
       indices: 
       edges: []
@@ -299,12 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Eyes_1_0: -7199661311398357026
-      Eyes_1_1: 1525849061290653360
-      Eyes_1_2: 187893496086644852
-      Eyes_1_3: -3314274972455044737
-      Eyes_1_4: 4194452451628562793
-      Eyes_1_5: 4988569717566497770
+      boost_right_eye_0: -8726659136796814493
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

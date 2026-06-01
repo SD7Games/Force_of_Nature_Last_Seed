@@ -7,7 +7,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
     private const string IdleVisualName = "Visual_Idle";
     private const string AngryVisualName = "Visual_Engry";
     private const string AngryVisualFallbackName = "Visual_Angry";
-    private const string SymbolName = "Symbol";
 
     [Header("Visual Roots")]
     [SerializeField] private GameObject _idleVisual;
@@ -34,33 +33,14 @@ public sealed class WormFaceVisualController : MonoBehaviour
     [SerializeField, Range(1f, 1.3f)] private float _switchPunchXScale = 1.08f;
     [SerializeField, Range(0.7f, 1f)] private float _switchPunchYScale = 0.92f;
 
-    [Header("Inner Symbol")]
-    [SerializeField] private bool _animateSymbol = true;
-
-    [SerializeField, Range(0f, 1f)] private float _symbolBreathScale = 0.02f;
-    [SerializeField, Min(0.01f)] private float _symbolBreathDuration = 1.45f;
-    [SerializeField, Range(0f, 40f)] private float _symbolRotationAngle = 32f;
-    [SerializeField, Min(0.1f)] private float _symbolRotationDuration = 2.8f;
-    [SerializeField, Range(0f, 0.75f)] private float _symbolRandomDurationOffset = 0.35f;
-
     private Transform _idleTransform;
     private Transform _angryTransform;
-    private Transform _idleSymbolTransform;
-    private Transform _angrySymbolTransform;
     private Vector3 _idleBasePosition;
     private Vector3 _angryBasePosition;
     private Vector3 _idleBaseScale;
     private Vector3 _angryBaseScale;
-    private Vector3 _idleSymbolBasePosition;
-    private Vector3 _angrySymbolBasePosition;
-    private Vector3 _idleSymbolBaseScale;
-    private Vector3 _angrySymbolBaseScale;
-    private Vector3 _idleSymbolBaseEuler;
-    private Vector3 _angrySymbolBaseEuler;
     private Sequence _switchSequence;
     private Sequence _loopSequence;
-    private Sequence _symbolBreathSequence;
-    private Sequence _symbolRotationSequence;
     private bool _boostActive;
     private bool _initialized;
 
@@ -152,7 +132,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
     {
         _loopSequence?.Kill();
         _loopSequence = null;
-        KillSymbolSequences();
 
         Transform target = GetActiveTransform(boostActive);
         if (target == null || !target.gameObject.activeInHierarchy)
@@ -162,8 +141,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
             StartBoostLoop(target);
         else
             StartIdleLoop(target);
-
-        StartSymbolLoop(boostActive);
     }
 
     private void StartIdleLoop(Transform target)
@@ -210,46 +187,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
             .SetLoops(-1, LoopType.Restart);
     }
 
-    private void StartSymbolLoop(bool boostActive)
-    {
-        if (!_animateSymbol)
-            return;
-
-        Transform symbol = GetActiveSymbolTransform(boostActive);
-        if (symbol == null || !symbol.gameObject.activeInHierarchy)
-            return;
-
-        Vector3 baseScale = GetSymbolBaseScale(boostActive);
-        Vector3 baseEuler = GetSymbolBaseEuler(boostActive);
-        Vector3 breathScale = new(
-            baseScale.x * (1f + _symbolBreathScale),
-            baseScale.y * (1f + _symbolBreathScale),
-            baseScale.z);
-
-        float direction = Random.value < 0.5f ? -1f : 1f;
-        float durationOffset = Random.Range(-_symbolRandomDurationOffset, _symbolRandomDurationOffset);
-        float rotationDuration = Mathf.Max(0.1f, _symbolRotationDuration + durationOffset);
-
-        Vector3 positiveEuler = baseEuler;
-        positiveEuler.z += _symbolRotationAngle * direction;
-
-        Vector3 negativeEuler = baseEuler;
-        negativeEuler.z -= _symbolRotationAngle * direction;
-
-        _symbolBreathSequence = DOTween.Sequence()
-            .SetTarget(this)
-            .Append(symbol.DOScale(breathScale, _symbolBreathDuration).SetEase(Ease.InOutSine))
-            .Append(symbol.DOScale(baseScale, _symbolBreathDuration).SetEase(Ease.InOutSine))
-            .SetLoops(-1, LoopType.Restart);
-
-        _symbolRotationSequence = DOTween.Sequence()
-            .SetTarget(this)
-            .Append(symbol.DOLocalRotate(positiveEuler, rotationDuration, RotateMode.Fast).SetEase(Ease.InOutSine))
-            .Append(symbol.DOLocalRotate(negativeEuler, rotationDuration * 2f, RotateMode.Fast).SetEase(Ease.InOutSine))
-            .Append(symbol.DOLocalRotate(baseEuler, rotationDuration, RotateMode.Fast).SetEase(Ease.InOutSine))
-            .SetLoops(-1, LoopType.Restart);
-    }
-
     private void ResolveVisuals()
     {
         if (_idleVisual == null)
@@ -263,8 +200,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
 
         _idleTransform = _idleVisual != null ? _idleVisual.transform : null;
         _angryTransform = _angryVisual != null ? _angryVisual.transform : null;
-        _idleSymbolTransform = _idleTransform != null ? FindChildGameObject(_idleTransform, SymbolName)?.transform : null;
-        _angrySymbolTransform = _angryTransform != null ? FindChildGameObject(_angryTransform, SymbolName)?.transform : null;
     }
 
     private void CacheBaseTransforms()
@@ -279,20 +214,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
         {
             _angryBasePosition = _angryTransform.localPosition;
             _angryBaseScale = _angryTransform.localScale;
-        }
-
-        if (_idleSymbolTransform != null)
-        {
-            _idleSymbolBasePosition = _idleSymbolTransform.localPosition;
-            _idleSymbolBaseScale = _idleSymbolTransform.localScale;
-            _idleSymbolBaseEuler = _idleSymbolTransform.localEulerAngles;
-        }
-
-        if (_angrySymbolTransform != null)
-        {
-            _angrySymbolBasePosition = _angrySymbolTransform.localPosition;
-            _angrySymbolBaseScale = _angrySymbolTransform.localScale;
-            _angrySymbolBaseEuler = _angrySymbolTransform.localEulerAngles;
         }
 
         _initialized = true;
@@ -312,19 +233,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
             _angryTransform.localScale = _angryBaseScale;
         }
 
-        if (_idleSymbolTransform != null)
-        {
-            _idleSymbolTransform.localPosition = _idleSymbolBasePosition;
-            _idleSymbolTransform.localScale = _idleSymbolBaseScale;
-            _idleSymbolTransform.localEulerAngles = _idleSymbolBaseEuler;
-        }
-
-        if (_angrySymbolTransform != null)
-        {
-            _angrySymbolTransform.localPosition = _angrySymbolBasePosition;
-            _angrySymbolTransform.localScale = _angrySymbolBaseScale;
-            _angrySymbolTransform.localEulerAngles = _angrySymbolBaseEuler;
-        }
     }
 
     private Transform GetActiveTransform(bool boostActive)
@@ -337,21 +245,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
         return boostActive ? _angryBaseScale : _idleBaseScale;
     }
 
-    private Transform GetActiveSymbolTransform(bool boostActive)
-    {
-        return boostActive ? _angrySymbolTransform : _idleSymbolTransform;
-    }
-
-    private Vector3 GetSymbolBaseScale(bool boostActive)
-    {
-        return boostActive ? _angrySymbolBaseScale : _idleSymbolBaseScale;
-    }
-
-    private Vector3 GetSymbolBaseEuler(bool boostActive)
-    {
-        return boostActive ? _angrySymbolBaseEuler : _idleSymbolBaseEuler;
-    }
-
     private void KillSequences()
     {
         _switchSequence?.Kill();
@@ -359,17 +252,6 @@ public sealed class WormFaceVisualController : MonoBehaviour
 
         _loopSequence?.Kill();
         _loopSequence = null;
-
-        KillSymbolSequences();
-    }
-
-    private void KillSymbolSequences()
-    {
-        _symbolBreathSequence?.Kill();
-        _symbolBreathSequence = null;
-
-        _symbolRotationSequence?.Kill();
-        _symbolRotationSequence = null;
     }
 
     private static void SetActive(GameObject target, bool active)

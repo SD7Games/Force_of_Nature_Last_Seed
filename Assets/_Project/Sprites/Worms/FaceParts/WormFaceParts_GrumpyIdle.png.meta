@@ -1,0 +1,468 @@
+fileFormatVersion: 2
+guid: bf61ff25c4be4e6592113d6367f03e04
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8993789009387197532
+    second: WormFaceParts_GrumpyIdle_0
+  - first:
+      213: 7300380365172581072
+    second: WormFaceParts_GrumpyIdle_1
+  - first:
+      213: 1010361460802776060
+    second: WormFaceParts_GrumpyIdle_2
+  - first:
+      213: 1297338728890470046
+    second: WormFaceParts_GrumpyIdle_3
+  - first:
+      213: 7708063718023298190
+    second: WormFaceParts_GrumpyIdle_4
+  - first:
+      213: 6369949907295337878
+    second: WormFaceParts_GrumpyIdle_5
+  - first:
+      213: 6372317475122548093
+    second: WormFaceParts_GrumpyIdle_6
+  - first:
+      213: -1248931357937354506
+    second: WormFaceParts_GrumpyIdle_7
+  - first:
+      213: -2882210946130020227
+    second: WormFaceParts_GrumpyIdle_8
+  - first:
+      213: 7303864870327225348
+    second: WormFaceParts_GrumpyIdle_9
+  - first:
+      213: 4411729109323219928
+    second: WormFaceParts_GrumpyIdle_10
+  - first:
+      213: -5004395990277014416
+    second: WormFaceParts_GrumpyIdle_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_0
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 571
+        width: 260
+        height: 147
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c541651f37b50dc70800000000000000
+      internalID: 8993789009387197532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_1
+      rect:
+        serializedVersion: 2
+        x: 399
+        y: 570
+        width: 260
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d229575349205560800000000000000
+      internalID: 7300380365172581072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_2
+      rect:
+        serializedVersion: 2
+        x: 741
+        y: 585
+        width: 46
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfbe4ed3566850e00800000000000000
+      internalID: 1010361460802776060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_3
+      rect:
+        serializedVersion: 2
+        x: 862
+        y: 586
+        width: 314
+        height: 97
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9e8fd843b2110210800000000000000
+      internalID: 1297338728890470046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_4
+      rect:
+        serializedVersion: 2
+        x: 1250
+        y: 586
+        width: 217
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8cfadacc1b88fa60800000000000000
+      internalID: 7708063718023298190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_5
+      rect:
+        serializedVersion: 2
+        x: 1522
+        y: 588
+        width: 216
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 69dfe55f0bb966850800000000000000
+      internalID: 6369949907295337878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_6
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 193
+        width: 261
+        height: 193
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7d81bc4bf40f6850800000000000000
+      internalID: 6372317475122548093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_7
+      rect:
+        serializedVersion: 2
+        x: 387
+        y: 193
+        width: 266
+        height: 195
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f83c4d0c87eaaee0800000000000000
+      internalID: -1248931357937354506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_8
+      rect:
+        serializedVersion: 2
+        x: 741
+        y: 231
+        width: 46
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d787d244a645008d0800000000000000
+      internalID: -2882210946130020227
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_9
+      rect:
+        serializedVersion: 2
+        x: 852
+        y: 173
+        width: 352
+        height: 231
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40c0f4be66a8c5560800000000000000
+      internalID: 7303864870327225348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_10
+      rect:
+        serializedVersion: 2
+        x: 1292
+        y: 230
+        width: 186
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d30676204c993d30800000000000000
+      internalID: 4411729109323219928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WormFaceParts_GrumpyIdle_11
+      rect:
+        serializedVersion: 2
+        x: 1534
+        y: 233
+        width: 182
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07c362c7c50dc8ab0800000000000000
+      internalID: -5004395990277014416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      WormFaceParts_GrumpyIdle_0: 8993789009387197532
+      WormFaceParts_GrumpyIdle_1: 7300380365172581072
+      WormFaceParts_GrumpyIdle_10: 4411729109323219928
+      WormFaceParts_GrumpyIdle_11: -5004395990277014416
+      WormFaceParts_GrumpyIdle_2: 1010361460802776060
+      WormFaceParts_GrumpyIdle_3: 1297338728890470046
+      WormFaceParts_GrumpyIdle_4: 7708063718023298190
+      WormFaceParts_GrumpyIdle_5: 6369949907295337878
+      WormFaceParts_GrumpyIdle_6: 6372317475122548093
+      WormFaceParts_GrumpyIdle_7: -1248931357937354506
+      WormFaceParts_GrumpyIdle_8: -2882210946130020227
+      WormFaceParts_GrumpyIdle_9: 7303864870327225348
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

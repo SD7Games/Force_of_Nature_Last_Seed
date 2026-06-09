@@ -27,9 +27,12 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
     private int _activeCount;
     private int _activeNormalCount;
     private int _activeDamageOverTimeCount;
+    private System.Action<WormDamagePopupView> _popupCompleteHandler;
 
     private void Awake()
     {
+        _popupCompleteHandler = OnPopupComplete;
+
         if (_combat == null)
             Debug.LogError("DamagePopupPresenter: Combat not assigned", this);
 
@@ -73,7 +76,7 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
             RegisterNonCriticalPopup(popup, request.Kind);
 
         popup.gameObject.SetActive(true);
-        popup.Show(request, animationMode, scaleMultiplier, OnPopupComplete);
+        popup.Show(request, animationMode, scaleMultiplier, _popupCompleteHandler);
     }
 
     private void OnPopupComplete(WormDamagePopupView view)
@@ -164,7 +167,9 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
         if (_popupPrefab == null)
             return null;
 
-        return Instantiate(_popupPrefab, transform);
+        WormDamagePopupView popup = Instantiate(_popupPrefab, transform);
+        popup.PrewarmText();
+        return popup;
     }
 
     private static bool IsCritical(DamageViewRequest request)

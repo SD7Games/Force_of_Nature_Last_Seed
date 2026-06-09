@@ -2,8 +2,8 @@ using UnityEngine;
 
 public static class RewardAdRerollPolicy
 {
-    public const float LegendaryChanceMinDestructionProgress = 0.65f;
-    public const float TakeAllMinHeadPathProgress = 0.7f;
+    public const float LegendaryChanceMinDangerProgress = 0.65f;
+    public const float TakeAllMinHeadPathProgress = 0.64f;
 
     private const float LockedAdditionalWeaponLegendaryChance = 0.1f;
     private const float UnlockedAdditionalWeaponLegendaryChance = 0.18f;
@@ -32,7 +32,11 @@ public static class RewardAdRerollPolicy
         RewardRuntimeContext context,
         RewardRollContext rollContext)
     {
-        if (rollContext.WormDestructionProgressNormalized < LegendaryChanceMinDestructionProgress)
+        float dangerProgress = Mathf.Max(
+            rollContext.HeadPathProgressNormalized,
+            rollContext.WormDestructionProgressNormalized);
+
+        if (dangerProgress < LegendaryChanceMinDangerProgress)
             return 0f;
 
         return HasAdditionalWeaponUnlocked(context)

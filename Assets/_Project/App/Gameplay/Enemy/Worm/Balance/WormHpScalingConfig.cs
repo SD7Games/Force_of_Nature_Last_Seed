@@ -8,7 +8,7 @@ public sealed class WormHpScalingConfig : ScriptableObject
     [Header("Independent HP")]
     [SerializeField][Min(1)] private int _baseSectionHp = 8;
     [SerializeField][Min(0.1f)] private float _baseHpStartMultiplier = 1f;
-    [SerializeField][Min(0.1f)] private float _baseHpEndMultiplier = 2.1f;
+    [SerializeField][Min(0.1f)] private float _baseHpEndMultiplier = 2.8f;
 
     [Header("Adaptive HP")]
     [SerializeField][Min(0.1f)] private float _targetSectionLifetime = 8f;
@@ -26,16 +26,20 @@ public sealed class WormHpScalingConfig : ScriptableObject
 
     [Header("Pressure")]
     [SerializeField][Min(0.1f)] private float _startPressureMultiplier = 1f;
-    [SerializeField][Min(0.1f)] private float _endPressureMultiplier = 1.2f;
+    [SerializeField][Min(0.1f)] private float _endPressureMultiplier = 2.8f;
     [SerializeField] private bool _usePressureCurve = true;
     [SerializeField] private AnimationCurve _pressureByProgress = CreateDefaultPressureCurve();
 
     [Header("Head Path Pressure")]
     [SerializeField] private bool _useHeadPathPressure = true;
     [SerializeField][Range(0f, 1f)] private float _strongHeadPressureUntilProgress = 0.5f;
-    [SerializeField][Range(0f, 1f)] private float _minimumHeadPressureFromProgress = 0.75f;
+    [SerializeField][Range(0f, 1f)] private float _minimumHeadPressureFromProgress = 0.85f;
     [SerializeField][Min(0.1f)] private float _earlyHeadPressureMultiplier = 1f;
-    [SerializeField][Min(0.1f)] private float _lateHeadPressureMultiplier = 1.1f;
+    [SerializeField][Min(0.1f)] private float _lateHeadPressureMultiplier = 1.5f;
+
+    [Header("Revive Relief")]
+    [SerializeField] private bool _usePostReviveHpRelief = true;
+    [SerializeField][Range(0.1f, 1f)] private float _postReviveHpMultiplier = 0.62f;
 
     [Header("Limits")]
     [SerializeField][Min(1)] private int _minHp = 3;
@@ -138,6 +142,13 @@ public sealed class WormHpScalingConfig : ScriptableObject
             t);
     }
 
+    public float GetPostReviveHpMultiplier(bool hasRevivedThisRun)
+    {
+        return _usePostReviveHpRelief && hasRevivedThisRun
+            ? _postReviveHpMultiplier
+            : 1f;
+    }
+
     private void OnValidate()
     {
         _baseSectionHp = Mathf.Max(1, _baseSectionHp);
@@ -154,6 +165,7 @@ public sealed class WormHpScalingConfig : ScriptableObject
         _minimumHeadPressureFromProgress = Mathf.Clamp01(_minimumHeadPressureFromProgress);
         _earlyHeadPressureMultiplier = Mathf.Max(0.1f, _earlyHeadPressureMultiplier);
         _lateHeadPressureMultiplier = Mathf.Max(0.1f, _lateHeadPressureMultiplier);
+        _postReviveHpMultiplier = Mathf.Clamp(_postReviveHpMultiplier, 0.1f, 1f);
         _minHp = Mathf.Max(1, _minHp);
         _maxHp = Mathf.Max(_minHp, _maxHp);
         EnsureCurves();
@@ -175,25 +187,25 @@ public sealed class WormHpScalingConfig : ScriptableObject
     private static AnimationCurve CreateDefaultTargetLifetimeCurve()
     {
         return new AnimationCurve(
-            new Keyframe(0f, 0.9f),
-            new Keyframe(0.08f, 1.05f),
-            new Keyframe(0.18f, 1.8f),
-            new Keyframe(0.32f, 2.6f),
-            new Keyframe(0.5f, 3.2f),
-            new Keyframe(0.72f, 3.6f),
-            new Keyframe(1f, 4.2f));
+            new Keyframe(0f, 0.85f),
+            new Keyframe(0.08f, 0.95f),
+            new Keyframe(0.18f, 1.2f),
+            new Keyframe(0.32f, 1.55f),
+            new Keyframe(0.5f, 2.05f),
+            new Keyframe(0.72f, 5f),
+            new Keyframe(1f, 8.8f));
     }
 
     private static AnimationCurve CreateDefaultPressureCurve()
     {
         return new AnimationCurve(
-            new Keyframe(0f, 0.35f),
-            new Keyframe(0.12f, 0.5f),
-            new Keyframe(0.25f, 0.9f),
-            new Keyframe(0.45f, 1.05f),
-            new Keyframe(0.58f, 1.12f),
-            new Keyframe(0.78f, 1.16f),
-            new Keyframe(1f, 1.2f));
+            new Keyframe(0f, 0.33f),
+            new Keyframe(0.12f, 0.45f),
+            new Keyframe(0.25f, 0.65f),
+            new Keyframe(0.45f, 0.85f),
+            new Keyframe(0.58f, 1f),
+            new Keyframe(0.78f, 2f),
+            new Keyframe(1f, 2.8f));
     }
 
     private static float GetSectionProgress(int sectionIndex, int totalSections)

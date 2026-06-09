@@ -6,16 +6,16 @@ public sealed class WormPressureConfig : ScriptableObject
     [SerializeField] private bool _enabled = true;
 
     [Header("Progress Target")]
-    [SerializeField][Range(0f, 1f)] private float _targetHeadProgress = 0.55f;
-    [SerializeField][Min(1f)] private float _targetReachTime = 145f;
-    [SerializeField][Min(0f)] private float _startDelay = 1.5f;
-    [SerializeField][Range(0f, 0.25f)] private float _progressDeadZone = 0.04f;
+    [SerializeField][Range(0f, 1f)] private float _targetHeadProgress = 1f;
+    [SerializeField][Min(1f)] private float _targetReachTime = 95f;
+    [SerializeField][Min(0f)] private float _startDelay = 0f;
+    [SerializeField][Range(0f, 0.25f)] private float _progressDeadZone = 0.02f;
 
     [Header("Runtime Pressure")]
     [SerializeField][Min(0.1f)] private float _sampleInterval = 1f;
-    [SerializeField][Min(0f)] private float _increasePerSample = 0.025f;
-    [SerializeField][Min(0f)] private float _recoveryPerSample = 0.12f;
-    [SerializeField][Min(1f)] private float _maxMultiplier = 1.55f;
+    [SerializeField][Min(0f)] private float _increasePerSample = 0.06f;
+    [SerializeField][Min(0f)] private float _recoveryPerSample = 0.03f;
+    [SerializeField][Min(1f)] private float _maxMultiplier = 3.6f;
 
     public bool Enabled => _enabled;
     public float StartDelay => _startDelay;

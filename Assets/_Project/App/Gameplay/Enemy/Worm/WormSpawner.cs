@@ -58,6 +58,7 @@ public sealed class WormSpawner : MonoBehaviour
     private float _lastAdaptiveRebalanceTime;
     private bool _hasAppliedAdaptiveUpgradeRebalance;
     private WormFaceVisualController _activeFaceVisual;
+    private bool _hasRevivedThisRun;
 
 #if UNITY_EDITOR
     public WormHpScalingConfig EditorHpScalingConfig => _hpScalingConfig;
@@ -67,6 +68,8 @@ public sealed class WormSpawner : MonoBehaviour
 
     private void OnEnable()
     {
+        WormReviveFlowController.ReviveGranted += OnReviveGranted;
+
         if (_weapon != null)
             _weapon.RuntimeStatsChanged += OnWeaponRuntimeStatsChanged;
 
@@ -79,6 +82,8 @@ public sealed class WormSpawner : MonoBehaviour
 
     private void OnDisable()
     {
+        WormReviveFlowController.ReviveGranted -= OnReviveGranted;
+
         if (_weapon != null)
             _weapon.RuntimeStatsChanged -= OnWeaponRuntimeStatsChanged;
 
@@ -151,6 +156,7 @@ public sealed class WormSpawner : MonoBehaviour
         _pendingAdaptiveUpgradeChanges = 0;
         _lastAdaptiveRebalanceTime = Time.time;
         _hasAppliedAdaptiveUpgradeRebalance = false;
+        _hasRevivedThisRun = false;
 
         _wormFactory.AttachDamageReceivers(segments, _wormCombat);
 
@@ -188,6 +194,7 @@ public sealed class WormSpawner : MonoBehaviour
         _pendingAdaptiveUpgradeChanges = 0;
         _lastAdaptiveRebalanceTime = Time.time;
         _hasAppliedAdaptiveUpgradeRebalance = false;
+        _hasRevivedThisRun = false;
         _isSpawned = false;
     }
 
@@ -288,7 +295,7 @@ public sealed class WormSpawner : MonoBehaviour
             RebalanceAdaptiveHpWave();
     }
 
-    private void RebalanceFutureSections()
+    private void RebalanceFutureSections(bool allowHpDecrease = false)
     {
         if (!_isSpawned || _sections.Count == 0)
             return;
@@ -315,15 +322,21 @@ public sealed class WormSpawner : MonoBehaviour
                 headPathPressureMultiplier);
             hp = EnsureHpAbovePrevious(hp, previousHp);
 
-            if (CanRebalanceSection(section))
+            if (CanRebalanceSection(section, allowHpDecrease))
             {
-                hp = Mathf.Max(hp, GetCurrentSectionMaxHp(section));
+                if (!allowHpDecrease)
+                    hp = Mathf.Max(hp, GetCurrentSectionMaxHp(section));
+
                 section.SetHp(hp);
                 previousHp = hp;
                 continue;
             }
 
-            previousHp = Mathf.Max(previousHp, hp, GetCurrentSectionMaxHp(section));
+            previousHp = GetPreviousHpForLockedSection(
+                previousHp,
+                hp,
+                section,
+                allowHpDecrease);
         }
     }
 
@@ -344,7 +357,8 @@ public sealed class WormSpawner : MonoBehaviour
             _levelNumber,
             power,
             _runtimePressureMultiplier,
-            headPathPressureMultiplier);
+            headPathPressureMultiplier,
+            _hasRevivedThisRun);
     }
 
     private float GetHeadPathPressureMultiplierForHp()
@@ -387,12 +401,14 @@ public sealed class WormSpawner : MonoBehaviour
         RebalanceFutureSections();
     }
 
-    private static bool CanRebalanceSection(WormSection section)
+    private static bool CanRebalanceSection(
+        WormSection section,
+        bool allowHpDecrease)
     {
         return section != null
             && !section.IsDestroyed
             && !section.HasTakenDamage
-            && !section.HasVisibleAliveSegment();
+            && (allowHpDecrease || !section.HasVisibleAliveSegment());
     }
 
     private static int GetCurrentSectionMaxHp(WormSection section)
@@ -400,6 +416,22 @@ public sealed class WormSpawner : MonoBehaviour
         return section != null
             ? Mathf.Max(0, section.MaxHP)
             : 0;
+    }
+
+    private static int GetPreviousHpForLockedSection(
+        int previousHp,
+        int resolvedHp,
+        WormSection section,
+        bool allowHpDecrease)
+    {
+        int currentMaxHp = GetCurrentSectionMaxHp(section);
+
+        if (!allowHpDecrease)
+            return Mathf.Max(previousHp, resolvedHp, currentMaxHp);
+
+        return section != null && !section.IsDestroyed
+            ? Mathf.Max(previousHp, resolvedHp, currentMaxHp)
+            : Mathf.Max(previousHp, resolvedHp);
     }
 
     private static int EnsureHpAbovePrevious(int hp, int previousHp)
@@ -439,5 +471,16 @@ public sealed class WormSpawner : MonoBehaviour
         return _rewardInstaller != null
             ? _rewardInstaller.CocoonProfiles
             : CocoonRewardProfile.Defaults;
+    }
+
+    private void OnReviveGranted()
+    {
+        if (_hasRevivedThisRun)
+            return;
+
+        _hasRevivedThisRun = true;
+
+        if (_isSpawned && _hpScalingConfig != null && _hpScalingConfig.Enabled)
+            RebalanceFutureSections(allowHpDecrease: true);
     }
 }

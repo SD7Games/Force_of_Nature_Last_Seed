@@ -19,6 +19,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class Projectile : MonoBehaviour
 {
+    private const int HitSectionsInitialCapacity = 8;
+
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private LayerMask _hitMask;
     [SerializeField] private float _minHitDistance = 1.5f;
@@ -32,7 +34,7 @@ public sealed class Projectile : MonoBehaviour
     private bool _hasLastHit;
     private float _hitDelayTimer;
 
-    private readonly HashSet<WormSection> _hitSections = new();
+    private readonly List<WormSection> _hitSections = new(HitSectionsInitialCapacity);
 
     private float _lifeTime;
     private float _timer;

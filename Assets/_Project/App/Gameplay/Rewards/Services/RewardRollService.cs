@@ -5,6 +5,10 @@ public sealed class RewardRollService
 {
     private const int MAX_CHOICES = 3;
     private const float NewWeaponUnlockMinWormProgress = 0.3f;
+    private const float PostRevivePrimaryDpsWeightMultiplier = 4f;
+    private const float PostReviveSecondaryDpsWeightMultiplier = 1.25f;
+    private const float PaidAssistPrimaryDpsWeightMultiplier = 2.75f;
+    private const float PaidAssistSecondaryDpsWeightMultiplier = 1.15f;
 
     private readonly RewardDatabase _database;
     private readonly List<RewardRaritySlot> _defaultSlots = new()
@@ -87,14 +91,29 @@ public sealed class RewardRollService
             RewardModifierEntry selected = null;
             bool isSelected = false;
 
-            isSelected = TryRollRewardForRarity(
-                pools,
-                rarity,
-                usedCategories,
-                usedCategoryRarities,
-                out selected,
-                rollContext,
-                weaponDpsBias);
+            if (ShouldUseAssistDpsBias(rollContext))
+            {
+                isSelected = TryRollAssistPrimaryDpsReward(
+                    pools,
+                    rarity,
+                    usedCategories,
+                    usedCategoryRarities,
+                    out selected,
+                    rollContext,
+                    weaponDpsBias);
+            }
+
+            if (!isSelected)
+            {
+                isSelected = TryRollRewardForRarity(
+                    pools,
+                    rarity,
+                    usedCategories,
+                    usedCategoryRarities,
+                    out selected,
+                    rollContext,
+                    weaponDpsBias);
+            }
 
             if (!isSelected && useLegendaryProfileRules)
             {
@@ -237,6 +256,116 @@ public sealed class RewardRollService
             weaponDpsBias);
     }
 
+    private bool TryRollAssistPrimaryDpsReward(
+        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
+        RewardRarity preferredRarity,
+        HashSet<RewardModifierCategory> usedCategories,
+        HashSet<int> usedCategoryRarities,
+        out RewardModifierEntry selected,
+        RewardRollContext rollContext,
+        RewardWeaponDpsBias weaponDpsBias = default,
+        bool requireAssistDpsReward = false)
+    {
+        selected = null;
+
+        if (!TryRollPrimaryDpsRewardForRarity(
+                pools,
+                preferredRarity,
+                usedCategories,
+                usedCategoryRarities,
+                out selected,
+                rollContext,
+                weaponDpsBias))
+        {
+            return preferredRarity switch
+            {
+                RewardRarity.Legendary => TryRollPrimaryDpsRewardForRarity(
+                        pools,
+                        RewardRarity.Rare,
+                        usedCategories,
+                        usedCategoryRarities,
+                        out selected,
+                        rollContext,
+                        weaponDpsBias)
+                    || TryRollPrimaryDpsRewardForRarity(
+                        pools,
+                        RewardRarity.Common,
+                        usedCategories,
+                        usedCategoryRarities,
+                        out selected,
+                        rollContext,
+                        weaponDpsBias),
+
+                RewardRarity.Rare => TryRollPrimaryDpsRewardForRarity(
+                    pools,
+                    RewardRarity.Common,
+                    usedCategories,
+                    usedCategoryRarities,
+                    out selected,
+                    rollContext,
+                    weaponDpsBias),
+
+                _ => false
+            };
+        }
+
+        return true;
+    }
+
+    private static bool TryRollPrimaryDpsRewardForRarity(
+        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
+        RewardRarity rarity,
+        HashSet<RewardModifierCategory> usedCategories,
+        HashSet<int> usedCategoryRarities,
+        out RewardModifierEntry selected,
+        RewardRollContext rollContext,
+        RewardWeaponDpsBias weaponDpsBias = default)
+    {
+        selected = null;
+
+        if (TryRollRewardForRarity(
+                pools,
+                rarity,
+                usedCategories,
+                usedCategoryRarities,
+                RewardPickMode.UniqueCategory,
+                RewardWeaponGroup.None,
+                out selected,
+                rollContext,
+                weaponDpsBias,
+                requireAssistDpsReward: true))
+        {
+            return true;
+        }
+
+        if (TryRollRewardForRarity(
+                pools,
+                rarity,
+                usedCategories,
+                usedCategoryRarities,
+                RewardPickMode.UniqueCategoryRarity,
+                RewardWeaponGroup.None,
+                out selected,
+                rollContext,
+                weaponDpsBias,
+                requireAssistDpsReward: true))
+        {
+            return true;
+        }
+
+        return TryRollRewardForRarity(
+            pools,
+            rarity,
+            usedCategories,
+            usedCategoryRarities,
+            RewardPickMode.Any,
+            RewardWeaponGroup.None,
+            out selected,
+            rollContext,
+            weaponDpsBias,
+            requireAssistDpsReward: true);
+    }
+
     private bool TryRollPremiumReward(
         Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
         RewardRarity preferredRarity,
@@ -295,7 +424,8 @@ public sealed class RewardRollService
         RewardWeaponGroup requiredWeaponGroup,
         out RewardModifierEntry selected,
         RewardRollContext rollContext,
-        RewardWeaponDpsBias weaponDpsBias = default)
+        RewardWeaponDpsBias weaponDpsBias = default,
+        bool requireAssistDpsReward = false)
     {
         selected = null;
 
@@ -310,7 +440,8 @@ public sealed class RewardRollService
             requiredWeaponGroup,
             out selected,
             rollContext,
-            weaponDpsBias);
+            weaponDpsBias,
+            requireAssistDpsReward);
     }
 
     private Dictionary<RewardRarity, List<RewardModifierEntry>> BuildPools(
@@ -740,6 +871,8 @@ public sealed class RewardRollService
 
         float multiplier = weaponDpsBias.GetMultiplier(GetWeaponGroup(entry));
 
+        multiplier *= GetAssistDpsWeightMultiplier(entry, rollContext);
+
         return Mathf.Max(0.01f, baseWeight * multiplier);
     }
 
@@ -838,13 +971,22 @@ public sealed class RewardRollService
         RewardWeaponGroup requiredWeaponGroup,
         out RewardModifierEntry selected,
         RewardRollContext rollContext,
-        RewardWeaponDpsBias weaponDpsBias = default)
+        RewardWeaponDpsBias weaponDpsBias = default,
+        bool requireAssistDpsReward = false)
     {
         selected = null;
 
         if (pool == null || pool.Count == 0)
             return false;
 
+        bool preferAssistDpsRewards = !requireAssistDpsReward && ShouldPreferAssistDpsRewards(
+            pool,
+            usedCategories,
+            usedCategoryRarities,
+            mode,
+            requiredWeaponGroup,
+            rollContext);
+        bool requireDpsReward = requireAssistDpsReward || preferAssistDpsRewards;
         float totalWeight = 0f;
 
         for (int i = 0; i < pool.Count; i++)
@@ -856,7 +998,8 @@ public sealed class RewardRollService
                     usedCategories,
                     usedCategoryRarities,
                     mode,
-                    requiredWeaponGroup))
+                    requiredWeaponGroup,
+                    requireDpsReward))
             {
                 totalWeight += GetEffectiveWeight(entry, rollContext, weaponDpsBias);
             }
@@ -877,7 +1020,8 @@ public sealed class RewardRollService
                     usedCategories,
                     usedCategoryRarities,
                     mode,
-                    requiredWeaponGroup))
+                    requiredWeaponGroup,
+                    requireDpsReward))
             {
                 continue;
             }
@@ -900,7 +1044,8 @@ public sealed class RewardRollService
         HashSet<RewardModifierCategory> usedCategories,
         HashSet<int> usedCategoryRarities,
         RewardPickMode mode,
-        RewardWeaponGroup requiredWeaponGroup)
+        RewardWeaponGroup requiredWeaponGroup,
+        bool requireAssistDpsReward = false)
     {
         if (entry == null)
             return false;
@@ -913,6 +1058,9 @@ public sealed class RewardRollService
         {
             return false;
         }
+
+        if (requireAssistDpsReward && !IsAssistPrimaryDpsReward(entry))
+            return false;
 
         return mode switch
         {
@@ -931,6 +1079,110 @@ public sealed class RewardRollService
     {
         return entry != null
             && entry.Category == RewardModifierCategory.AcaciaThornUnlock;
+    }
+
+    private static bool ShouldPreferAssistDpsRewards(
+        List<RewardModifierEntry> pool,
+        HashSet<RewardModifierCategory> usedCategories,
+        HashSet<int> usedCategoryRarities,
+        RewardPickMode mode,
+        RewardWeaponGroup requiredWeaponGroup,
+        RewardRollContext rollContext)
+    {
+        if (!ShouldUseAssistDpsBias(rollContext))
+            return false;
+
+        for (int i = 0; i < pool.Count; i++)
+        {
+            RewardModifierEntry entry = pool[i];
+
+            if (IsAssistPrimaryDpsReward(entry)
+                && IsEligible(
+                    entry,
+                    usedCategories,
+                    usedCategoryRarities,
+                    mode,
+                    requiredWeaponGroup))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static float GetAssistDpsWeightMultiplier(
+        RewardModifierEntry entry,
+        RewardRollContext rollContext)
+    {
+        if (rollContext.HasRevivedThisRun)
+        {
+            return GetDpsWeightMultiplier(
+                entry,
+                PostRevivePrimaryDpsWeightMultiplier,
+                PostReviveSecondaryDpsWeightMultiplier);
+        }
+
+        if (rollContext.IsPaidAssistRoll)
+        {
+            return GetDpsWeightMultiplier(
+                entry,
+                PaidAssistPrimaryDpsWeightMultiplier,
+                PaidAssistSecondaryDpsWeightMultiplier);
+        }
+
+        return 1f;
+    }
+
+    private static float GetDpsWeightMultiplier(
+        RewardModifierEntry entry,
+        float primaryMultiplier,
+        float secondaryMultiplier)
+    {
+        if (IsAssistPrimaryDpsReward(entry))
+            return primaryMultiplier;
+
+        return IsAssistSecondaryDpsReward(entry)
+            ? secondaryMultiplier
+            : 1f;
+    }
+
+    private static bool ShouldUseAssistDpsBias(RewardRollContext rollContext)
+    {
+        return rollContext.HasRevivedThisRun || rollContext.IsPaidAssistRoll;
+    }
+
+    private static bool IsAssistPrimaryDpsReward(RewardModifierEntry entry)
+    {
+        if (entry == null)
+            return false;
+
+        return entry.Category switch
+        {
+            RewardModifierCategory.Damage
+                or RewardModifierCategory.FireRate
+                or RewardModifierCategory.CriticalChance
+                or RewardModifierCategory.CriticalPower
+                or RewardModifierCategory.Penetration
+                or RewardModifierCategory.ParallelProjectiles
+                or RewardModifierCategory.Salvo
+                or RewardModifierCategory.AcaciaThornUnlock
+                or RewardModifierCategory.AcaciaThornDamage
+                or RewardModifierCategory.AcaciaThornFireRate
+                or RewardModifierCategory.AcaciaThornSalvo
+                or RewardModifierCategory.AcaciaThornCriticalChance
+                or RewardModifierCategory.AcaciaThornCriticalPower => true,
+            _ => false
+        };
+    }
+
+    private static bool IsAssistSecondaryDpsReward(RewardModifierEntry entry)
+    {
+        if (entry == null)
+            return false;
+
+        return entry.Category is RewardModifierCategory.ProjectileSpeed
+            or RewardModifierCategory.AcaciaThornProjectileSpeed;
     }
 
     private static bool HasAdditionalWeaponUnlocked(RewardRuntimeContext context)

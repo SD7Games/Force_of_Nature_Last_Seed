@@ -6,15 +6,27 @@ public readonly struct RewardRollContext
     public readonly float HeadPathProgressNormalized;
     public readonly float WormDestructionProgressNormalized;
     public readonly bool HasRevivedThisRun;
+    public readonly bool IsPaidAssistRoll;
 
     public RewardRollContext(
         float headPathProgressNormalized,
         float wormDestructionProgressNormalized,
-        bool hasRevivedThisRun)
+        bool hasRevivedThisRun,
+        bool isPaidAssistRoll = false)
     {
         HeadPathProgressNormalized = Mathf.Clamp01(headPathProgressNormalized);
         WormDestructionProgressNormalized = Mathf.Clamp01(wormDestructionProgressNormalized);
         HasRevivedThisRun = hasRevivedThisRun;
+        IsPaidAssistRoll = isPaidAssistRoll;
+    }
+
+    public RewardRollContext WithPaidAssistRoll()
+    {
+        return new RewardRollContext(
+            HeadPathProgressNormalized,
+            WormDestructionProgressNormalized,
+            HasRevivedThisRun,
+            true);
     }
 }
 

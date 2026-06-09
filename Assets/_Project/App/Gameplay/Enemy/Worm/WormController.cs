@@ -59,6 +59,7 @@ public sealed class WormController : MonoBehaviour
 
     [Header("Rollback")]
     [SerializeField] private float _rollbackSpeed = 8f;
+    [SerializeField][Min(0f)] private float _sectionRollbackForwardSpeedMultiplier = 4f;
 
     [Header("Revive")]
     [Tooltip("RailPath control point index. Set -1 to use Catch Up Rail Point Index.")]
@@ -116,6 +117,8 @@ public sealed class WormController : MonoBehaviour
     public RailPath EditorRail => _rail;
     public float EditorSpeed => _speed;
     public float EditorSegmentSpacing => _segmentSpacing;
+    public float EditorRollbackSpeed => _rollbackSpeed;
+    public float EditorSectionRollbackForwardSpeedMultiplier => _sectionRollbackForwardSpeedMultiplier;
     public float EditorReviveRollbackProgressNormalized
     {
         get
@@ -178,6 +181,7 @@ public sealed class WormController : MonoBehaviour
 
         _combatBurstDisablePathProgress = Mathf.Clamp01(_combatBurstDisablePathProgress);
         _combatBurstSlowdownDuration = Mathf.Max(0.01f, _combatBurstSlowdownDuration);
+        _sectionRollbackForwardSpeedMultiplier = Mathf.Max(0f, _sectionRollbackForwardSpeedMultiplier);
         ClearTargetDistanceCaches();
     }
 
@@ -281,14 +285,19 @@ public sealed class WormController : MonoBehaviour
             targetDistance,
             _headDistance + GetForwardSpeed(deltaTime) * deltaTime);
 
+        CompletePathIfReached(previousDistance, targetDistance);
+    }
+
+    private void CompletePathIfReached(float previousDistance, float targetDistance)
+    {
         if (_hasReachedPathEnd)
             return;
 
-        if (previousDistance < targetDistance && _headDistance >= targetDistance)
-        {
-            _hasReachedPathEnd = true;
-            PathCompleted?.Invoke();
-        }
+        if (previousDistance >= targetDistance || _headDistance < targetDistance)
+            return;
+
+        _hasReachedPathEnd = true;
+        PathCompleted?.Invoke();
     }
 
     private float GetForwardSpeed(float deltaTime)
@@ -784,8 +793,8 @@ public sealed class WormController : MonoBehaviour
 
     /// <summary>
     /// Calculates rail distance for the specified segment index.
-    /// During rollback, detached rear segments keep their anchor distance
-    /// until the moving front chain reaches and reconnects with them.
+    /// During rollback, detached rear segments advance from their anchor
+    /// distance until the moving front chain reconnects with them.
     /// </summary>
     private float GetSegmentDistance(int index, WormSegment segment)
     {
@@ -956,25 +965,66 @@ public sealed class WormController : MonoBehaviour
 
         while (_headDistance > _sectionRollbackTargetDistance)
         {
+            float deltaTime = Time.unscaledDeltaTime;
             float target = _sectionRollbackTargetDistance;
+
+            AdvanceSectionRollbackTail(deltaTime);
+            target = _sectionRollbackTargetDistance;
+
+            if (_headDistance <= target)
+                break;
 
             _headDistance = Mathf.MoveTowards(
                 _headDistance,
                 target,
-                _rollbackSpeed * Time.unscaledDeltaTime
+                _rollbackSpeed * deltaTime
             );
 
             UpdateSegments();
             yield return null;
         }
 
-        _headDistance = _sectionRollbackTargetDistance;
+        _headDistance = Mathf.Min(_headDistance, _sectionRollbackTargetDistance);
         UpdateSegments();
+        CompletePathIfReached(_headDistance - 0.001f, _rail.TotalLength);
 
         _isSectionRollback = false;
         _rollbackAnchoredDistances.Clear();
         _sectionRollbackTargetDistance = 0f;
         _rollbackRoutine = null;
+    }
+
+    private void AdvanceSectionRollbackTail(float deltaTime)
+    {
+        if (deltaTime <= 0f || _rail == null)
+            return;
+
+        float forwardDistance = Mathf.Max(0f, _speed) *
+            Mathf.Max(0f, _sectionRollbackForwardSpeedMultiplier) *
+            deltaTime;
+
+        if (forwardDistance <= 0f)
+            return;
+
+        float maxDistance = _rail.TotalLength;
+        _sectionRollbackTargetDistance = Mathf.Min(
+            maxDistance,
+            _sectionRollbackTargetDistance + forwardDistance);
+
+        for (int i = 0; i < _segments.Count; i++)
+        {
+            WormSegment segment = _segments[i];
+
+            if (segment == null)
+                continue;
+
+            if (_rollbackAnchoredDistances.TryGetValue(segment, out float distance))
+            {
+                _rollbackAnchoredDistances[segment] = Mathf.Min(
+                    maxDistance,
+                    distance + forwardDistance);
+            }
+        }
     }
 
     private IEnumerator ReviveThrowbackRoutine(float target, Action onComplete)

@@ -6,6 +6,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class WormDamagePopupView : MonoBehaviour
 {
+    private const int DamageTextBufferSize = 16;
+
     public enum AnimationMode
     {
         Normal = 0,
@@ -23,8 +25,10 @@ public sealed class WormDamagePopupView : MonoBehaviour
 
     private MeshRenderer _renderer;
     private Sequence _sequence;
+    private TweenCallback _animationCompleteCallback;
 
     private Action<WormDamagePopupView> _onComplete;
+    private readonly char[] _damageTextBuffer = new char[DamageTextBufferSize];
 
     public bool IsCritical { get; private set; }
     public bool IsCompleting { get; private set; }
@@ -40,7 +44,18 @@ public sealed class WormDamagePopupView : MonoBehaviour
         }
 
         _text.TryGetComponent(out _renderer);
+        _animationCompleteCallback = OnAnimationComplete;
         ApplySorting(false);
+    }
+
+    public void PrewarmText()
+    {
+        if (_text == null)
+            return;
+
+        SetDamageText(int.MaxValue);
+        _text.alpha = 0f;
+        _text.ForceMeshUpdate(false, false);
     }
 
     private void OnDisable()
@@ -122,7 +137,7 @@ public sealed class WormDamagePopupView : MonoBehaviour
                 break;
         }
 
-        _sequence.OnComplete(OnAnimationComplete);
+        _sequence.OnComplete(_animationCompleteCallback);
     }
 
     private void AppendNormalAnimation(float targetScale)
@@ -166,7 +181,7 @@ public sealed class WormDamagePopupView : MonoBehaviour
         _sequence = DOTween.Sequence();
         _sequence.Append(_text.DOFade(0f, 0.08f));
         _sequence.Join(transform.DOScale(transform.localScale * 0.85f, 0.08f));
-        _sequence.OnComplete(OnAnimationComplete);
+        _sequence.OnComplete(_animationCompleteCallback);
     }
 
     private void OnAnimationComplete()
@@ -196,6 +211,12 @@ public sealed class WormDamagePopupView : MonoBehaviour
 
     private void SetDamageText(int amount)
     {
+        if (WormHpFormatter.TryFormat(amount, _damageTextBuffer, out int length))
+        {
+            _text.SetCharArray(_damageTextBuffer, 0, length);
+            return;
+        }
+
         _text.text = WormHpFormatter.Format(amount);
     }
 

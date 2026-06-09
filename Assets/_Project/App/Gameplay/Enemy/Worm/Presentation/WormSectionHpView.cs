@@ -3,6 +3,8 @@ using UnityEngine;
 
 public sealed class WormSectionHpView : MonoBehaviour
 {
+    private const int HpTextBufferSize = 16;
+
     [SerializeField] private TMP_Text _text;
     [SerializeField] private Transform _visualRoot;
 
@@ -11,6 +13,7 @@ public sealed class WormSectionHpView : MonoBehaviour
 
     private Transform _target;
     private bool _isVisible = true;
+    private readonly char[] _hpTextBuffer = new char[HpTextBufferSize];
 
     private void Awake()
     {
@@ -56,7 +59,10 @@ public sealed class WormSectionHpView : MonoBehaviour
 
     public void SetValue(int current)
     {
-        _text.text = WormHpFormatter.Format(current);
+        if (WormHpFormatter.TryFormat(current, _hpTextBuffer, out int length))
+            _text.SetCharArray(_hpTextBuffer, 0, length);
+        else
+            _text.text = WormHpFormatter.Format(current);
 
         float t = Mathf.InverseLerp(0, 10000, current);
         float scale = Mathf.Lerp(_maxScale, _minScale, t);

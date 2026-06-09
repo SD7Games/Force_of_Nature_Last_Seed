@@ -226,7 +226,8 @@ public sealed class RewardFlowController : IDisposable
 
         if (!RollCurrentChoices(
                 adGuaranteeRarity,
-                AdRerollGuaranteedSlots))
+                AdRerollGuaranteedSlots,
+                isPaidAssistRoll: true))
         {
             _popup?.SetAllButtonsInteractable(true);
             return;
@@ -301,20 +302,25 @@ public sealed class RewardFlowController : IDisposable
 
     private bool RollCurrentChoices(
         RewardRarity? forcedGuaranteeRarity = null,
-        int forcedGuaranteeSlotCount = 1)
+        int forcedGuaranteeSlotCount = 1,
+        bool isPaidAssistRoll = false)
     {
+        RewardRollContext rollContext = isPaidAssistRoll
+            ? _currentRollContext.WithPaidAssistRoll()
+            : _currentRollContext;
+
         _currentGuaranteeRarity = forcedGuaranteeRarity
             ?? _rollService.RollGuaranteeRarity(
                 _applyService.RuntimeContext,
                 _currentCocoonProfile,
-                _currentRollContext);
+                rollContext);
 
         _currentChoices = _rollService.Roll3(
             _applyService.RuntimeContext,
             _currentCocoonProfile,
             _currentGuaranteeRarity,
             forcedGuaranteeSlotCount,
-            _currentRollContext);
+            rollContext);
 
         return _currentChoices != null && _currentChoices.Count > 0;
     }

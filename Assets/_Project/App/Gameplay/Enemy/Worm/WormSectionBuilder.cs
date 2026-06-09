@@ -97,8 +97,13 @@ public static class WormSectionBuilder
         if (buffer.Count == 0)
             return;
 
-        int centerIndex = buffer.Count / 2;
-        WormSegment centerSegment = buffer[centerIndex];
+        if (!WormCocoonRules.TryGetCocoonSegmentIndex(buffer.Count, out int cocoonSegmentIndex))
+        {
+            sectionsWithoutCocoon++;
+            return;
+        }
+
+        WormSegment cocoonSegment = buffer[cocoonSegmentIndex];
         float sectionProgress = GetSectionProgress(sectionIndex, totalSections);
         bool spawnCocoon = ShouldPlaceCocoon(
             sectionIndex,
@@ -117,7 +122,7 @@ public static class WormSectionBuilder
         CocoonRewardProfile profile = RollCocoonProfile(
             cocoonProfiles,
             sectionProgress);
-        centerSegment.EnableCocoon(profile);
+        cocoonSegment.EnableCocoon(profile);
 
         section.SetCocoon(profile);
     }

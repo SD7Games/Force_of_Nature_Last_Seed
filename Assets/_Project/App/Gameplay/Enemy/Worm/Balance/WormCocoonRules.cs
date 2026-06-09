@@ -3,7 +3,9 @@ using UnityEngine;
 
 public static class WormCocoonRules
 {
-    public const int SectionSize = 7;
+    public const int EmptySegmentsAroundCocoon = 3;
+    public const int SectionSize = EmptySegmentsAroundCocoon * 2 + 1;
+    public const int CocoonSegmentIndex = EmptySegmentsAroundCocoon;
 
     private const int FirstCocoonSectionIndex = 1;
     private const int EarlyEmptySectionsBetweenCocoons = 1;
@@ -21,6 +23,12 @@ public static class WormCocoonRules
             return 0f;
 
         return Mathf.Clamp01(sectionIndex / (float)(totalSections - 1));
+    }
+
+    public static bool TryGetCocoonSegmentIndex(int sectionSegmentCount, out int segmentIndex)
+    {
+        segmentIndex = CocoonSegmentIndex;
+        return sectionSegmentCount == SectionSize;
     }
 
     public static bool ShouldPlaceCocoon(

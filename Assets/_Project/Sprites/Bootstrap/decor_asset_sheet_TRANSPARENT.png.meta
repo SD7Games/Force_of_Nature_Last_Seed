@@ -1,0 +1,1534 @@
+fileFormatVersion: 2
+guid: 37c25ba31e10ed34b9adb6610dbead02
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1437573122467237684
+    second: decor_asset_sheet_TRANSPARENT_0
+  - first:
+      213: 7090609304093666389
+    second: decor_asset_sheet_TRANSPARENT_1
+  - first:
+      213: 7944362504503077671
+    second: decor_asset_sheet_TRANSPARENT_2
+  - first:
+      213: -1346217073241524462
+    second: decor_asset_sheet_TRANSPARENT_3
+  - first:
+      213: -341080933430282558
+    second: decor_asset_sheet_TRANSPARENT_4
+  - first:
+      213: 3006639994810052680
+    second: decor_asset_sheet_TRANSPARENT_5
+  - first:
+      213: -18937023869620348
+    second: decor_asset_sheet_TRANSPARENT_6
+  - first:
+      213: 7647965298788648907
+    second: decor_asset_sheet_TRANSPARENT_7
+  - first:
+      213: -2173239251590363933
+    second: decor_asset_sheet_TRANSPARENT_8
+  - first:
+      213: -5478044030003592129
+    second: decor_asset_sheet_TRANSPARENT_9
+  - first:
+      213: 8950129524413836574
+    second: decor_asset_sheet_TRANSPARENT_10
+  - first:
+      213: 7635260827572123612
+    second: decor_asset_sheet_TRANSPARENT_11
+  - first:
+      213: -2924314366670694728
+    second: decor_asset_sheet_TRANSPARENT_12
+  - first:
+      213: 8825568442446938375
+    second: decor_asset_sheet_TRANSPARENT_13
+  - first:
+      213: -6111689542477808744
+    second: decor_asset_sheet_TRANSPARENT_14
+  - first:
+      213: 5117330114114305400
+    second: decor_asset_sheet_TRANSPARENT_15
+  - first:
+      213: 7987487958944529498
+    second: decor_asset_sheet_TRANSPARENT_16
+  - first:
+      213: -219247880005603890
+    second: decor_asset_sheet_TRANSPARENT_17
+  - first:
+      213: -3920488400448738736
+    second: decor_asset_sheet_TRANSPARENT_18
+  - first:
+      213: -3995764850962971573
+    second: decor_asset_sheet_TRANSPARENT_19
+  - first:
+      213: -3677505502357902748
+    second: decor_asset_sheet_TRANSPARENT_20
+  - first:
+      213: 7080630310326223812
+    second: decor_asset_sheet_TRANSPARENT_21
+  - first:
+      213: 6595690731853097461
+    second: decor_asset_sheet_TRANSPARENT_22
+  - first:
+      213: -629494958366335575
+    second: decor_asset_sheet_TRANSPARENT_23
+  - first:
+      213: 3901870465011955765
+    second: decor_asset_sheet_TRANSPARENT_24
+  - first:
+      213: -5343520963729265058
+    second: decor_asset_sheet_TRANSPARENT_25
+  - first:
+      213: 638374454838244125
+    second: decor_asset_sheet_TRANSPARENT_26
+  - first:
+      213: -4816123339207170872
+    second: decor_asset_sheet_TRANSPARENT_27
+  - first:
+      213: -2456273924286364620
+    second: decor_asset_sheet_TRANSPARENT_28
+  - first:
+      213: -3803366551513044492
+    second: decor_asset_sheet_TRANSPARENT_29
+  - first:
+      213: -6966679400074813370
+    second: decor_asset_sheet_TRANSPARENT_30
+  - first:
+      213: -8225184483913010572
+    second: decor_asset_sheet_TRANSPARENT_31
+  - first:
+      213: 4473022505086680273
+    second: decor_asset_sheet_TRANSPARENT_32
+  - first:
+      213: -675707429675479831
+    second: decor_asset_sheet_TRANSPARENT_33
+  - first:
+      213: -5134821228578520654
+    second: decor_asset_sheet_TRANSPARENT_34
+  - first:
+      213: 7128267456162499987
+    second: decor_asset_sheet_TRANSPARENT_35
+  - first:
+      213: 2638091731223757444
+    second: decor_asset_sheet_TRANSPARENT_36
+  - first:
+      213: 3642518591023094004
+    second: decor_asset_sheet_TRANSPARENT_37
+  - first:
+      213: -3668383385478039541
+    second: decor_asset_sheet_TRANSPARENT_38
+  - first:
+      213: 6991112169671169621
+    second: decor_asset_sheet_TRANSPARENT_39
+  - first:
+      213: 7568867509657230660
+    second: decor_asset_sheet_TRANSPARENT_40
+  - first:
+      213: -82789387121284472
+    second: decor_asset_sheet_TRANSPARENT_41
+  - first:
+      213: -8012140092280103787
+    second: decor_asset_sheet_TRANSPARENT_42
+  - first:
+      213: -3339296389536654585
+    second: decor_asset_sheet_TRANSPARENT_43
+  - first:
+      213: 8607268135317236197
+    second: decor_asset_sheet_TRANSPARENT_44
+  - first:
+      213: -3060172763713398238
+    second: decor_asset_sheet_TRANSPARENT_45
+  - first:
+      213: -5653453352244829577
+    second: decor_asset_sheet_TRANSPARENT_46
+  - first:
+      213: -335484568235647780
+    second: decor_asset_sheet_TRANSPARENT_47
+  - first:
+      213: 5175878010809600230
+    second: decor_asset_sheet_TRANSPARENT_48
+  - first:
+      213: 5259598281762584831
+    second: decor_asset_sheet_TRANSPARENT_49
+  - first:
+      213: -8992504037477545095
+    second: decor_asset_sheet_TRANSPARENT_50
+  - first:
+      213: 1537196423858103269
+    second: decor_asset_sheet_TRANSPARENT_51
+  - first:
+      213: -238376062174264540
+    second: decor_asset_sheet_TRANSPARENT_52
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_0
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 964
+        width: 130
+        height: 126
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43f0f47632943f310800000000000000
+      internalID: 1437573122467237684
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_1
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 970
+        width: 91
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55c259b2897e66260800000000000000
+      internalID: 7090609304093666389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_2
+      rect:
+        serializedVersion: 2
+        x: 354
+        y: 969
+        width: 60
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72ba6d75b9b004e60800000000000000
+      internalID: 7944362504503077671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_3
+      rect:
+        serializedVersion: 2
+        x: 499
+        y: 975
+        width: 51
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2177fd654b6415de0800000000000000
+      internalID: -1346217073241524462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_4
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 969
+        width: 71
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c6ba3bb2bc344bf0800000000000000
+      internalID: -341080933430282558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_5
+      rect:
+        serializedVersion: 2
+        x: 757
+        y: 965
+        width: 141
+        height: 120
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 840b22a352bb9b920800000000000000
+      internalID: 3006639994810052680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_6
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 1025
+        width: 33
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48fe52b80e8bcbff0800000000000000
+      internalID: -18937023869620348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_7
+      rect:
+        serializedVersion: 2
+        x: 1037
+        y: 1058
+        width: 21
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc7cfc82be7032a60800000000000000
+      internalID: 7647965298788648907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_8
+      rect:
+        serializedVersion: 2
+        x: 469
+        y: 970
+        width: 38
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e4450d3a6a17d1e0800000000000000
+      internalID: -2173239251590363933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_9
+      rect:
+        serializedVersion: 2
+        x: 538
+        y: 975
+        width: 36
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f34cfa78af31af3b0800000000000000
+      internalID: -5478044030003592129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_10
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 991
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1d2c64f16f353c70800000000000000
+      internalID: 8950129524413836574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_11
+      rect:
+        serializedVersion: 2
+        x: 1055
+        y: 967
+        width: 56
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd734e2f445e5f960800000000000000
+      internalID: 7635260827572123612
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_12
+      rect:
+        serializedVersion: 2
+        x: 1003
+        y: 953
+        width: 29
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b69503c39fba67d0800000000000000
+      internalID: -2924314366670694728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_13
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 788
+        width: 120
+        height: 113
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70182f01db7ba7a70800000000000000
+      internalID: 8825568442446938375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_14
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 791
+        width: 113
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89bf3230ebaee2ba0800000000000000
+      internalID: -6111689542477808744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_15
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 795
+        width: 96
+        height: 91
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87d313240a8640740800000000000000
+      internalID: 5117330114114305400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_16
+      rect:
+        serializedVersion: 2
+        x: 481
+        y: 797
+        width: 88
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5c3998aaf149de60800000000000000
+      internalID: 7987487958944529498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_17
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 798
+        width: 138
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecd228af63315fcf0800000000000000
+      internalID: -219247880005603890
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_18
+      rect:
+        serializedVersion: 2
+        x: 765
+        y: 795
+        width: 147
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05aa6394290a799c0800000000000000
+      internalID: -3920488400448738736
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_19
+      rect:
+        serializedVersion: 2
+        x: 979
+        y: 829
+        width: 56
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b444c5cd9013c88c0800000000000000
+      internalID: -3995764850962971573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_20
+      rect:
+        serializedVersion: 2
+        x: 1047
+        y: 879
+        width: 22
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46aa968da30e6fcc0800000000000000
+      internalID: -3677505502357902748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_21
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 794
+        width: 22
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c3cbd0a0c3734260800000000000000
+      internalID: 7080630310326223812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_22
+      rect:
+        serializedVersion: 2
+        x: 1067
+        y: 806
+        width: 47
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f9a07076c9988b50800000000000000
+      internalID: 6595690731853097461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_23
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 619
+        width: 287
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9addcaaaba59347f0800000000000000
+      internalID: -629494958366335575
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_24
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 623
+        width: 257
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53830a2d38a362630800000000000000
+      internalID: 3901870465011955765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_25
+      rect:
+        serializedVersion: 2
+        x: 668
+        y: 628
+        width: 234
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5e6013aefff7d5b0800000000000000
+      internalID: -5343520963729265058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_26
+      rect:
+        serializedVersion: 2
+        x: 974
+        y: 696
+        width: 41
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1331563f26fbd800800000000000000
+      internalID: 638374454838244125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_27
+      rect:
+        serializedVersion: 2
+        x: 1016
+        y: 671
+        width: 40
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c4a6140751b92db0800000000000000
+      internalID: -4816123339207170872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_28
+      rect:
+        serializedVersion: 2
+        x: 977
+        y: 674
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4344bd731ef89edd0800000000000000
+      internalID: -2456273924286364620
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_29
+      rect:
+        serializedVersion: 2
+        x: 973
+        y: 605
+        width: 67
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f96672c54ab73bc0800000000000000
+      internalID: -3803366551513044492
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_30
+      rect:
+        serializedVersion: 2
+        x: 1063
+        y: 633
+        width: 29
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64062862ff1615f90800000000000000
+      internalID: -6966679400074813370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_31
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 466
+        width: 201
+        height: 97
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4727f407a464add80800000000000000
+      internalID: -8225184483913010572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_32
+      rect:
+        serializedVersion: 2
+        x: 385
+        y: 491
+        width: 97
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dcf400f44e531e30800000000000000
+      internalID: 4473022505086680273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_33
+      rect:
+        serializedVersion: 2
+        x: 489
+        y: 526
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ecc91a3ca76f96f0800000000000000
+      internalID: -675707429675479831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_34
+      rect:
+        serializedVersion: 2
+        x: 592
+        y: 468
+        width: 320
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b1417d4c437db8b0800000000000000
+      internalID: -5134821228578520654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_35
+      rect:
+        serializedVersion: 2
+        x: 1042
+        y: 531
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39d0b84fb71bce260800000000000000
+      internalID: 7128267456162499987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_36
+      rect:
+        serializedVersion: 2
+        x: 1053
+        y: 496
+        width: 40
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 482cc7cc3726c9420800000000000000
+      internalID: 2638091731223757444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_37
+      rect:
+        serializedVersion: 2
+        x: 218
+        y: 478
+        width: 22
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f810b11c53dc8230800000000000000
+      internalID: 3642518591023094004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_38
+      rect:
+        serializedVersion: 2
+        x: 308
+        y: 477
+        width: 64
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b08f2a03fb8471dc0800000000000000
+      internalID: -3668383385478039541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_39
+      rect:
+        serializedVersion: 2
+        x: 495
+        y: 490
+        width: 39
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55619225a7b650160800000000000000
+      internalID: 6991112169671169621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_40
+      rect:
+        serializedVersion: 2
+        x: 974
+        y: 466
+        width: 56
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44d5d1106e40a0960800000000000000
+      internalID: 7568867509657230660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_41
+      rect:
+        serializedVersion: 2
+        x: 1054
+        y: 480
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88aa675bd7fd9def0800000000000000
+      internalID: -82789387121284472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_42
+      rect:
+        serializedVersion: 2
+        x: 1058
+        y: 432
+        width: 51
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59c9af449092fc090800000000000000
+      internalID: -8012140092280103787
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_43
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 317
+        width: 217
+        height: 121
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70b5ce540af68a1d0800000000000000
+      internalID: -3339296389536654585
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_44
+      rect:
+        serializedVersion: 2
+        x: 1021
+        y: 419
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e96f1c04c8237770800000000000000
+      internalID: 8607268135317236197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_45
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 325
+        width: 122
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22a998bb5151885d0800000000000000
+      internalID: -3060172763713398238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_46
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 334
+        width: 108
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 772a4312126ea81b0800000000000000
+      internalID: -5653453352244829577
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_47
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 349
+        width: 70
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdc50ba009e185bf0800000000000000
+      internalID: -335484568235647780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_48
+      rect:
+        serializedVersion: 2
+        x: 459
+        y: 327
+        width: 151
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e8cf0bb0a964d740800000000000000
+      internalID: 5175878010809600230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_49
+      rect:
+        serializedVersion: 2
+        x: 931
+        y: 313
+        width: 75
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff8b6bd45c8ddf840800000000000000
+      internalID: 5259598281762584831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_50
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 15
+        width: 274
+        height: 252
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97b82e4e835343380800000000000000
+      internalID: -8992504037477545095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_51
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 8
+        width: 294
+        height: 259
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e3201ac008355510800000000000000
+      internalID: 1537196423858103269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decor_asset_sheet_TRANSPARENT_52
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 7
+        width: 418
+        height: 269
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42385230c3e11bcf0800000000000000
+      internalID: -238376062174264540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      decor_asset_sheet_TRANSPARENT_0: 1437573122467237684
+      decor_asset_sheet_TRANSPARENT_1: 7090609304093666389
+      decor_asset_sheet_TRANSPARENT_10: 8950129524413836574
+      decor_asset_sheet_TRANSPARENT_11: 7635260827572123612
+      decor_asset_sheet_TRANSPARENT_12: -2924314366670694728
+      decor_asset_sheet_TRANSPARENT_13: 8825568442446938375
+      decor_asset_sheet_TRANSPARENT_14: -6111689542477808744
+      decor_asset_sheet_TRANSPARENT_15: 5117330114114305400
+      decor_asset_sheet_TRANSPARENT_16: 7987487958944529498
+      decor_asset_sheet_TRANSPARENT_17: -219247880005603890
+      decor_asset_sheet_TRANSPARENT_18: -3920488400448738736
+      decor_asset_sheet_TRANSPARENT_19: -3995764850962971573
+      decor_asset_sheet_TRANSPARENT_2: 7944362504503077671
+      decor_asset_sheet_TRANSPARENT_20: -3677505502357902748
+      decor_asset_sheet_TRANSPARENT_21: 7080630310326223812
+      decor_asset_sheet_TRANSPARENT_22: 6595690731853097461
+      decor_asset_sheet_TRANSPARENT_23: -629494958366335575
+      decor_asset_sheet_TRANSPARENT_24: 3901870465011955765
+      decor_asset_sheet_TRANSPARENT_25: -5343520963729265058
+      decor_asset_sheet_TRANSPARENT_26: 638374454838244125
+      decor_asset_sheet_TRANSPARENT_27: -4816123339207170872
+      decor_asset_sheet_TRANSPARENT_28: -2456273924286364620
+      decor_asset_sheet_TRANSPARENT_29: -3803366551513044492
+      decor_asset_sheet_TRANSPARENT_3: -1346217073241524462
+      decor_asset_sheet_TRANSPARENT_30: -6966679400074813370
+      decor_asset_sheet_TRANSPARENT_31: -8225184483913010572
+      decor_asset_sheet_TRANSPARENT_32: 4473022505086680273
+      decor_asset_sheet_TRANSPARENT_33: -675707429675479831
+      decor_asset_sheet_TRANSPARENT_34: -5134821228578520654
+      decor_asset_sheet_TRANSPARENT_35: 7128267456162499987
+      decor_asset_sheet_TRANSPARENT_36: 2638091731223757444
+      decor_asset_sheet_TRANSPARENT_37: 3642518591023094004
+      decor_asset_sheet_TRANSPARENT_38: -3668383385478039541
+      decor_asset_sheet_TRANSPARENT_39: 6991112169671169621
+      decor_asset_sheet_TRANSPARENT_4: -341080933430282558
+      decor_asset_sheet_TRANSPARENT_40: 7568867509657230660
+      decor_asset_sheet_TRANSPARENT_41: -82789387121284472
+      decor_asset_sheet_TRANSPARENT_42: -8012140092280103787
+      decor_asset_sheet_TRANSPARENT_43: -3339296389536654585
+      decor_asset_sheet_TRANSPARENT_44: 8607268135317236197
+      decor_asset_sheet_TRANSPARENT_45: -3060172763713398238
+      decor_asset_sheet_TRANSPARENT_46: -5653453352244829577
+      decor_asset_sheet_TRANSPARENT_47: -335484568235647780
+      decor_asset_sheet_TRANSPARENT_48: 5175878010809600230
+      decor_asset_sheet_TRANSPARENT_49: 5259598281762584831
+      decor_asset_sheet_TRANSPARENT_5: 3006639994810052680
+      decor_asset_sheet_TRANSPARENT_50: -8992504037477545095
+      decor_asset_sheet_TRANSPARENT_51: 1537196423858103269
+      decor_asset_sheet_TRANSPARENT_52: -238376062174264540
+      decor_asset_sheet_TRANSPARENT_6: -18937023869620348
+      decor_asset_sheet_TRANSPARENT_7: 7647965298788648907
+      decor_asset_sheet_TRANSPARENT_8: -2173239251590363933
+      decor_asset_sheet_TRANSPARENT_9: -5478044030003592129
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

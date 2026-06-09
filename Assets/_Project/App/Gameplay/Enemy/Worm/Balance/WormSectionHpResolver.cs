@@ -16,7 +16,8 @@ public sealed class WormSectionHpResolver
         int levelNumber,
         WeaponPowerSnapshot power,
         float runtimePressureMultiplier,
-        float headPathPressureMultiplier)
+        float headPathPressureMultiplier,
+        bool hasRevivedThisRun = false)
     {
         if (_config == null || !_config.Enabled)
             return baseHp;
@@ -27,8 +28,10 @@ public sealed class WormSectionHpResolver
             totalSections,
             levelNumber);
 
+        float postReviveHpMultiplier = _config.GetPostReviveHpMultiplier(hasRevivedThisRun);
+
         if (!_config.UsesDynamicHp || !power.IsValid)
-            return ClampHp(independentHp);
+            return ClampHp(independentHp * postReviveHpMultiplier);
 
         float dynamicHp =
             power.EstimatedDps *
@@ -48,7 +51,7 @@ public sealed class WormSectionHpResolver
             dynamicHp,
             _config.DynamicHpWeight);
 
-        return ClampHp(blendedHp * _config.HpMultiplier);
+        return ClampHp(blendedHp * _config.HpMultiplier * postReviveHpMultiplier);
     }
 
     private float ResolveIndependentHp(

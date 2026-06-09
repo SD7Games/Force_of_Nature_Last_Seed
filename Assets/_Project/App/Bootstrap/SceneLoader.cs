@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public static class SceneNames
@@ -7,8 +8,24 @@ public static class SceneNames
 
 public sealed class SceneLoader
 {
-    public void LoadGame()
+    public AsyncOperation LoadGameAsync(bool allowSceneActivation)
     {
-        SceneManager.LoadScene(SceneNames.Game);
+        AsyncOperation operation = SceneManager.LoadSceneAsync(SceneNames.Game);
+
+        if (operation != null)
+            operation.allowSceneActivation = allowSceneActivation;
+
+        return operation;
+    }
+
+    public void Activate(AsyncOperation operation)
+    {
+        if (operation != null)
+            operation.allowSceneActivation = true;
+    }
+
+    public bool IsReadyToActivate(AsyncOperation operation)
+    {
+        return operation == null || operation.progress >= 0.9f;
     }
 }

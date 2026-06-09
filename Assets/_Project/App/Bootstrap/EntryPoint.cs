@@ -3,8 +3,11 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class EntryPoint : MonoBehaviour
 {
+    [SerializeField] private BootstrapLoadingView _loadingView;
+
     private static EntryPoint _instance;
     private Bootstrap _bootstrap;
+    private bool _started;
 
     private void Awake()
     {
@@ -22,6 +25,10 @@ public sealed class EntryPoint : MonoBehaviour
 
     private void Start()
     {
-        _bootstrap.StartGame();
+        if (_started)
+            return;
+
+        _started = true;
+        StartCoroutine(_bootstrap.StartGame(_loadingView));
     }
 }

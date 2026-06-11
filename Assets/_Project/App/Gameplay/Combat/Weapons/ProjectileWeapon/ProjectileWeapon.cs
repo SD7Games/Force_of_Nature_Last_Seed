@@ -27,6 +27,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private WeaponRuntimeState _runtimeState;
 
+    public event Action<float, float> AttackCycleStarted;
     public event Action RuntimeStatsChanged;
 
     public WeaponConfig Config => _config;
@@ -154,7 +155,16 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
     private void StartSalvo()
     {
         _salvoShotsRemaining = 1 + Mathf.Max(0, _runtimeState.SalvoExtraShots);
+        AttackCycleStarted?.Invoke(_currentShotCooldown, GetBaseShotCooldown());
         FireSalvoShot();
+    }
+
+    private float GetBaseShotCooldown()
+    {
+        if (_config == null)
+            return _currentShotCooldown;
+
+        return Mathf.Max(_config.MinShotCooldown, _config.FireRate);
     }
 
     private void TickSalvo()

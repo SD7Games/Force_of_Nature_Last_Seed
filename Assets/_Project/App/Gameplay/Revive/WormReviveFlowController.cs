@@ -18,7 +18,8 @@ public sealed class WormReviveFlowController : MonoBehaviour
     [SerializeField] private RewardedAdService _rewardedAdService;
     [SerializeField, Min(0)] private int _maxReviveAttempts = 1;
     [SerializeField, Range(0f, 1f)] private float _fallbackRemainingLevelNormalized = 0.5f;
-    [SerializeField] private bool _reloadCurrentSceneOnGiveUp = true;
+    [FormerlySerializedAs("_reloadCurrentSceneOnGiveUp")]
+    [SerializeField] private bool _returnToLobbyOnGiveUp = true;
     [FormerlySerializedAs("_giveUpRestartAnimationDuration")]
     [SerializeField, Min(0f)] private float _popupCloseAnimationDuration = 0.55f;
     [FormerlySerializedAs("_giveUpRestartTargetScale")]
@@ -180,13 +181,13 @@ public sealed class WormReviveFlowController : MonoBehaviour
 
     private void HandleGiveUpRequested()
     {
-        if (!_reloadCurrentSceneOnGiveUp)
+        if (!_returnToLobbyOnGiveUp)
         {
             _popupRoot?.HideActive();
             return;
         }
 
-        PlayPopupCloseAnimation(RequestRunRestart);
+        PlayPopupCloseAnimation(RequestLobbyLoad);
     }
 
     public void ResetForNewRun()
@@ -198,10 +199,10 @@ public sealed class WormReviveFlowController : MonoBehaviour
         _isReviveRollbackPending = false;
     }
 
-    private void RequestRunRestart()
+    private void RequestLobbyLoad()
     {
         _popupRoot?.HideActive();
-        GameplayRunRestartEvents.RequestRestart();
+        SceneNavigationEvents.RequestLobby();
     }
 
     private void PlayPopupCloseAnimation(System.Action onComplete)

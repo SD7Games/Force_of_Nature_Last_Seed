@@ -10,9 +10,9 @@ public sealed class Bootstrap
         _sceneLoader = sceneLoader;
     }
 
-    public IEnumerator StartGame(BootstrapLoadingView loadingView)
+    public IEnumerator LoadInitialLobby(BootstrapLoadingView loadingView)
     {
-        AsyncOperation loadOperation = _sceneLoader.LoadGameAsync(false);
+        AsyncOperation loadOperation = _sceneLoader.LoadLobbyAsync(false);
 
         if (loadingView != null)
             loadingView.Play();

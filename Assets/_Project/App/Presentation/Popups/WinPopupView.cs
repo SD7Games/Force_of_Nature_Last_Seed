@@ -70,17 +70,17 @@ public sealed class WinPopupView : PopupView
     {
         AcceptRequested?.Invoke();
 
-        RequestRunRestart(_closeOnAccept);
+        RequestLobbyReturn(_closeOnAccept);
     }
 
     private void HandleDoubleRewardClicked()
     {
         DoubleRewardRequested?.Invoke();
 
-        RequestRunRestart(_closeOnDoubleReward);
+        RequestLobbyReturn(_closeOnDoubleReward);
     }
 
-    private void RequestRunRestart(bool closeOnComplete)
+    private void RequestLobbyReturn(bool closeOnComplete)
     {
         if (_restartRequested)
             return;
@@ -92,7 +92,7 @@ public sealed class WinPopupView : PopupView
             if (closeOnComplete)
                 RequestClose();
 
-            GameplayRunRestartEvents.RequestRestart();
+            SceneNavigationEvents.RequestLobby();
         });
     }
 

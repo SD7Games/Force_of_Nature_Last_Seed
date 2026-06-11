@@ -23,20 +23,31 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _WindStrength: 0.024
-    - _WindSpeed: 5.2
-    - _PulseSpeed: 0.52
-    - _PulseThreshold: 0.8
-    - _InfluenceStart: 0.46
-    - _InfluencePower: 2.4
-    - _WaveFrequency: 5.8
+    - PixelSnap: 0
+    - _BreathSpeed: 0.58
+    - _BreathStrength: 0.0058
+    - _EnableExternalAlpha: 0
+    - _InfluencePower: 2.15
+    - _InfluenceStart: 0.38
     - _PhaseOffset: 0.35
-    m_Colors: []
+    - _PulseSpeed: 0.44
+    - _PulseThreshold: 0.68
+    - _WaveFrequency: 5.15
+    - _WindSpeed: 4.65
+    - _WindStrength: 0.04
+    - _ZWrite: 0
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

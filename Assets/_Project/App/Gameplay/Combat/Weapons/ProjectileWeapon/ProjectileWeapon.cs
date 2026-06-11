@@ -18,8 +18,11 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private float _weaponCooldownTimer;
     private float _currentShotCooldown;
+    private float _preparedAttackElapsed;
+    private float _lastAttackReleaseDelay;
     private float _salvoTimer;
     private int _salvoShotsRemaining;
+    private bool _isAttackPrepared;
     private bool _isSalvoActive;
 
     private readonly List<ShotSpawnData> _shots = new();
@@ -63,10 +66,16 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
             return;
         }
 
+        if (_isAttackPrepared)
+        {
+            TickPreparedAttack();
+            return;
+        }
+
         _weaponCooldownTimer -= Time.deltaTime;
 
         if (_weaponCooldownTimer <= 0f)
-            StartSalvo();
+            StartAttackCycle();
     }
 
     /// <summary>
@@ -90,7 +99,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
             return;
         }
 
-        if (!_isSalvoActive)
+        if (!_isAttackPrepared && !_isSalvoActive)
             _weaponCooldownTimer = Mathf.Min(_weaponCooldownTimer, _currentShotCooldown);
     }
 
@@ -102,6 +111,9 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     public void ClearTransientState()
     {
+        _isAttackPrepared = false;
+        _preparedAttackElapsed = 0f;
+        _lastAttackReleaseDelay = 0f;
         _isSalvoActive = false;
         _salvoTimer = 0f;
         _salvoShotsRemaining = 0;
@@ -146,17 +158,30 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private void ResetFiringCycle()
     {
+        _isAttackPrepared = false;
+        _preparedAttackElapsed = 0f;
+        _lastAttackReleaseDelay = 0f;
         _isSalvoActive = false;
         _salvoTimer = 0f;
         _salvoShotsRemaining = 0;
         _weaponCooldownTimer = 0f;
     }
 
-    private void StartSalvo()
+    private void StartAttackCycle()
     {
-        _salvoShotsRemaining = 1 + Mathf.Max(0, _runtimeState.SalvoExtraShots);
-        AttackCycleStarted?.Invoke(_currentShotCooldown, GetBaseShotCooldown());
-        FireSalvoShot();
+        _isAttackPrepared = true;
+        _preparedAttackElapsed = 0f;
+        _lastAttackReleaseDelay = 0f;
+
+        Action<float, float> attackCycleStarted = AttackCycleStarted;
+
+        if (attackCycleStarted == null)
+        {
+            ReleasePreparedAttack();
+            return;
+        }
+
+        attackCycleStarted.Invoke(_currentShotCooldown, GetBaseShotCooldown());
     }
 
     private float GetBaseShotCooldown()
@@ -165,6 +190,35 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
             return _currentShotCooldown;
 
         return Mathf.Max(_config.MinShotCooldown, _config.FireRate);
+    }
+
+    public void ReleasePreparedAttack()
+    {
+        ReleasePreparedAttack(_preparedAttackElapsed);
+    }
+
+    public void ReleasePreparedAttack(float preparedAttackElapsed)
+    {
+        if (!_isAttackPrepared)
+            return;
+
+        if (_pool == null || _firePoint == null || _config == null || _runtimeState == null)
+            return;
+
+        _isAttackPrepared = false;
+        _lastAttackReleaseDelay = Mathf.Clamp(preparedAttackElapsed, 0f, _currentShotCooldown);
+        _preparedAttackElapsed = 0f;
+        _salvoShotsRemaining = 1 + Mathf.Max(0, _runtimeState.SalvoExtraShots);
+
+        FireSalvoShot();
+    }
+
+    private void TickPreparedAttack()
+    {
+        _preparedAttackElapsed += Time.deltaTime;
+
+        if (_preparedAttackElapsed >= _currentShotCooldown)
+            ReleasePreparedAttack(_currentShotCooldown);
     }
 
     private void TickSalvo()
@@ -195,7 +249,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private void StartWeaponCooldown()
     {
-        _weaponCooldownTimer = _currentShotCooldown;
+        _weaponCooldownTimer = Mathf.Max(0f, _currentShotCooldown - _lastAttackReleaseDelay);
     }
 
     private float GetSalvoInterval()

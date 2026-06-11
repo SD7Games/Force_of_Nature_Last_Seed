@@ -14,11 +14,14 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
     [SerializeField] private string _attackStateName = "Weapon";
     [SerializeField, Min(0.01f)] private float _baseAnimationDuration = 1.1f;
     [SerializeField, Min(0.01f)] private float _minAnimationDuration = 0.25f;
+    [SerializeField, Range(0f, 1f)] private float _projectileReleaseNormalizedTime = 0.58f;
     [SerializeField] private bool _resetPoseWhenStopped = true;
 
     private int _attackStateHash;
     private float _animationTimer;
+    private float _currentAnimationDuration;
     private bool _isPlaying;
+    private bool _projectileReleased;
 
     private void Reset()
     {
@@ -58,6 +61,8 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
         CombatState.OnShootStateChanged -= HandleShootStateChanged;
         _isPlaying = false;
+        _projectileReleased = false;
+        _currentAnimationDuration = 0f;
 
         if (_animator != null)
         {
@@ -66,15 +71,22 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (!_isPlaying)
             return;
 
+        TryReleaseProjectileFromAnimationProgress();
+
         _animationTimer -= Time.deltaTime;
 
         if (_animationTimer <= 0f)
+        {
+            if (!_projectileReleased && CombatState.CanShoot)
+                ReleaseProjectileAtNormalizedTime(1f);
+
             StopAnimation();
+        }
     }
 
     private void HandleAttackCycleStarted(float currentCooldown, float baseCooldown)
@@ -83,6 +95,11 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
             return;
 
         PlayAnimation(GetScaledAnimationDuration(currentCooldown, baseCooldown));
+    }
+
+    public void ReleasePreparedAttack()
+    {
+        // Kept intentionally so stale Animation Events do not release the shot early.
     }
 
     private void HandleShootStateChanged(bool canShoot)
@@ -103,7 +120,46 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
             _animator.Play(_attackStateHash, BaseLayerIndex, 0f);
 
         _animationTimer = duration;
+        _currentAnimationDuration = duration;
+        _projectileReleased = false;
         _isPlaying = true;
+    }
+
+    private void TryReleaseProjectileFromAnimationProgress()
+    {
+        if (_projectileReleased || !CombatState.CanShoot)
+            return;
+
+        float normalizedTime = GetCurrentAnimationNormalizedTime();
+
+        if (normalizedTime < _projectileReleaseNormalizedTime)
+            return;
+
+        ReleaseProjectileAtNormalizedTime(normalizedTime);
+    }
+
+    private void ReleaseProjectileAtNormalizedTime(float normalizedTime)
+    {
+        _projectileReleased = true;
+
+        if (_weapon == null)
+            return;
+
+        float preparedAttackElapsed = Mathf.Clamp01(normalizedTime) * _currentAnimationDuration;
+        _weapon.ReleasePreparedAttack(preparedAttackElapsed);
+    }
+
+    private float GetCurrentAnimationNormalizedTime()
+    {
+        if (_animator == null || !_animator.enabled || _currentAnimationDuration <= 0f)
+            return 1f;
+
+        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(BaseLayerIndex);
+
+        if (_attackStateHash != 0 && stateInfo.shortNameHash == _attackStateHash)
+            return Mathf.Clamp01(stateInfo.normalizedTime);
+
+        return Mathf.Clamp01(1f - _animationTimer / _currentAnimationDuration);
     }
 
     private float GetScaledAnimationDuration(float currentCooldown, float baseCooldown)
@@ -123,7 +179,9 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
             return;
 
         _isPlaying = false;
+        _projectileReleased = false;
         _animationTimer = 0f;
+        _currentAnimationDuration = 0f;
 
         if (_resetPoseWhenStopped)
         {

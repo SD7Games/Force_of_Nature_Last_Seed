@@ -907,8 +907,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneFadeOverlay
   _targetImage: {fileID: 730615255}
-  _fadeDuration: 3
-  _fadeEase: 3
+  _fadeDuration: 2
+  _fadeEase: 4
   _playOnEnable: 1
   _useUnscaledTime: 1
   _blockRaycastsDuringFade: 1

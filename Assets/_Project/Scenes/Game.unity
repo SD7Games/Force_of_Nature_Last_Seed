@@ -335,7 +335,7 @@ MonoBehaviour:
   _rewardedAdService: {fileID: 91581460}
   _maxReviveAttempts: 1
   _fallbackRemainingLevelNormalized: 0.5
-  _reloadCurrentSceneOnGiveUp: 1
+  _returnToLobbyOnGiveUp: 1
   _popupCloseAnimationDuration: 0.55
   _popupCloseAnimationTargetScale: 0.92
 --- !u!114 &91581460
@@ -1672,8 +1672,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneFadeOverlay
   _targetImage: {fileID: 993268173}
-  _fadeDuration: 3
-  _fadeEase: 3
+  _fadeDuration: 2
+  _fadeEase: 4
   _playOnEnable: 1
   _useUnscaledTime: 1
   _blockRaycastsDuringFade: 1
@@ -1907,29 +1907,11 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1286495987
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1286495983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8f0e0e8713f4c9ba58d0cf60a2fc2f1, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponAutoAttackAnimator
-  _weapon: {fileID: 501089295}
-  _animator: {fileID: 1286495985}
-  _attackStateName: Weapon
-  _baseAnimationDuration: 1.1
-  _minAnimationDuration: 0.25
-  _resetPoseWhenStopped: 1
 --- !u!212 &1286495986
 SpriteRenderer:
   serializedVersion: 2
@@ -1989,6 +1971,24 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1286495987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286495983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8f0e0e8713f4c9ba58d0cf60a2fc2f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponAutoAttackAnimator
+  _weapon: {fileID: 501089295}
+  _animator: {fileID: 1286495985}
+  _attackStateName: Weapon
+  _baseAnimationDuration: 1.1
+  _minAnimationDuration: 0.25
+  _resetPoseWhenStopped: 1
 --- !u!1 &1349314161
 GameObject:
   m_ObjectHideFlags: 0

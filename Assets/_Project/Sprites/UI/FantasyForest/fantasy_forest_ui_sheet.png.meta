@@ -1,0 +1,702 @@
+fileFormatVersion: 2
+guid: b97737c0bfc118647a750dfbb6b412da
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8676474335373980746
+    second: fantasy_forest_ui_sheet_0
+  - first:
+      213: 5474885171552906825
+    second: fantasy_forest_ui_sheet_1
+  - first:
+      213: -53852704026137770
+    second: fantasy_forest_ui_sheet_2
+  - first:
+      213: 5837992327032599269
+    second: fantasy_forest_ui_sheet_3
+  - first:
+      213: -3807080602625035943
+    second: fantasy_forest_ui_sheet_4
+  - first:
+      213: -5096763822663532861
+    second: fantasy_forest_ui_sheet_5
+  - first:
+      213: 4502757938239898331
+    second: fantasy_forest_ui_sheet_6
+  - first:
+      213: -6075752397803919280
+    second: fantasy_forest_ui_sheet_7
+  - first:
+      213: -1566335082298247167
+    second: fantasy_forest_ui_sheet_8
+  - first:
+      213: -336032149616397060
+    second: fantasy_forest_ui_sheet_9
+  - first:
+      213: -3554835980117161984
+    second: fantasy_forest_ui_sheet_10
+  - first:
+      213: -5068109141388397580
+    second: fantasy_forest_ui_sheet_11
+  - first:
+      213: -1035006536757541330
+    second: fantasy_forest_ui_sheet_12
+  - first:
+      213: -162728028959283720
+    second: fantasy_forest_ui_sheet_13
+  - first:
+      213: -741685662955902900
+    second: fantasy_forest_ui_sheet_14
+  - first:
+      213: -7335079740591922893
+    second: fantasy_forest_ui_sheet_15
+  - first:
+      213: 1471955293469273852
+    second: fantasy_forest_ui_sheet_16
+  - first:
+      213: 9175781791677767729
+    second: fantasy_forest_ui_sheet_17
+  - first:
+      213: -2139534580755395296
+    second: fantasy_forest_ui_sheet_18
+  - first:
+      213: -267354683418460565
+    second: fantasy_forest_ui_sheet_19
+  - first:
+      213: 1367063225544345197
+    second: fantasy_forest_ui_sheet_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WindowsStoreApps
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_0
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 826
+        width: 915
+        height: 158
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4472c62077096870800000000000000
+      internalID: 8676474335373980746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_1
+      rect:
+        serializedVersion: 2
+        x: 1003
+        y: 817
+        width: 137
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94ee67c6e03bafb40800000000000000
+      internalID: 5474885171552906825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_2
+      rect:
+        serializedVersion: 2
+        x: 1172
+        y: 817
+        width: 136
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65be352404da04ff0800000000000000
+      internalID: -53852704026137770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_3
+      rect:
+        serializedVersion: 2
+        x: 1339
+        y: 813
+        width: 136
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e2fb362717b40150800000000000000
+      internalID: 5837992327032599269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_4
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 580
+        width: 739
+        height: 228
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9513149dc588a2bc0800000000000000
+      internalID: -3807080602625035943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_5
+      rect:
+        serializedVersion: 2
+        x: 1384
+        y: 698
+        width: 79
+        height: 75
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cef31e9e48a449b0800000000000000
+      internalID: -5096763822663532861
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_6
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 330
+        width: 665
+        height: 215
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd20c5afc720d7e30800000000000000
+      internalID: 4502757938239898331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_7
+      rect:
+        serializedVersion: 2
+        x: 838
+        y: 543
+        width: 148
+        height: 136
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0586ba982679eaba0800000000000000
+      internalID: -6075752397803919280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_8
+      rect:
+        serializedVersion: 2
+        x: 1001
+        y: 542
+        width: 151
+        height: 136
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 108716c9a82434ae0800000000000000
+      internalID: -1566335082298247167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_9
+      rect:
+        serializedVersion: 2
+        x: 1167
+        y: 543
+        width: 150
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf4f0015a8c265bf0800000000000000
+      internalID: -336032149616397060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_10
+      rect:
+        serializedVersion: 2
+        x: 1334
+        y: 542
+        width: 151
+        height: 136
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 008c65aa28faaaec0800000000000000
+      internalID: -3554835980117161984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_11
+      rect:
+        serializedVersion: 2
+        x: 744
+        y: 370
+        width: 349
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f372a086957aa9b0800000000000000
+      internalID: -5068109141388397580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_12
+      rect:
+        serializedVersion: 2
+        x: 1127
+        y: 370
+        width: 351
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e260c5cd90be2a1f0800000000000000
+      internalID: -1035006536757541330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_13
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 80
+        width: 195
+        height: 184
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f5e1e648bfddbdf0800000000000000
+      internalID: -162728028959283720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_14
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 55
+        width: 200
+        height: 190
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c486384b1d005b5f0800000000000000
+      internalID: -741685662955902900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_15
+      rect:
+        serializedVersion: 2
+        x: 763
+        y: 220
+        width: 695
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 331aadeb6df843a90800000000000000
+      internalID: -7335079740591922893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_16
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 65
+        width: 204
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfeed786a8f6d6410800000000000000
+      internalID: 1471955293469273852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_17
+      rect:
+        serializedVersion: 2
+        x: 701
+        y: 57
+        width: 206
+        height: 152
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13063759cece65f70800000000000000
+      internalID: 9175781791677767729
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_18
+      rect:
+        serializedVersion: 2
+        x: 927
+        y: 27
+        width: 159
+        height: 175
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02d096172a8de42e0800000000000000
+      internalID: -2139534580755395296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_19
+      rect:
+        serializedVersion: 2
+        x: 1099
+        y: 77
+        width: 231
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6e3ec9f45a2a4cf0800000000000000
+      internalID: -267354683418460565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fantasy_forest_ui_sheet_20
+      rect:
+        serializedVersion: 2
+        x: 1333
+        y: 41
+        width: 168
+        height: 156
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d660218b2c8c8f210800000000000000
+      internalID: 1367063225544345197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      fantasy_forest_ui_sheet_0: 8676474335373980746
+      fantasy_forest_ui_sheet_1: 5474885171552906825
+      fantasy_forest_ui_sheet_10: -3554835980117161984
+      fantasy_forest_ui_sheet_11: -5068109141388397580
+      fantasy_forest_ui_sheet_12: -1035006536757541330
+      fantasy_forest_ui_sheet_13: -162728028959283720
+      fantasy_forest_ui_sheet_14: -741685662955902900
+      fantasy_forest_ui_sheet_15: -7335079740591922893
+      fantasy_forest_ui_sheet_16: 1471955293469273852
+      fantasy_forest_ui_sheet_17: 9175781791677767729
+      fantasy_forest_ui_sheet_18: -2139534580755395296
+      fantasy_forest_ui_sheet_19: -267354683418460565
+      fantasy_forest_ui_sheet_2: -53852704026137770
+      fantasy_forest_ui_sheet_20: 1367063225544345197
+      fantasy_forest_ui_sheet_3: 5837992327032599269
+      fantasy_forest_ui_sheet_4: -3807080602625035943
+      fantasy_forest_ui_sheet_5: -5096763822663532861
+      fantasy_forest_ui_sheet_6: 4502757938239898331
+      fantasy_forest_ui_sheet_7: -6075752397803919280
+      fantasy_forest_ui_sheet_8: -1566335082298247167
+      fantasy_forest_ui_sheet_9: -336032149616397060
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

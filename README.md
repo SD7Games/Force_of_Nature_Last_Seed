@@ -1,12 +1,26 @@
-# Last Seed: Survival
+# Last Seed Survivor
 
 2D mobile auto-shooter built in Unity 6 and C#, focused on modular gameplay systems, mobile performance, data-driven balancing, and maintainable feature implementation.
 
-Status: in development, Android-focused, prepared around a public mobile release workflow.
+Portfolio hub: https://tokarevdev.github.io/
+
+Status: in development, Android-focused, prepared around a public mobile release workflow. Closed testing is complete; Google Play post-test review/release preparation is in progress.
+
+## Quick Review
+
+This repository is public as a portfolio/code review sample. Unity vendor packages and imported assets are present, but the portfolio-relevant code lives under `Assets/_Project/App/`.
+
+Start here:
+
+- Main project code: `Assets/_Project/App/`
+- Bootstrap and scene startup: `Assets/_Project/App/Bootstrap/`
+- Combat, weapons, projectiles, and rewards: `Assets/_Project/App/Gameplay/Combat/`
+- Segmented enemy systems and balance tooling: `Assets/_Project/App/Gameplay/Enemy/Worm/`
+- Presentation/UI gameplay flow: `Assets/_Project/App/Presentation/`
 
 ## Overview
 
-Last Seed: Survival is my current main Unity project. The goal is to build a mobile auto-shooter where combat, rewards, enemy behavior, UI flow, and balancing can grow without turning the project into tightly coupled scene logic.
+Last Seed Survivor is my current main Unity project. The goal is to build a mobile auto-shooter where combat, rewards, enemy behavior, UI flow, and balancing can grow without turning the project into tightly coupled scene logic.
 
 The project is structured around practical production concerns:
 
@@ -162,17 +176,7 @@ Architecture principles used:
 
 ## Tech Stack
 
-- Unity 6
-- C#
-- UGUI
-- ScriptableObjects
-- Input System
-- Physics2D
-- DOTween
-- URP
-- Custom object pooling
-- Unity Editor tooling
-- Android/mobile-oriented runtime constraints
+Unity 6, C#, UGUI, ScriptableObjects, Input System, Physics2D, DOTween, URP, custom object pooling, Unity Editor tooling, Android/mobile-oriented runtime constraints.
 
 ## What This Project Demonstrates
 
@@ -182,12 +186,8 @@ Architecture principles used:
 - Thinking about mobile performance before the project becomes object-heavy.
 - Turning a prototype into a project that can be balanced, debugged, and prepared for release.
 
-## Repository Notes
-
-The repository is public as a portfolio/code review sample. Some visual assets, final balancing, videos, and release materials may change while the project is still in development.
-
 ## Author
 
 Oleksandr Tokarev  
-Unity C# Developer  
+Unity C# Developer / C# Gameplay Programmer  
 Portfolio: https://tokarevdev.github.io/

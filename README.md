@@ -2,8 +2,10 @@
 
 Unity 6 mobile 2D auto-shooter project focused on modular combat, ScriptableObject-driven rewards, segmented enemy behavior, object pooling, balance simulations, and Android release preparation.
 
-Portfolio hub: https://tokarevdev.github.io/
+Portfolio hub: https://tokarevdev.github.io
+
 Gameplay video: https://youtube.com/shorts/HiQBlYjienI?feature=share
+
 Architecture notes: ./ARCHITECTURE.md
 
 Status: closed test passed. Android release preparation continues with modular combat, pooled runtime systems, and balance tooling ready for review.

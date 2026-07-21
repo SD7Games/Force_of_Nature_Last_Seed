@@ -8,7 +8,9 @@ Gameplay video: https://youtube.com/shorts/HiQBlYjienI?feature=share
 
 Architecture notes: ./ARCHITECTURE.md
 
-Status: closed test passed. Android release preparation continues with modular combat, pooled runtime systems, and balance tooling ready for review.
+Development period: Mar 2026 - present.
+
+Status: closed test passed. Android release preparation continues with modular combat, pooled runtime systems, and deterministic balance tooling ready for review.
 
 ## Quick Review
 
@@ -38,7 +40,7 @@ The project is structured around practical production concerns:
 
 - Challenge: mobile survival gameplay needed scalable combat, rewards, enemy pressure, and tuning instead of one-off prototype logic.
 - Action: separated data, runtime systems, UI binding, bootstrap, pooling, segmented enemy logic, and balance simulation tools.
-- Result: closed test passed; Android release preparation continues with modular combat, pooled runtime systems, and balance tooling ready for review.
+- Result: built a one-click deterministic validation cycle covering 4,000 battles across four player-behavior scenarios, with zero combat-logic failures detected in repeated runs.
 
 ## My Role
 
@@ -80,6 +82,8 @@ Solo Unity C# development across gameplay programming, Unity scene/prefab setup,
 
 - Custom Worm Balance Lab editor window with deterministic simulation seed, configurable simulation count, level number, worm sections, path timing, hit efficiency, reward strategy, rerolls, ad assists, and revive behavior.
 - Simulations use real reward database, reward effects, weapon configs, HP resolver, and DPS estimation.
+- The standard one-click validation cycle runs four player-behavior scenarios of 1,000 battles each, covering ad engagement and revive combinations.
+- Repeated 4,000-battle cycles completed with zero detected combat-logic failures.
 - Balance iteration becomes measurable instead of relying only on manual replay.
 
 ## Architecture
@@ -113,7 +117,7 @@ Unity vendor packages and imported assets are present in the repository, but the
 
 ## Tech Stack
 
-Unity 6, C#, UGUI, ScriptableObjects, Input System, Physics2D, DOTween, URP, custom object pooling, Unity Editor tooling, Android/mobile-oriented runtime constraints.
+Unity 6, C#, UGUI, ScriptableObjects, Input System, Physics2D, DOTween, URP, custom object pooling, deterministic balance simulations, Unity Editor tooling, Android/mobile-oriented runtime constraints.
 
 ## What This Project Demonstrates
 
@@ -129,6 +133,10 @@ The repository is public as a portfolio/code review sample. Some visual assets, 
 
 ## Author
 
-Oleksandr Tokarev  
-Unity C# Developer / C# Gameplay Programmer  
+Oleksandr Tokarev
+
+Unity Developer | C# Gameplay Programmer
+
+Email: otokarevdev@gmail.com
+
 Portfolio: https://tokarevdev.github.io/

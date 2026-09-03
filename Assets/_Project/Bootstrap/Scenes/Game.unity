@@ -230,12 +230,6 @@ MonoBehaviour:
   _wormCombat: {fileID: 91581457}
   _hpPresenter: {fileID: 1262977638}
   _rewardDatabase: {fileID: 11400000, guid: bafb328ff8286024f9f6854a598d8d25, type: 2}
-  _weapon: {fileID: 501089295}
-  _acaciaThornWeapon: {fileID: 501089296}
-  _hpScalingConfig: {fileID: 11400000, guid: 0cf733b5054a4ec2a3770fda9b75f3d8, type: 2}
-  _adaptiveRebalanceUpgradeInterval: 1
-  _adaptiveRebalanceMinInterval: 2
-  _levelNumber: 1
   _sectionCount: 70
   _poolPadding: 32
   _prewarmBatchSize: 64
@@ -395,6 +389,7 @@ GameObject:
   - component: {fileID: 141515089}
   - component: {fileID: 141515088}
   - component: {fileID: 141515094}
+  - component: {fileID: 141515097}
   - component: {fileID: 141515093}
   - component: {fileID: 141515092}
   - component: {fileID: 141515091}
@@ -436,6 +431,7 @@ MonoBehaviour:
   _monoInstallers:
   - {fileID: 141515088}
   - {fileID: 141515094}
+  - {fileID: 141515097}
   - {fileID: 141515093}
   - {fileID: 141515092}
   - {fileID: 141515091}
@@ -541,6 +537,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73b5e527d43289d4d8e81208414c4986, type: 3}
   m_Name:
   m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.GameSessionInstaller
+--- !u!114 &141515097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af0fc3e478a306542bf5761695683895, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.WormInstaller
+  _wormSpawner: {fileID: 91581455}
+  _wormController: {fileID: 91581456}
+  _wormCombatController: {fileID: 91581457}
+  _hpScalingConfig: {fileID: 11400000, guid: 0cf733b5054a4ec2a3770fda9b75f3d8, type: 2}
+  _levelNumber: 1
+  _upgradeRebalanceInterval: 1
+  _minimumRebalanceInterval: 2
 --- !u!114 &141515096
 MonoBehaviour:
   m_ObjectHideFlags: 0

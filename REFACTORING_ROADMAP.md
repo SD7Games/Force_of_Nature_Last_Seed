@@ -114,6 +114,8 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 ### 6. Worm domain
 
 - In progress: worm segment creation is transactional and rolls every rented segment back on partial failure; damage receivers are cached once per pooled segment and rebound on reuse.
+- Adaptive HP orchestration is extracted from `WormSpawner` into a constructor-injected C# service with explicit policy, weapon-power, path-progress, and settings dependencies; `WormInstaller` owns its scene composition.
+- Adaptive HP policy resolution has EditMode coverage, and the migrated graph is covered by all-scene Zenject validation plus the direct-Game PlayMode smoke test.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

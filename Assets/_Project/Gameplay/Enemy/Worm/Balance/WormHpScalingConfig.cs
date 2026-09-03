@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Game/Worm/HP Scaling Config")]
-public sealed class WormHpScalingConfig : ScriptableObject
+public sealed class WormHpScalingConfig : ScriptableObject, IWormHpScalingPolicy
 {
     [SerializeField] private bool _enabled = true;
 

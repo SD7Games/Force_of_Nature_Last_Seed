@@ -1,10 +1,10 @@
-using UnityEngine;
+using System;
 
 public sealed class WormSectionHpResolver
 {
-    private readonly WormHpScalingConfig _config;
+    private readonly IWormHpScalingPolicy _config;
 
-    public WormSectionHpResolver(WormHpScalingConfig config)
+    public WormSectionHpResolver(IWormHpScalingPolicy config)
     {
         _config = config;
     }
@@ -38,18 +38,16 @@ public sealed class WormSectionHpResolver
             _config.GetTargetSectionLifetime(sectionIndex, totalSections) *
             _config.GetLevelMultiplier(levelNumber) *
             _config.GetPressureMultiplier(sectionIndex, totalSections) *
-            Mathf.Max(1f, runtimePressureMultiplier) *
-            Mathf.Max(0.1f, headPathPressureMultiplier);
+            Math.Max(1f, runtimePressureMultiplier) *
+            Math.Max(0.1f, headPathPressureMultiplier);
 
         if (_config.UseBaseHpAsFloor)
-            dynamicHp = Mathf.Max(independentHp, dynamicHp);
+            dynamicHp = Math.Max(independentHp, dynamicHp);
 
         dynamicHp = ClampDynamicHp(independentHp, dynamicHp);
 
-        float blendedHp = Mathf.Lerp(
-            independentHp,
-            dynamicHp,
-            _config.DynamicHpWeight);
+        float blendedHp = independentHp +
+            (dynamicHp - independentHp) * Clamp01(_config.DynamicHpWeight);
 
         return ClampHp(blendedHp * _config.HpMultiplier * postReviveHpMultiplier);
     }
@@ -60,7 +58,7 @@ public sealed class WormSectionHpResolver
         int totalSections,
         int levelNumber)
     {
-        float configuredBaseHp = Mathf.Max(baseHp, _config.BaseSectionHp);
+        float configuredBaseHp = Math.Max(baseHp, _config.BaseSectionHp);
 
         return configuredBaseHp *
             _config.GetLevelMultiplier(levelNumber) *
@@ -70,17 +68,20 @@ public sealed class WormSectionHpResolver
 
     private float ClampDynamicHp(float independentHp, float dynamicHp)
     {
-        float safeIndependentHp = Mathf.Max(1f, independentHp);
+        float safeIndependentHp = Math.Max(1f, independentHp);
         float maxDynamicHp = safeIndependentHp * _config.MaxDynamicHpMultiplier;
 
-        return Mathf.Min(dynamicHp, maxDynamicHp);
+        return Math.Min(dynamicHp, maxDynamicHp);
     }
 
     private int ClampHp(float hp)
     {
-        return Mathf.Clamp(
-            Mathf.RoundToInt(hp),
-            _config.MinHp,
-            _config.MaxHp);
+        int roundedHp = (int)Math.Round(hp, MidpointRounding.ToEven);
+        return Math.Max(_config.MinHp, Math.Min(_config.MaxHp, roundedHp));
+    }
+
+    private static float Clamp01(float value)
+    {
+        return Math.Max(0f, Math.Min(1f, value));
     }
 }

@@ -16,7 +16,7 @@ using UnityEngine;
 /// a group of segments is destroyed. In this case the worm head moves
 /// backwards until the remaining segments reconnect.
 /// </summary>
-public sealed class WormController : MonoBehaviour
+public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 {
     [Header("Rail")]
     [SerializeField] private RailPath _rail;

@@ -8,7 +8,7 @@ public enum RailPathInterpolationMode
 }
 
 [DisallowMultipleComponent]
-public sealed class RailPath : MonoBehaviour
+public sealed class RailPath : MonoBehaviour, IWormRailPath
 {
     private const float DefaultSampleStep = 0.1f;
     private const float MinSampleStep = 0.01f;

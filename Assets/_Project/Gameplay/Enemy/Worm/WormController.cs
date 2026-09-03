@@ -92,17 +92,9 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private bool _hasReachedPathEnd;
     private float _reviveVisualYOffset;
     private WormCombatBurstController _combatBurstController;
+    private WormRailTargetResolver _railTargetResolver;
 
     private Vector3 _tmpEuler;
-    private RailPath _cachedCatchUpRail;
-    private int _cachedCatchUpRailPointIndex = -1;
-    private float _cachedCatchUpRailPointDistance;
-    private RailPath _cachedReviveRollbackRail;
-    private int _cachedReviveRollbackRailPointIndex = -2;
-    private float _cachedReviveRollbackRailPointDistance;
-    private RailPath _cachedCombatBurstDisableRail;
-    private int _cachedCombatBurstDisableRailPointIndex = -2;
-    private float _cachedCombatBurstDisableDistance;
 
     public event Action PathCompleted;
     public event Action<bool> CombatBurstStateChanged;
@@ -113,9 +105,12 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _combatBurstController != null && _combatBurstController.IsActive;
 
     [Inject]
-    public void Construct(WormCombatBurstController combatBurstController)
+    public void Construct(
+        WormCombatBurstController combatBurstController,
+        WormRailTargetResolver railTargetResolver)
     {
         _combatBurstController = combatBurstController;
+        _railTargetResolver = railTargetResolver;
         _combatBurstController.ActiveStateChanged += HandleCombatBurstStateChanged;
     }
 
@@ -337,67 +332,24 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private bool TryGetCatchUpTargetDistance(out float targetDistance)
     {
-        targetDistance = 0f;
-
-        if (_rail == null)
-            return false;
-
-        if (_cachedCatchUpRail == _rail &&
-            _cachedCatchUpRailPointIndex == _catchUpRailPointIndex)
-        {
-            targetDistance = _cachedCatchUpRailPointDistance;
-            return true;
-        }
-
-        if (!_rail.TryGetControlPointDistance(_catchUpRailPointIndex, out targetDistance))
-            return false;
-
-        _cachedCatchUpRail = _rail;
-        _cachedCatchUpRailPointIndex = _catchUpRailPointIndex;
-        _cachedCatchUpRailPointDistance = targetDistance;
-
-        return true;
+        return _railTargetResolver.TryGetCatchUpDistance(
+            _rail,
+            _catchUpRailPointIndex,
+            out targetDistance);
     }
 
     private bool TryGetReviveRollbackTargetDistance(out float targetDistance)
     {
-        targetDistance = 0f;
-
-        if (_rail == null)
-            return false;
-
-        int targetIndex = _reviveRollbackRailPointIndex >= 0
-            ? _reviveRollbackRailPointIndex
-            : _catchUpRailPointIndex;
-
-        if (_cachedReviveRollbackRail == _rail &&
-            _cachedReviveRollbackRailPointIndex == targetIndex)
-        {
-            targetDistance = _cachedReviveRollbackRailPointDistance;
-            return true;
-        }
-
-        if (!_rail.TryGetControlPointDistance(targetIndex, out targetDistance))
-            return false;
-
-        _cachedReviveRollbackRail = _rail;
-        _cachedReviveRollbackRailPointIndex = targetIndex;
-        _cachedReviveRollbackRailPointDistance = targetDistance;
-
-        return true;
+        return _railTargetResolver.TryGetReviveDistance(
+            _rail,
+            _reviveRollbackRailPointIndex,
+            _catchUpRailPointIndex,
+            out targetDistance);
     }
 
     private void ClearTargetDistanceCaches()
     {
-        _cachedCatchUpRail = null;
-        _cachedCatchUpRailPointIndex = -1;
-        _cachedCatchUpRailPointDistance = 0f;
-        _cachedReviveRollbackRail = null;
-        _cachedReviveRollbackRailPointIndex = -2;
-        _cachedReviveRollbackRailPointDistance = 0f;
-        _cachedCombatBurstDisableRail = null;
-        _cachedCombatBurstDisableRailPointIndex = -2;
-        _cachedCombatBurstDisableDistance = 0f;
+        _railTargetResolver?.Clear();
     }
 
     private bool CanUseCombatBurst(float deltaTime)
@@ -413,31 +365,11 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private bool TryGetCombatBurstDisableDistance(out float distance)
     {
-        distance = 0f;
-
-        if (_rail == null || _rail.TotalLength <= 0f)
-            return false;
-
-        if (_combatBurstDisableRailPointIndex >= 0)
-        {
-            if (_cachedCombatBurstDisableRail == _rail &&
-                _cachedCombatBurstDisableRailPointIndex == _combatBurstDisableRailPointIndex)
-            {
-                distance = _cachedCombatBurstDisableDistance;
-                return true;
-            }
-
-            if (_rail.TryGetControlPointDistance(_combatBurstDisableRailPointIndex, out distance))
-            {
-                _cachedCombatBurstDisableRail = _rail;
-                _cachedCombatBurstDisableRailPointIndex = _combatBurstDisableRailPointIndex;
-                _cachedCombatBurstDisableDistance = distance;
-                return true;
-            }
-        }
-
-        distance = Mathf.Clamp01(_combatBurstDisablePathProgress) * _rail.TotalLength;
-        return true;
+        return _railTargetResolver.TryGetBurstDisableDistance(
+            _rail,
+            _combatBurstDisableRailPointIndex,
+            _combatBurstDisablePathProgress,
+            out distance);
     }
 
     private void HandleCombatBurstStateChanged(bool isActive)

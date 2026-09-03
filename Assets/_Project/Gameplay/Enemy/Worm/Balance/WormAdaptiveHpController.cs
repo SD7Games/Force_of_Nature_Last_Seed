@@ -18,7 +18,7 @@ public sealed class WormAdaptiveHpController
     private readonly int _upgradeRebalanceInterval;
     private readonly float _minimumRebalanceInterval;
 
-    private IReadOnlyList<WormSection> _sections = Array.Empty<WormSection>();
+    private readonly List<IWormSectionHpTarget> _sections = new();
     private float _runtimePressureMultiplier = 1f;
     private int _pendingUpgradeChanges;
     private float _lastRebalanceTime;
@@ -44,15 +44,25 @@ public sealed class WormAdaptiveHpController
         _minimumRebalanceInterval = settings.MinimumRebalanceInterval;
     }
 
-    public void InitializeSections(List<WormSection> sections, float currentTime)
+    public void InitializeSections(
+        IReadOnlyList<IWormSectionHpTarget> sections,
+        float currentTime)
     {
         if (sections == null)
             throw new ArgumentNullException(nameof(sections));
 
-        sections.Sort(static (left, right) =>
-            left.GetCenterSegmentIndex().CompareTo(right.GetCenterSegmentIndex()));
+        _sections.Clear();
 
-        _sections = sections;
+        for (int index = 0; index < sections.Count; index++)
+        {
+            IWormSectionHpTarget section = sections[index];
+
+            if (section != null)
+                _sections.Add(section);
+        }
+
+        _sections.Sort(static (left, right) => left.HpOrder.CompareTo(right.HpOrder));
+
         _pendingUpgradeChanges = 0;
         _lastRebalanceTime = currentTime;
         _hasAppliedUpgradeRebalance = false;
@@ -61,21 +71,21 @@ public sealed class WormAdaptiveHpController
         WeaponPowerSnapshot power = GetWeaponPower();
         int previousHp = 0;
 
-        for (int sectionIndex = 0; sectionIndex < sections.Count; sectionIndex++)
+        for (int sectionIndex = 0; sectionIndex < _sections.Count; sectionIndex++)
         {
-            WormSection section = sections[sectionIndex];
+            IWormSectionHpTarget section = _sections[sectionIndex];
             section.Index = sectionIndex;
             int baseHp = WormSectionHPGenerator.GetHP(sectionIndex, _levelNumber);
-            int hp = ResolveSectionHp(baseHp, sectionIndex, sections.Count, power, 1f);
+            int hp = ResolveSectionHp(baseHp, sectionIndex, _sections.Count, power, 1f);
             hp = EnsureHpAbovePrevious(hp, previousHp);
-            section.Init(hp);
+            section.InitializeHp(hp);
             previousHp = hp;
         }
     }
 
     public void Reset(float currentTime)
     {
-        _sections = Array.Empty<WormSection>();
+        _sections.Clear();
         _runtimePressureMultiplier = 1f;
         _pendingUpgradeChanges = 0;
         _lastRebalanceTime = currentTime;
@@ -142,7 +152,7 @@ public sealed class WormAdaptiveHpController
 
         for (int index = 0; index < _sections.Count; index++)
         {
-            WormSection section = _sections[index];
+            IWormSectionHpTarget section = _sections[index];
             int sectionIndex = section != null ? section.Index : index;
             int baseHp = WormSectionHPGenerator.GetHP(sectionIndex, _levelNumber);
             int hp = ResolveSectionHp(baseHp, sectionIndex, _sections.Count, power, pathPressure);
@@ -153,7 +163,7 @@ public sealed class WormAdaptiveHpController
                 if (!allowHpDecrease)
                     hp = Math.Max(hp, GetCurrentSectionMaxHp(section));
 
-                section.SetHp(hp);
+                section.ResetHp(hp);
                 previousHp = hp;
             }
             else
@@ -200,23 +210,25 @@ public sealed class WormAdaptiveHpController
             : WeaponPowerSnapshot.Invalid;
     }
 
-    private static bool CanRebalanceSection(WormSection section, bool allowHpDecrease)
+    private static bool CanRebalanceSection(
+        IWormSectionHpTarget section,
+        bool allowHpDecrease)
     {
         return section != null
             && !section.IsDestroyed
             && !section.HasTakenDamage
-            && (allowHpDecrease || !section.HasVisibleAliveSegment());
+            && (allowHpDecrease || !section.HasVisibleAliveSegment);
     }
 
-    private static int GetCurrentSectionMaxHp(WormSection section)
+    private static int GetCurrentSectionMaxHp(IWormSectionHpTarget section)
     {
-        return section != null ? Math.Max(0, section.MaxHP) : 0;
+        return section != null ? Math.Max(0, section.MaxHp) : 0;
     }
 
     private static int GetPreviousHpForLockedSection(
         int previousHp,
         int resolvedHp,
-        WormSection section,
+        IWormSectionHpTarget section,
         bool allowHpDecrease)
     {
         int currentMaxHp = GetCurrentSectionMaxHp(section);

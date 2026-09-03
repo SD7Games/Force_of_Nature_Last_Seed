@@ -2,36 +2,45 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class WormSection
+public sealed class WormSection : IWormSectionHpTarget
 {
-    public Action<WormSection> HPChanged;
-    public Action<WormSection> Destroyed;
+    private readonly WormSectionHealth _health = new();
+    private readonly List<WormSegment> _segments = new();
 
-    public int MaxHP { get; private set; }
-    public int CurrentHP { get; private set; }
+    public WormSection()
+    {
+        _health.Changed += HandleHealthChanged;
+        _health.Destroyed += HandleDestroyed;
+    }
+
+    public event Action<WormSection> HpChanged;
+    public event Action<WormSection> Destroyed;
+
+    public int MaxHp => _health.MaxHp;
+    public int CurrentHp => _health.CurrentHp;
     public int Index { get; set; }
+    public int HpOrder => GetCenterSegmentIndex();
 
     public CocoonRewardProfile CocoonProfile { get; private set; }
     public bool HasCocoon => CocoonProfile != null;
     public bool HasReward => HasCocoon;
 
-    private readonly List<WormSegment> _segments = new();
-
     public IReadOnlyList<WormSegment> Segments => _segments;
-    public bool IsDestroyed => CurrentHP <= 0;
-    public bool HasTakenDamage => CurrentHP < MaxHP;
+    public bool IsDestroyed => _health.IsDestroyed;
+    public bool HasTakenDamage => _health.HasTakenDamage;
+    public bool HasVisibleAliveSegment => ContainsVisibleAliveSegment();
 
-    public void Init(int hp)
+    public void InitializeHp(int hp)
     {
-        SetHp(hp, notify: false);
+        _health.Initialize(hp);
     }
 
-    public void SetHp(int hp)
+    public void ResetHp(int hp)
     {
-        SetHp(hp, notify: true);
+        _health.ResetHp(hp);
     }
 
-    public bool HasVisibleAliveSegment()
+    private bool ContainsVisibleAliveSegment()
     {
         for (int i = 0; i < _segments.Count; i++)
         {
@@ -84,28 +93,7 @@ public sealed class WormSection
 
     public void Damage(int damage)
     {
-        if (IsDestroyed) return;
-
-        CurrentHP -= damage;
-
-        if (CurrentHP < 0)
-            CurrentHP = 0;
-
-        HPChanged?.Invoke(this);
-
-        if (CurrentHP == 0)
-            Destroyed?.Invoke(this);
-    }
-
-    private void SetHp(int hp, bool notify)
-    {
-        int clampedHp = Mathf.Max(1, hp);
-
-        MaxHP = clampedHp;
-        CurrentHP = clampedHp;
-
-        if (notify)
-            HPChanged?.Invoke(this);
+        _health.ApplyDamage(damage);
     }
 
     public List<WormSegment> ReleaseSegments()
@@ -127,5 +115,15 @@ public sealed class WormSection
 
         _segments.Clear();
         return released;
+    }
+
+    private void HandleHealthChanged()
+    {
+        HpChanged?.Invoke(this);
+    }
+
+    private void HandleDestroyed()
+    {
+        Destroyed?.Invoke(this);
     }
 }

@@ -27,7 +27,7 @@ public sealed class WormSectionHpPresenter : MonoBehaviour
 
             if (section != null)
             {
-                section.HPChanged -= OnHpChanged;
+                section.HpChanged -= OnHpChanged;
                 section.Destroyed -= OnSectionDestroyed;
             }
 
@@ -45,9 +45,9 @@ public sealed class WormSectionHpPresenter : MonoBehaviour
         WormSectionHpView view = Instantiate(_viewPrefab, _root);
 
         view.Bind(section.GetHpAnchor());
-        view.SetValue(section.CurrentHP);
+        view.SetValue(section.CurrentHp);
 
-        section.HPChanged += OnHpChanged;
+        section.HpChanged += OnHpChanged;
         section.Destroyed += OnSectionDestroyed;
 
         _views.Add(section, view);
@@ -57,7 +57,7 @@ public sealed class WormSectionHpPresenter : MonoBehaviour
     {
         if (!_views.TryGetValue(section, out var view)) return;
 
-        view.SetValue(section.CurrentHP);
+        view.SetValue(section.CurrentHp);
     }
 
     private void OnSectionDestroyed(WormSection section)
@@ -66,7 +66,7 @@ public sealed class WormSectionHpPresenter : MonoBehaviour
 
         Destroy(view.gameObject);
 
-        section.HPChanged -= OnHpChanged;
+        section.HpChanged -= OnHpChanged;
         section.Destroyed -= OnSectionDestroyed;
 
         _views.Remove(section);

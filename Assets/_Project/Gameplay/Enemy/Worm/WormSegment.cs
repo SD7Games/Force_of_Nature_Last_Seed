@@ -1,5 +1,4 @@
 using System;
-using DG.Tweening;
 using UnityEngine;
 
 public enum WormSegmentType
@@ -17,15 +16,6 @@ public enum WormSegmentType
 /// </summary>
 public sealed class WormSegment : MonoBehaviour
 {
-    private static readonly object SyncedCocoonShakeTarget = new();
-    private static Sequence _syncedCocoonShakeSequence;
-    private static float _syncedCocoonShakeZOffset;
-    private static int _syncedCocoonShakeUsers;
-
-    private const int CocoonShakeStepCount = 8;
-    private const float CocoonShakeStepDuration = 0.1f;
-    private const float CocoonShakeDuration = CocoonShakeStepDuration * CocoonShakeStepCount;
-
     [field: SerializeField] public WormSegmentType Type { get; private set; }
     [field: SerializeField] public Transform VisualRoot { get; private set; }
 
@@ -52,6 +42,7 @@ public sealed class WormSegment : MonoBehaviour
         Array.Empty<WormSegmentDamageReceiver>();
 
     private Transform _cocoonTransform;
+    private IWormCocoonShakeClock _cocoonShakeClock;
     private bool _usesSyncedCocoonShake;
 
     public Transform CachedTransform { get; private set; }
@@ -65,13 +56,6 @@ public sealed class WormSegment : MonoBehaviour
     public int TailVisualPartCount => _tailVisualParts.Length;
     public bool HasHeadFollowChain => _headFollowParts.Length > 0;
     public int HeadFollowPartCount => _headFollowParts.Length;
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetSyncedCocoonShakeState()
-    {
-        StopSyncedCocoonShake();
-        _syncedCocoonShakeUsers = 0;
-    }
 
     private void Awake()
     {
@@ -127,7 +111,7 @@ public sealed class WormSegment : MonoBehaviour
         if (HasCocoon && _cocoonTransform != null)
         {
             float shakeOffset = _usesSyncedCocoonShake
-                ? _syncedCocoonShakeZOffset
+                ? _cocoonShakeClock.RotationOffset
                 : 0f;
 
             _cocoonTransform.localEulerAngles =
@@ -313,6 +297,12 @@ public sealed class WormSegment : MonoBehaviour
             gameObject.SetActive(false);
     }
 
+    public void InitializePresentation(IWormCocoonShakeClock cocoonShakeClock)
+    {
+        _cocoonShakeClock = cocoonShakeClock ??
+            throw new ArgumentNullException(nameof(cocoonShakeClock));
+    }
+
     public void BindDamageReceivers(WormCombatController combat)
     {
         if (combat == null)
@@ -492,13 +482,13 @@ public sealed class WormSegment : MonoBehaviour
         if (_usesSyncedCocoonShake)
             return;
 
-        if (_cocoonTransform == null || _cocoonShakeAngle <= 0f)
+        if (_cocoonTransform == null ||
+            _cocoonShakeClock == null ||
+            _cocoonShakeAngle <= 0f)
             return;
 
         _usesSyncedCocoonShake = true;
-        _syncedCocoonShakeUsers++;
-
-        EnsureSyncedCocoonShake(_cocoonShakeInterval, _cocoonShakeAngle);
+        _cocoonShakeClock.Register(_cocoonShakeInterval, _cocoonShakeAngle);
     }
 
     private void CacheTailVisualChain()
@@ -645,65 +635,6 @@ public sealed class WormSegment : MonoBehaviour
             return;
 
         _usesSyncedCocoonShake = false;
-        _syncedCocoonShakeUsers = Mathf.Max(0, _syncedCocoonShakeUsers - 1);
-
-        if (_syncedCocoonShakeUsers == 0)
-            StopSyncedCocoonShake();
-    }
-
-    private static void EnsureSyncedCocoonShake(float interval, float angle)
-    {
-        if (_syncedCocoonShakeSequence != null && _syncedCocoonShakeSequence.IsActive())
-            return;
-
-        float strongAngle = angle * 0.8f;
-        float mediumAngle = angle * 0.55f;
-        float weakAngle = angle * 0.3f;
-        float shakeDelay = Mathf.Max(0f, interval - CocoonShakeDuration);
-
-        _syncedCocoonShakeSequence = DOTween.Sequence()
-            .SetTarget(SyncedCocoonShakeTarget)
-            .AppendInterval(shakeDelay)
-            .Append(CreateSyncedCocoonShakeTween(angle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(-angle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(strongAngle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(-strongAngle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(mediumAngle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(-mediumAngle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(weakAngle, CocoonShakeStepDuration))
-            .Append(CreateSyncedCocoonShakeTween(0f, CocoonShakeStepDuration))
-            .SetLoops(-1, LoopType.Restart);
-    }
-
-    private static Tween CreateSyncedCocoonShakeTween(float targetAngle, float duration)
-    {
-        return DOTween
-            .To(
-                GetSyncedCocoonShakeOffset,
-                SetSyncedCocoonShakeOffset,
-                targetAngle,
-                duration)
-            .SetEase(Ease.InOutSine);
-    }
-
-    private static float GetSyncedCocoonShakeOffset()
-    {
-        return _syncedCocoonShakeZOffset;
-    }
-
-    private static void SetSyncedCocoonShakeOffset(float value)
-    {
-        _syncedCocoonShakeZOffset = value;
-    }
-
-    private static void StopSyncedCocoonShake()
-    {
-        if (_syncedCocoonShakeSequence != null)
-        {
-            _syncedCocoonShakeSequence.Kill();
-            _syncedCocoonShakeSequence = null;
-        }
-
-        _syncedCocoonShakeZOffset = 0f;
+        _cocoonShakeClock?.Unregister();
     }
 }

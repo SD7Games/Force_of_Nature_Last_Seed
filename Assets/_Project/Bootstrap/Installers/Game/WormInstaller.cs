@@ -44,6 +44,7 @@ namespace LastSeed.Bootstrap.Installers
                 _headPrefab,
                 _bodyPrefab,
                 _tailPrefab));
+            Container.BindInterfacesAndSelfTo<WormCocoonShakeClock>().AsSingle();
             Container.Bind<WormSegmentPool>().AsSingle();
             Container.Bind<WormFactory>().AsSingle();
             Container.Bind<IWormPathProgressProvider>().FromInstance(_wormController).AsSingle();

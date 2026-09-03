@@ -127,6 +127,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Worm spawn/pool settings, `WormSegmentPool`, and `WormFactory` are composed by `WormInstaller`; `WormSpawner` no longer acts as a hidden composition root or constructs gameplay collaborators in `Awake`.
 - Combat-burst changes are published as immutable scene-scoped signals by a lifecycle-managed adapter; the face presenter reacts through SignalBus and no longer couples `WormSpawner` directly to controller events or runtime component searches.
 - Damage-view requests, destruction progress, and path completion are immutable SignalBus payloads; popup/progress/revive subscribers react without direct event subscriptions to worm controllers, and the unused section-damaged event was removed.
+- Synchronized cocoon shake is owned by a scene-scoped Zenject service and explicitly supplied to pooled segment views; `WormSegment` no longer owns static tween state that can leak across scene lifecycles.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

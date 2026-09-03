@@ -17,11 +17,15 @@ public sealed class WormSegmentPool
     private readonly ObjectPool<WormSegment> _headPool;
     private readonly ObjectPool<WormSegment> _bodyPool;
     private readonly ObjectPool<WormSegment> _tailPool;
+    private readonly IWormCocoonShakeClock _cocoonShakeClock;
     private int _prewarmCreatedThisFrame;
 
-    public WormSegmentPool(WormSegmentPoolSettings settings)
+    public WormSegmentPool(
+        WormSegmentPoolSettings settings,
+        IWormCocoonShakeClock cocoonShakeClock)
     {
         _parent = settings.Parent;
+        _cocoonShakeClock = cocoonShakeClock;
 
         _headPrefab = settings.HeadPrefab;
         _bodyPrefab = settings.BodyPrefab;
@@ -109,8 +113,15 @@ public sealed class WormSegmentPool
             return null;
 
         return new ObjectPool<WormSegment>(
-            () => Object.Instantiate(prefab, _parent),
+            () => CreateSegment(prefab),
             PrepareForPool);
+    }
+
+    private WormSegment CreateSegment(WormSegment prefab)
+    {
+        WormSegment segment = Object.Instantiate(prefab, _parent);
+        segment.InitializePresentation(_cocoonShakeClock);
+        return segment;
     }
 
     private static void PrepareForPool(WormSegment segment)

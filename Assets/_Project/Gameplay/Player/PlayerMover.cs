@@ -29,12 +29,10 @@ public sealed class PlayerMover : MonoBehaviour
         transform.position = _startPosition;
     }
 
-    public void Move(float inputX)
+    public void Move(float inputX, float deltaTime)
     {
-        if (!CanProcessMovement())
+        if (!HasScreenBounds())
             return;
-
-        float deltaTime = Time.deltaTime;
 
         if (deltaTime <= 0f)
         {
@@ -60,7 +58,7 @@ public sealed class PlayerMover : MonoBehaviour
 
     public void MoveByNormalizedScreenDeltaX(float normalizedDeltaX)
     {
-        if (!CanProcessMovement())
+        if (!HasScreenBounds())
             return;
 
         float minX = _screenBounds.Left + _edgePadding;
@@ -77,7 +75,12 @@ public sealed class PlayerMover : MonoBehaviour
             : Mathf.Sign(movementDeltaX);
     }
 
-    private bool CanProcessMovement()
+    public void StopMovement()
+    {
+        _currentInput = 0f;
+    }
+
+    private bool HasScreenBounds()
     {
         if (_screenBounds == null)
         {
@@ -85,15 +88,6 @@ public sealed class PlayerMover : MonoBehaviour
             return false;
         }
 
-        if (!GameplayInputBlocker.IsBlocked)
-            return true;
-
-        Stop();
-        return false;
-    }
-
-    private void Stop()
-    {
-        _currentInput = 0f;
+        return true;
     }
 }

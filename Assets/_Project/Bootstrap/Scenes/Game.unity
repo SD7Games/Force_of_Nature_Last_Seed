@@ -146,7 +146,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2dd12eb24bd05f84ca7a80fb7950abaf, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::RewardInstaller
   _database: {fileID: 11400000, guid: bafb328ff8286024f9f6854a598d8d25, type: 2}
   _popup: {fileID: 656578156}
@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 464cdcfe9f1ee7a46a362d0904048d78, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnEnemyPoint
   _headPrefab: {fileID: 1300043371089455902, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
   _bodyPrefab: {fileID: 5005386936780954391, guid: d793d0b4e9b2e00478b0d9799bab95d2, type: 3}
@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 195711e49e371794aa5cefe1ad087694, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::WormController
   _rail: {fileID: 192453719}
   _speed: 1.2
@@ -293,7 +293,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: de842bcb64240634d87970b0d3ff1d4e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::WormCombatController
   _wormController: {fileID: 91581456}
 --- !u!114 &91581458
@@ -306,7 +306,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30f272d7b93f4f2bbf624c52ea343c25, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::WormPressureDirector
   _wormController: {fileID: 91581456}
   _wormSpawner: {fileID: 91581455}
@@ -321,7 +321,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2c5b62ff9d74c5a982f5cb21b958a69, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::WormReviveFlowController
   _wormController: {fileID: 91581456}
   _wormCombat: {fileID: 91581457}
@@ -381,7 +381,6 @@ MonoBehaviour:
   _engagementController: {fileID: 659970389}
   _reviveFlowController: {fileID: 91581459}
   _playerMover: {fileID: 501089290}
-  _inputReader: {fileID: 501089293}
   _projectileWeapon: {fileID: 501089295}
   _acaciaThornWeapon: {fileID: 501089296}
   _projectilePoolRegistry: {fileID: 550759621}
@@ -399,6 +398,10 @@ GameObject:
   - component: {fileID: 141515090}
   - component: {fileID: 141515089}
   - component: {fileID: 141515088}
+  - component: {fileID: 141515094}
+  - component: {fileID: 141515093}
+  - component: {fileID: 141515092}
+  - component: {fileID: 141515091}
   m_Layer: 0
   m_Name: Scene Context
   m_TagString: Untagged
@@ -419,9 +422,6 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.GameWorldInstaller
   _worldCamera: {fileID: 519420031}
-  _playerMover: {fileID: 501089290}
-  _playerShooter: {fileID: 501089294}
-  _projectilePoolRegistry: {fileID: 550759621}
 --- !u!114 &141515089
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -437,6 +437,10 @@ MonoBehaviour:
   _scriptableObjectInstallers: []
   _monoInstallers:
   - {fileID: 141515088}
+  - {fileID: 141515094}
+  - {fileID: 141515093}
+  - {fileID: 141515092}
+  - {fileID: 141515091}
   _installerPrefabs: []
   _findSiblingMonoInstallers: 0
   _autoRun: 1
@@ -470,6 +474,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &141515091
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ea87ea621b7b4f4fbdf0c26f51777d8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.GameplayLoopInstaller
+--- !u!114 &141515092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53f1fd366b69fff4f88648c2958074e1, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.GameplayInputInstaller
+  _playerInputSnapshotProvider: {fileID: 501089293}
+--- !u!114 &141515093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 347ada60645ce2c45b62030e6111d64f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.ProjectilePoolInstaller
+  _projectilePoolRegistry: {fileID: 550759621}
+--- !u!114 &141515094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3380e1e1f5b7f254e87052df131713af, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.PlayerInstaller
+  _playerController: {fileID: 501089292}
+  _playerMover: {fileID: 501089290}
+  _playerShooter: {fileID: 501089294}
 --- !u!1 &192453717
 GameObject:
   m_ObjectHideFlags: 0
@@ -1051,8 +1108,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e98fdfa460b44c04cbf94ea15ab53182, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedController
-  _mover: {fileID: 501089290}
-  _input: {fileID: 501089293}
 --- !u!114 &501089293
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1064,7 +1119,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c1cc985e8456b84bb9ad66447242b4f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InputReader
+  m_EditorClassIdentifier: LastSeed.Infrastructure::LastSeed.Infrastructure.Input.PlayerInputSnapshotProvider
   _enableTouchDrag: 1
 --- !u!114 &501089294
 MonoBehaviour:

@@ -1,24 +1,31 @@
+using LastSeed.Infrastructure.Input;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class PlayerController : MonoBehaviour
 {
-    [SerializeField] private PlayerMover _mover;
-    [SerializeField] private InputReader _input;
+    private PlayerMover _playerMover;
 
-    private void Update()
+    [Inject]
+    public void Construct(PlayerMover playerMover)
     {
-        HandleMovement();
+        _playerMover = playerMover;
     }
 
-    private void HandleMovement()
+    public void Tick(PlayerInputSnapshot inputSnapshot, float deltaTime)
     {
-        if (_input.HasActiveTouch)
+        if (inputSnapshot.IsTouchActive)
         {
-            _mover.MoveByNormalizedScreenDeltaX(_input.ConsumeTouchDeltaXNormalized());
+            _playerMover.MoveByNormalizedScreenDeltaX(inputSnapshot.NormalizedTouchDeltaX);
             return;
         }
 
-        _mover.Move(_input.MoveX);
+        _playerMover.Move(inputSnapshot.HorizontalMovement, deltaTime);
+    }
+
+    public void StopMovement()
+    {
+        _playerMover.StopMovement();
     }
 }

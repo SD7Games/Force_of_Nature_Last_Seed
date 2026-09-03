@@ -4,7 +4,7 @@ using Zenject;
 
 namespace LastSeed.Bootstrap.Gameplay
 {
-    public sealed class GameWorldInitializer : IInitializable
+    public sealed class GameSceneInitializer : IInitializable
     {
         private readonly Camera _worldCamera;
         private readonly ScreenBoundsService _screenBoundsService;
@@ -12,7 +12,7 @@ namespace LastSeed.Bootstrap.Gameplay
         private readonly PoolRegistry _projectilePoolRegistry;
         private readonly PlayerShooter _playerShooter;
 
-        public GameWorldInitializer(
+        public GameSceneInitializer(
             Camera worldCamera,
             ScreenBoundsService screenBoundsService,
             PlayerMover playerMover,

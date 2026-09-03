@@ -72,10 +72,14 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 
 ### 2. Input and game loop
 
-- Add immutable `PlayerInputSnapshot`.
-- Poll physical input once per frame.
-- Replace static `GameplayInputBlocker` with scoped `IGameplayInputLock`.
-- Introduce an explicit named gameplay update coordinator only where ordering is required.
+**Status: completed and verified by automated EditMode and PlayMode tests.**
+
+- [x] Add immutable `PlayerInputSnapshot`.
+- [x] Poll physical input once per frame.
+- [x] Replace static `GameplayInputBlocker` with scoped `IGameplayInputLock`.
+- [x] Introduce an explicit named gameplay update coordinator only where ordering is required.
+- [x] Split the Game SceneContext bindings into focused world, input, player, projectile-pool, and game-loop installers.
+- [x] Add a permanent direct-Game-scene PlayMode startup smoke test.
 
 ### 3. Signals and session state
 
@@ -140,7 +144,8 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 
 - Unity script compilation succeeds with no C# errors or warnings.
 - Relevant Zenject object graphs validate.
-- Existing runtime smoke path succeeds.
+- Automated PlayMode smoke tests cover the changed runtime path and succeed.
+- Manual Play Mode verification is requested only for visual, interactive, platform-specific, or otherwise non-automatable behavior.
 - No new missing scripts or serialized references.
 - New subscriptions and resources have symmetric cleanup.
 - Git diff contains only the intended iteration.

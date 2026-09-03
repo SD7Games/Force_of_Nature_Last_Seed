@@ -1,4 +1,6 @@
+using LastSeed.Infrastructure.Input;
 using UnityEngine;
+using Zenject;
 
 namespace _Project.App.Gameplay
 {
@@ -13,7 +15,6 @@ namespace _Project.App.Gameplay
 
         [Header("Player")]
         [SerializeField] private PlayerMover _playerMover;
-        [SerializeField] private InputReader _inputReader;
 
         [Header("Weapons")]
         [SerializeField] private ProjectileWeapon _projectileWeapon;
@@ -26,6 +27,13 @@ namespace _Project.App.Gameplay
         [SerializeField] private WormDamagePopupPresenter _damagePopupPresenter;
 
         private bool _isRestarting;
+        private IPlayerInputSnapshotProvider _playerInputSnapshotProvider;
+
+        [Inject]
+        public void Construct(IPlayerInputSnapshotProvider playerInputSnapshotProvider)
+        {
+            _playerInputSnapshotProvider = playerInputSnapshotProvider;
+        }
 
         private void OnEnable()
         {
@@ -48,7 +56,7 @@ namespace _Project.App.Gameplay
             _popupRoot?.ReleaseGameplayLock();
             Time.timeScale = 1f;
 
-            _inputReader?.ResetMovement();
+            _playerInputSnapshotProvider.ResetState();
             _playerMover?.ResetForNewRun();
             _engagementController?.ResetState();
             _pressureDirector?.ResetForNewRun();

@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using LastSeed.Gameplay.Input;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class PopupRoot : MonoBehaviour
@@ -14,9 +17,16 @@ public sealed class PopupRoot : MonoBehaviour
     private readonly List<PopupView> _queuedPopups = new();
 
     private PopupView _activePopup;
+    private IGameplayInputLock _gameplayInputLock;
+    private IDisposable _gameplayInputLockHandle;
     private float _timeScaleBeforeLock = 1f;
     private bool _hasTimeScaleLock;
-    private bool _hasInputLock;
+
+    [Inject]
+    public void Construct(IGameplayInputLock gameplayInputLock)
+    {
+        _gameplayInputLock = gameplayInputLock;
+    }
 
     private void Awake()
     {
@@ -117,11 +127,8 @@ public sealed class PopupRoot : MonoBehaviour
 
     public void ReleaseGameplayLock()
     {
-        if (_hasInputLock)
-        {
-            GameplayInputBlocker.PopLock();
-            _hasInputLock = false;
-        }
+        _gameplayInputLockHandle?.Dispose();
+        _gameplayInputLockHandle = null;
 
         if (!_hasTimeScaleLock)
             return;
@@ -269,11 +276,7 @@ public sealed class PopupRoot : MonoBehaviour
 
     private void LockGameplay()
     {
-        if (!_hasInputLock)
-        {
-            GameplayInputBlocker.PushLock();
-            _hasInputLock = true;
-        }
+        _gameplayInputLockHandle ??= _gameplayInputLock.Acquire();
 
         if (!_pauseTimeWhileModalVisible || _hasTimeScaleLock)
             return;

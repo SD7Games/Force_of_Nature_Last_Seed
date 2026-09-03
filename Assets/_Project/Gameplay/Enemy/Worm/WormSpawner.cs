@@ -2,18 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using LastSeed.Gameplay.Signals;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WormSpawner : MonoBehaviour
 {
-    [Header("Prefabs")]
-    [SerializeField] private WormSegment _headPrefab;
-
-    [SerializeField] private WormSegment _bodyPrefab;
-    [SerializeField] private WormSegment _tailPrefab;
-
     [Header("Controllers")]
     [SerializeField] private WormController _wormController;
 
@@ -23,24 +16,14 @@ public sealed class WormSpawner : MonoBehaviour
     [Header("Rewards")]
     [SerializeField] private RewardDatabase _rewardDatabase;
 
-    [Header("Generation")]
-    [Tooltip("Gameplay HP sections. Each section contains WormCocoonRules.SectionSize body segments. Head and tail are added separately.")]
-    [Min(1)]
-    [FormerlySerializedAs("_totalLength")]
-    [SerializeField] private int _sectionCount = 9;
-
-    [Header("Pooling")]
-    [SerializeField] private int _poolPadding = 10;
-    [SerializeField, Min(1)] private int _prewarmBatchSize = 64;
-
     private WormSegmentPool _segmentPool;
     private WormFactory _wormFactory;
+    private WormSpawnSettings _spawnSettings;
     private WormAdaptiveHpController _adaptiveHpController;
     private readonly List<WormSection> _sections = new();
     private readonly List<WormSegment> _spawnedSegments = new();
 
     private bool _isSpawned;
-    private int _bodyPoolCapacity;
     private WormFaceVisualController _activeFaceVisual;
     private SignalBus _signalBus;
     private bool _isSubscribedToSignals;
@@ -51,19 +34,21 @@ public sealed class WormSpawner : MonoBehaviour
     public void Construct(
         SignalBus signalBus,
         WormAdaptiveHpController adaptiveHpController,
+        WormSegmentPool segmentPool,
+        WormFactory wormFactory,
+        WormSpawnSettings spawnSettings,
         ProjectileWeapon weapon,
         AcaciaThornWeapon acaciaThornWeapon)
     {
         _signalBus = signalBus;
         _adaptiveHpController = adaptiveHpController;
+        _segmentPool = segmentPool;
+        _wormFactory = wormFactory;
+        _spawnSettings = spawnSettings;
         _weapon = weapon;
         _acaciaThornWeapon = acaciaThornWeapon;
         SubscribeToSignals();
     }
-
-#if UNITY_EDITOR
-    public int EditorSectionCount => _sectionCount;
-#endif
 
     private void OnEnable()
     {
@@ -92,28 +77,11 @@ public sealed class WormSpawner : MonoBehaviour
         UnbindWormFace();
     }
 
-    private void Awake()
-    {
-        if (_wormController == null)
-            Debug.LogError("WormController not assigned", this);
-
-        if (_wormCombat == null)
-            Debug.LogError("WormCombatController not assigned", this);
-
-        _bodyPoolCapacity = WormPatternBuilder.GetBodySegmentCount(_sectionCount) + _poolPadding;
-        _segmentPool = new WormSegmentPool(
-            transform,
-            _headPrefab,
-            _bodyPrefab,
-            _tailPrefab);
-
-        _wormFactory = new WormFactory(_segmentPool);
-    }
-
     private IEnumerator Start()
     {
-        if (_segmentPool != null)
-            yield return _segmentPool.PrewarmRoutine(_bodyPoolCapacity, _prewarmBatchSize);
+        yield return _segmentPool.PrewarmRoutine(
+            _spawnSettings.BodyPoolCapacity,
+            _spawnSettings.PrewarmBatchSize);
 
         SpawnWorm();
     }
@@ -124,7 +92,7 @@ public sealed class WormSpawner : MonoBehaviour
             return;
 
         List<WormPatternEntry> pattern =
-            WormPatternBuilder.BuildPattern(_sectionCount);
+            WormPatternBuilder.BuildPattern(_spawnSettings.SectionCount);
 
         List<WormSegment> segments =
             _wormFactory.CreateSegments(

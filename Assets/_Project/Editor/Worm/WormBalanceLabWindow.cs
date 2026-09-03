@@ -380,13 +380,6 @@ public sealed class WormBalanceLabWindow : EditorWindow
 
     private void LoadOpenSceneValues(bool force = false)
     {
-        WormSpawner spawner = FindOpenSceneObject<WormSpawner>();
-        if (spawner != null)
-        {
-            if (force || _sectionCount == DefaultSectionCount)
-                _sectionCount = spawner.EditorSectionCount;
-        }
-
         LastSeed.Bootstrap.Installers.WormInstaller wormInstaller =
             FindOpenSceneObject<LastSeed.Bootstrap.Installers.WormInstaller>();
 
@@ -397,6 +390,9 @@ public sealed class WormBalanceLabWindow : EditorWindow
 
             if (force || _levelNumber <= 1)
                 _levelNumber = wormInstaller.EditorLevelNumber;
+
+            if (force || _sectionCount == DefaultSectionCount)
+                _sectionCount = wormInstaller.EditorSectionCount;
         }
 
         WormController controller = FindOpenSceneObject<WormController>();

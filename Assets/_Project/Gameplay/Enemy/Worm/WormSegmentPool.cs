@@ -19,17 +19,13 @@ public sealed class WormSegmentPool
     private readonly ObjectPool<WormSegment> _tailPool;
     private int _prewarmCreatedThisFrame;
 
-    public WormSegmentPool(
-        Transform parent,
-        WormSegment head,
-        WormSegment body,
-        WormSegment tail)
+    public WormSegmentPool(WormSegmentPoolSettings settings)
     {
-        _parent = parent;
+        _parent = settings.Parent;
 
-        _headPrefab = head;
-        _bodyPrefab = body;
-        _tailPrefab = tail;
+        _headPrefab = settings.HeadPrefab;
+        _bodyPrefab = settings.BodyPrefab;
+        _tailPrefab = settings.TailPrefab;
 
         _headPool = CreatePool(_headPrefab);
         _bodyPool = CreatePool(_bodyPrefab);

@@ -10,6 +10,14 @@ namespace LastSeed.Bootstrap.Installers
         [SerializeField] private WormController _wormController;
         [SerializeField] private WormCombatController _wormCombatController;
 
+        [Header("Segment Pool")]
+        [SerializeField] private WormSegment _headPrefab;
+        [SerializeField] private WormSegment _bodyPrefab;
+        [SerializeField] private WormSegment _tailPrefab;
+        [SerializeField, Min(1)] private int _sectionCount = 9;
+        [SerializeField, Min(0)] private int _poolPadding = 10;
+        [SerializeField, Min(1)] private int _prewarmBatchSize = 64;
+
         [Header("Adaptive HP")]
         [SerializeField] private WormHpScalingConfig _hpScalingConfig;
         [SerializeField, Min(1)] private int _levelNumber = 1;
@@ -19,6 +27,7 @@ namespace LastSeed.Bootstrap.Installers
 #if UNITY_EDITOR
         public WormHpScalingConfig EditorHpScalingConfig => _hpScalingConfig;
         public int EditorLevelNumber => _levelNumber;
+        public int EditorSectionCount => _sectionCount;
 #endif
 
         public override void InstallBindings()
@@ -26,6 +35,17 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<WormSpawner>().FromInstance(_wormSpawner).AsSingle();
             Container.Bind<WormController>().FromInstance(_wormController).AsSingle();
             Container.Bind<WormCombatController>().FromInstance(_wormCombatController).AsSingle();
+            Container.BindInstance(new WormSpawnSettings(
+                _sectionCount,
+                _poolPadding,
+                _prewarmBatchSize));
+            Container.BindInstance(new WormSegmentPoolSettings(
+                _wormSpawner.transform,
+                _headPrefab,
+                _bodyPrefab,
+                _tailPrefab));
+            Container.Bind<WormSegmentPool>().AsSingle();
+            Container.Bind<WormFactory>().AsSingle();
             Container.Bind<IWormPathProgressProvider>().FromInstance(_wormController).AsSingle();
             Container.Bind<IWormHpScalingPolicy>().FromInstance(_hpScalingConfig).AsSingle();
             Container.Bind<IWeaponPowerProvider>().To<WeaponPowerProvider>().AsSingle();

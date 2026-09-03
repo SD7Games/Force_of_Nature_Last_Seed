@@ -223,16 +223,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 464cdcfe9f1ee7a46a362d0904048d78, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnEnemyPoint
-  _headPrefab: {fileID: 1300043371089455902, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
-  _bodyPrefab: {fileID: 5005386936780954391, guid: d793d0b4e9b2e00478b0d9799bab95d2, type: 3}
-  _tailPrefab: {fileID: 3075482384031948703, guid: 433d2a5fe533f854d92179c62851b028, type: 3}
   _wormController: {fileID: 91581456}
   _wormCombat: {fileID: 91581457}
   _hpPresenter: {fileID: 1262977638}
   _rewardDatabase: {fileID: 11400000, guid: bafb328ff8286024f9f6854a598d8d25, type: 2}
-  _sectionCount: 70
-  _poolPadding: 32
-  _prewarmBatchSize: 64
 --- !u!114 &91581456
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -552,6 +546,12 @@ MonoBehaviour:
   _wormSpawner: {fileID: 91581455}
   _wormController: {fileID: 91581456}
   _wormCombatController: {fileID: 91581457}
+  _headPrefab: {fileID: 1300043371089455902, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
+  _bodyPrefab: {fileID: 5005386936780954391, guid: d793d0b4e9b2e00478b0d9799bab95d2, type: 3}
+  _tailPrefab: {fileID: 3075482384031948703, guid: 433d2a5fe533f854d92179c62851b028, type: 3}
+  _sectionCount: 70
+  _poolPadding: 32
+  _prewarmBatchSize: 64
   _hpScalingConfig: {fileID: 11400000, guid: 0cf733b5054a4ec2a3770fda9b75f3d8, type: 2}
   _levelNumber: 1
   _upgradeRebalanceInterval: 1

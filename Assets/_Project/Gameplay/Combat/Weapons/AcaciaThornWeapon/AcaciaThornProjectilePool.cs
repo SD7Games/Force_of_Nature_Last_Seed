@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public sealed class AcaciaThornProjectilePool
 {
-    private readonly Queue<AcaciaThornProjectile> _pool = new();
-    private readonly List<AcaciaThornProjectile> _active = new();
+    private ObjectPool<AcaciaThornProjectile> _pool;
 
     private AcaciaThornProjectile _prefab;
     private Transform _parent;
@@ -26,53 +24,68 @@ public sealed class AcaciaThornProjectilePool
         _parent = parent;
         _screenBounds = screenBounds;
 
-        for (int i = 0; i < Mathf.Max(0, prewarmCount); i++)
-        {
-            AcaciaThornProjectile projectile = CreateNew();
-            Release(projectile);
-        }
+        _pool = new ObjectPool<AcaciaThornProjectile>(CreateNew, Deactivate);
+        _pool.Prewarm(prewarmCount);
 
         _initialized = true;
     }
 
-    public AcaciaThornProjectile Get()
+    public AcaciaThornProjectile Spawn(
+        Vector3 position,
+        Vector2 direction,
+        int damage,
+        DamageKind damageKind,
+        bool isCritical,
+        float speed,
+        float lifeTime,
+        int bounces,
+        int splitCount,
+        bool canSplit)
     {
-        AcaciaThornProjectile projectile = _pool.Count == 0
-            ? CreateNew()
-            : _pool.Dequeue();
+        AcaciaThornProjectile projectile = _pool.Rent();
 
-        _active.Add(projectile);
-        return projectile;
+        try
+        {
+            projectile.Activate(
+                position,
+                direction,
+                damage,
+                damageKind,
+                isCritical,
+                speed,
+                lifeTime,
+                bounces,
+                splitCount,
+                canSplit);
+
+            return projectile;
+        }
+        catch
+        {
+            _pool.Return(projectile);
+            throw;
+        }
     }
 
     public void Release(AcaciaThornProjectile projectile)
     {
-        if (projectile == null)
-            return;
-
-        _active.Remove(projectile);
-        projectile.gameObject.SetActive(false);
-        _pool.Enqueue(projectile);
+        _pool?.Return(projectile);
     }
 
     public void ReleaseAllActive()
     {
-        for (int i = _active.Count - 1; i >= 0; i--)
-        {
-            AcaciaThornProjectile projectile = _active[i];
-
-            if (projectile != null)
-                projectile.ForceRelease();
-        }
-
-        _active.Clear();
+        _pool?.ReturnAll();
     }
 
     private AcaciaThornProjectile CreateNew()
     {
         AcaciaThornProjectile projectile = Object.Instantiate(_prefab, _parent);
         projectile.Init(this, _screenBounds);
-        projectile.gameObject.SetActive(false);
         return projectile;
+    }
+
+    private static void Deactivate(AcaciaThornProjectile projectile)
+    {
+        projectile.gameObject.SetActive(false);
     }
 }

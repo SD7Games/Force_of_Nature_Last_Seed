@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -17,8 +16,7 @@ public sealed class ProjectilePool : MonoBehaviour
 
     private Projectile _prefab;
     private IScreenBounds _screenBounds;
-    private readonly Queue<Projectile> _pool = new();
-    private readonly List<Projectile> _active = new();
+    private ObjectPool<Projectile> _pool;
     private bool _initialized;
 
     /// <summary>
@@ -31,7 +29,8 @@ public sealed class ProjectilePool : MonoBehaviour
 
         _prefab = prefab;
         _screenBounds = screenBounds;
-        Prewarm();
+        _pool = new ObjectPool<Projectile>(CreateNew, Deactivate);
+        _pool.Prewarm(_prewarmCount);
         _initialized = true;
     }
 
@@ -39,14 +38,25 @@ public sealed class ProjectilePool : MonoBehaviour
     /// Retrieves a projectile instance from the pool.
     /// Creates a new one if the pool is empty.
     /// </summary>
-    public Projectile Get()
+    public Projectile Spawn(
+        ProjectileConfig config,
+        ProjectileRuntimeStats stats,
+        Vector3 position,
+        Quaternion rotation)
     {
-        Projectile projectile = _pool.Count == 0
-            ? CreateNew()
-            : _pool.Dequeue();
+        Projectile projectile = _pool.Rent();
 
-        _active.Add(projectile);
-        return projectile;
+        try
+        {
+            projectile.ApplyConfig(config, stats);
+            projectile.Activate(position, rotation);
+            return projectile;
+        }
+        catch
+        {
+            _pool.Return(projectile);
+            throw;
+        }
     }
 
     /// <summary>
@@ -54,45 +64,23 @@ public sealed class ProjectilePool : MonoBehaviour
     /// </summary>
     public void Release(Projectile projectile)
     {
-        if (projectile == null)
-            return;
-
-        _active.Remove(projectile);
-        projectile.gameObject.SetActive(false);
-        _pool.Enqueue(projectile);
+        _pool?.Return(projectile);
     }
 
     public void ReleaseAllActive()
     {
-        for (int i = _active.Count - 1; i >= 0; i--)
-        {
-            Projectile projectile = _active[i];
-
-            if (projectile != null)
-                projectile.ForceRelease();
-        }
-
-        _active.Clear();
-    }
-
-    /// <summary>
-    /// Creates an initial batch of projectiles to populate the pool.
-    /// This prevents runtime allocations during gameplay.
-    /// </summary>
-    private void Prewarm()
-    {
-        for (int i = 0; i < _prewarmCount; i++)
-        {
-            var projectile = CreateNew();
-            Release(projectile);
-        }
+        _pool?.ReturnAll();
     }
 
     private Projectile CreateNew()
     {
         var projectile = Instantiate(_prefab, transform);
         projectile.Init(this, _screenBounds);
-        projectile.gameObject.SetActive(false);
         return projectile;
+    }
+
+    private static void Deactivate(Projectile projectile)
+    {
+        projectile.gameObject.SetActive(false);
     }
 }

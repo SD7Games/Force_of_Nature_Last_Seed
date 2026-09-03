@@ -279,11 +279,8 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private void Spawn(ShotSpawnData shot)
     {
-        var projectile = _pool.Get();
         ProjectileRuntimeStats stats = BuildProjectileStats();
-
-        projectile.ApplyConfig(_config.Projectile, stats);
-        projectile.Activate(shot.Position, shot.Rotation);
+        _pool.Spawn(_config.Projectile, stats, shot.Position, shot.Rotation);
     }
 
     private ProjectileRuntimeStats BuildProjectileStats()

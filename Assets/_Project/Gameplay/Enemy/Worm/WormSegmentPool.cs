@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -15,9 +14,9 @@ public sealed class WormSegmentPool
     private readonly WormSegment _bodyPrefab;
     private readonly WormSegment _tailPrefab;
 
-    private readonly Queue<WormSegment> _headPool = new();
-    private readonly Queue<WormSegment> _bodyPool = new();
-    private readonly Queue<WormSegment> _tailPool = new();
+    private readonly ObjectPool<WormSegment> _headPool;
+    private readonly ObjectPool<WormSegment> _bodyPool;
+    private readonly ObjectPool<WormSegment> _tailPool;
     private int _prewarmCreatedThisFrame;
 
     public WormSegmentPool(
@@ -31,6 +30,10 @@ public sealed class WormSegmentPool
         _headPrefab = head;
         _bodyPrefab = body;
         _tailPrefab = tail;
+
+        _headPool = CreatePool(_headPrefab);
+        _bodyPool = CreatePool(_bodyPrefab);
+        _tailPool = CreatePool(_tailPrefab);
     }
 
     /// <summary>
@@ -39,10 +42,9 @@ public sealed class WormSegmentPool
     /// </summary>
     public void Prewarm(int bodyCapacity)
     {
-        Prewarm(_headPrefab, 1, _headPool);
-        Prewarm(_tailPrefab, 1, _tailPool);
-
-        Prewarm(_bodyPrefab, bodyCapacity, _bodyPool);
+        _headPool?.Prewarm(1);
+        _tailPool?.Prewarm(1);
+        _bodyPool?.Prewarm(bodyCapacity);
     }
 
     public IEnumerator PrewarmRoutine(int bodyCapacity, int batchSize)
@@ -50,9 +52,9 @@ public sealed class WormSegmentPool
         int safeBatchSize = Mathf.Max(1, batchSize);
         _prewarmCreatedThisFrame = 0;
 
-        yield return PrewarmRoutine(_headPrefab, 1, _headPool, safeBatchSize);
-        yield return PrewarmRoutine(_tailPrefab, 1, _tailPool, safeBatchSize);
-        yield return PrewarmRoutine(_bodyPrefab, bodyCapacity, _bodyPool, safeBatchSize);
+        yield return PrewarmRoutine(_headPool, 1, safeBatchSize);
+        yield return PrewarmRoutine(_tailPool, 1, safeBatchSize);
+        yield return PrewarmRoutine(_bodyPool, bodyCapacity, safeBatchSize);
     }
 
     /// <summary>
@@ -61,23 +63,15 @@ public sealed class WormSegmentPool
     /// </summary>
     public WormSegment Get(WormSegmentType type)
     {
-        Queue<WormSegment> pool = GetPool(type);
+        ObjectPool<WormSegment> pool = GetPool(type);
 
-        if (pool.Count > 0)
-            return pool.Dequeue();
-
-        WormSegment prefab = GetPrefab(type);
-
-        if (prefab == null)
+        if (pool == null)
         {
             Debug.LogError($"Prefab for {type} is not assigned");
             return null;
         }
 
-        WormSegment created = Object.Instantiate(prefab, _parent);
-        created.gameObject.SetActive(false);
-
-        return created;
+        return pool.Rent();
     }
 
     public void Release(WormSegment segment)
@@ -85,35 +79,15 @@ public sealed class WormSegmentPool
         if (segment == null)
             return;
 
-        segment.PrepareForWorm();
-        GetPool(segment.Type).Enqueue(segment);
-    }
-
-    private void Prewarm(WormSegment prefab, int count, Queue<WormSegment> pool)
-    {
-        if (prefab == null)
-        {
-            Debug.LogWarning("WormSegment prefab missing in pool");
-            return;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            WormSegment seg = Object.Instantiate(prefab, _parent);
-
-            seg.gameObject.SetActive(false);
-
-            pool.Enqueue(seg);
-        }
+        GetPool(segment.Type)?.Return(segment);
     }
 
     private IEnumerator PrewarmRoutine(
-        WormSegment prefab,
+        ObjectPool<WormSegment> pool,
         int count,
-        Queue<WormSegment> pool,
         int batchSize)
     {
-        if (prefab == null)
+        if (pool == null)
         {
             Debug.LogWarning("WormSegment prefab missing in pool");
             yield break;
@@ -121,9 +95,7 @@ public sealed class WormSegmentPool
 
         for (int i = 0; i < count; i++)
         {
-            WormSegment seg = Object.Instantiate(prefab, _parent);
-            seg.gameObject.SetActive(false);
-            pool.Enqueue(seg);
+            pool.PrewarmOne();
 
             _prewarmCreatedThisFrame++;
 
@@ -135,7 +107,23 @@ public sealed class WormSegmentPool
         }
     }
 
-    private Queue<WormSegment> GetPool(WormSegmentType type) => type switch
+    private ObjectPool<WormSegment> CreatePool(WormSegment prefab)
+    {
+        if (prefab == null)
+            return null;
+
+        return new ObjectPool<WormSegment>(
+            () => Object.Instantiate(prefab, _parent),
+            PrepareForPool);
+    }
+
+    private static void PrepareForPool(WormSegment segment)
+    {
+        segment.PrepareForWorm();
+        segment.gameObject.SetActive(false);
+    }
+
+    private ObjectPool<WormSegment> GetPool(WormSegmentType type) => type switch
     {
         WormSegmentType.Head => _headPool,
         WormSegmentType.Body => _bodyPool,
@@ -143,11 +131,4 @@ public sealed class WormSegmentPool
         _ => _bodyPool
     };
 
-    private WormSegment GetPrefab(WormSegmentType type) => type switch
-    {
-        WormSegmentType.Head => _headPrefab,
-        WormSegmentType.Body => _bodyPrefab,
-        WormSegmentType.Tail => _tailPrefab,
-        _ => _bodyPrefab
-    };
 }

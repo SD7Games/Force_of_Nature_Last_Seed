@@ -229,9 +229,8 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         Vector3 position = _firePoint.position +
             (Vector3)(direction * Mathf.Max(0f, _config.SpawnOffset));
 
-        AcaciaThornProjectile projectile = _pool.Get();
         int damage = BuildDamage(out DamageKind damageKind, out bool isCritical);
-        projectile.Activate(
+        _pool.Spawn(
             position,
             direction,
             damage,

@@ -182,8 +182,7 @@ public sealed class AcaciaThornProjectile : MonoBehaviour
 
         for (int i = 0; i < _splitCount; i++)
         {
-            AcaciaThornProjectile projectile = _pool.Get();
-            projectile.Activate(
+            AcaciaThornProjectile projectile = _pool.Spawn(
                 position,
                 GetRandomDirection(),
                 _damage,

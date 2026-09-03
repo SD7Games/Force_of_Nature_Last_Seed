@@ -20,7 +20,7 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
     [SerializeField, Range(0.1f, 1f)] private float _crowdedScaleMultiplier = 0.75f;
     [SerializeField, Range(0.1f, 1f)] private float _veryCrowdedScaleMultiplier = 0.55f;
 
-    private readonly Queue<WormDamagePopupView> _pool = new();
+    private ObjectPool<WormDamagePopupView> _pool;
     private readonly List<WormDamagePopupView> _activePopups = new();
     private readonly List<WormDamagePopupView> _activeNonCriticalPopups = new();
 
@@ -39,7 +39,11 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
         if (_popupPrefab == null)
             Debug.LogError("DamagePopupPresenter: Popup prefab not assigned", this);
 
-        CreatePool();
+        if (_popupPrefab != null)
+        {
+            _pool = new ObjectPool<WormDamagePopupView>(CreatePopup, DeactivatePopup);
+            _pool.Prewarm(_initialPoolSize);
+        }
     }
 
     private void OnEnable()
@@ -61,7 +65,7 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
         if (!CanShow(request, isCritical))
             return;
 
-        var popup = GetFromPool();
+        WormDamagePopupView popup = _pool?.Rent();
 
         if (popup == null)
             return;
@@ -87,14 +91,14 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
             UnregisterNonCriticalPopup(view);
 
         UnregisterActivePopup(view);
-        ReturnToPool(view);
+        _pool?.Return(view);
     }
 
     public void ClearActivePopups()
     {
         for (int i = _activePopups.Count - 1; i >= 0; i--)
         {
-            ReturnToPool(_activePopups[i]);
+            _pool?.Return(_activePopups[i]);
         }
 
         _activePopups.Clear();
@@ -132,36 +136,6 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
         return true;
     }
 
-    private WormDamagePopupView GetFromPool()
-    {
-        if (_pool.Count > 0)
-            return _pool.Dequeue();
-
-        return CreatePopup();
-    }
-
-    private void ReturnToPool(WormDamagePopupView view)
-    {
-        if (view == null)
-            return;
-
-        view.gameObject.SetActive(false);
-        _pool.Enqueue(view);
-    }
-
-    private void CreatePool()
-    {
-        if (_popupPrefab == null)
-            return;
-
-        for (int i = 0; i < _initialPoolSize; i++)
-        {
-            var popup = CreatePopup();
-            popup.gameObject.SetActive(false);
-            _pool.Enqueue(popup);
-        }
-    }
-
     private WormDamagePopupView CreatePopup()
     {
         if (_popupPrefab == null)
@@ -170,6 +144,11 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
         WormDamagePopupView popup = Instantiate(_popupPrefab, transform);
         popup.PrewarmText();
         return popup;
+    }
+
+    private static void DeactivatePopup(WormDamagePopupView popup)
+    {
+        popup.gameObject.SetActive(false);
     }
 
     private static bool IsCritical(DamageViewRequest request)

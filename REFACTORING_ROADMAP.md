@@ -104,10 +104,12 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 
 ### 5. Unified pooling
 
-- Introduce one generic `ObjectPool<T>` algorithm and stable pooled lifecycle contracts.
-- Migrate projectiles, worm segments, VFX, damage popups, and audio sources incrementally.
-- Centralize rent -> initialize -> bind -> activate -> rollback-on-failure.
-- Remove subtype probing and duplicated pool orchestration.
+**Status: completed and verified by automated EditMode and PlayMode tests.**
+
+- [x] Introduce one generic `ObjectPool<T>` algorithm with active membership, duplicate-return protection, bulk return, and transactional rent rollback.
+- [x] Migrate main projectiles, Acacia Thorn projectiles, worm segments, and damage popups to the shared algorithm.
+- [x] Centralize projectile rent -> initialize -> activate -> rollback-on-failure in their owning pools.
+- [x] Keep type-specific creation and reset hooks in narrow adapters; no pooled audio or standalone VFX owners currently exist to migrate.
 
 ### 6. Worm domain
 

@@ -1,0 +1,19 @@
+{
+  "name": "LastSeed.Gameplay",
+  "rootNamespace": "LastSeed.Gameplay",
+  "references": [
+    "LastSeed.Core",
+    "LastSeed.Infrastructure",
+    "LastSeed.DOTween.Modules",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -1,0 +1,22 @@
+{
+  "name": "LastSeed.Editor",
+  "rootNamespace": "LastSeed.Editor",
+  "references": [
+    "LastSeed.Core",
+    "LastSeed.Gameplay",
+    "LastSeed.Infrastructure",
+    "LastSeed.Presentation",
+    "LastSeed.Bootstrap"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

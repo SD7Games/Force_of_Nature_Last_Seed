@@ -1,0 +1,17 @@
+{
+  "name": "LastSeed.Infrastructure",
+  "rootNamespace": "LastSeed.Infrastructure",
+  "references": [
+    "LastSeed.Core",
+    "Unity.InputSystem"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

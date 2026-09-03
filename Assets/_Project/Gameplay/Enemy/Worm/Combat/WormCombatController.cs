@@ -1,0 +1,276 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// Applies damage to worm sections and coordinates section removal
+/// with the movement chain once a section is destroyed.
+/// </summary>
+[DisallowMultipleComponent]
+public sealed class WormCombatController : MonoBehaviour
+{
+    public event Action<WormSection, int> SectionDamaged;
+
+    public event Action<DamageViewRequest> DamageDealt;
+    public event Action<int, int> DestructionProgressChanged;
+
+    public static event Action OnWormDied;
+
+    [SerializeField] private WormController _wormController;
+
+    private readonly List<WormSection> _sections = new();
+
+    private WormSegment _head;
+    private WormSegment _tail;
+    private int _totalProgressSegments;
+    private int _destroyedProgressSegments;
+    private bool _isWormDead;
+
+    public int TotalProgressSegments => _totalProgressSegments;
+    public int DestroyedProgressSegments => _destroyedProgressSegments;
+    public float DestructionProgressNormalized =>
+        _totalProgressSegments > 0
+            ? Mathf.Clamp01(_destroyedProgressSegments / (float)_totalProgressSegments)
+            : 0f;
+
+    public float RemainingProgressNormalized => 1f - DestructionProgressNormalized;
+
+    public void Init(WormSegment head, WormSegment tail, List<WormSection> sections)
+    {
+        _head = head;
+        _tail = tail;
+
+        _sections.Clear();
+
+        if (sections != null)
+            _sections.AddRange(sections);
+
+        _totalProgressSegments = CountProgressSegments(_sections);
+        _destroyedProgressSegments = 0;
+        _isWormDead = false;
+
+        NotifyDestructionProgressChanged();
+    }
+
+    public void Clear()
+    {
+        _head = null;
+        _tail = null;
+        _sections.Clear();
+        _totalProgressSegments = 0;
+        _destroyedProgressSegments = 0;
+        _isWormDead = false;
+        NotifyDestructionProgressChanged();
+    }
+
+    public void RegisterHit(WormSegment segment, in DamageInfo damageInfo)
+    {
+        if (_isWormDead)
+            return;
+
+        WormSection section = ResolveDamageSection(segment);
+
+        if (section == null || section.IsDestroyed)
+            return;
+
+        section.Damage(damageInfo.Amount);
+        SectionDamaged?.Invoke(section, damageInfo.Amount);
+        DamageDealt?.Invoke(DamageViewRequest.FromDamageInfo(damageInfo));
+
+        if (!section.IsDestroyed)
+            return;
+
+        DestroySection(section);
+    }
+
+    private void DestroySection(WormSection section)
+    {
+        bool isFinalSection = IsFinalAliveSection(section);
+        bool rewardTriggered = section.HasReward;
+        CocoonRewardProfile rewardProfile = section.CocoonProfile;
+
+        List<WormSegment> removedSegments = section.ReleaseSegments();
+
+        for (int i = 0; i < removedSegments.Count; i++)
+        {
+            WormSegment seg = removedSegments[i];
+
+            if (seg == null || !seg.IsAlive)
+                continue;
+
+            if (seg.Type is WormSegmentType.Head or WormSegmentType.Tail)
+                continue;
+
+            seg.KillVisualAndCollision();
+        }
+
+        _sections.Remove(section);
+        _destroyedProgressSegments = Mathf.Min(
+            _destroyedProgressSegments + CountProgressSegments(removedSegments),
+            _totalProgressSegments);
+
+        NotifyDestructionProgressChanged();
+
+        if (isFinalSection)
+        {
+            KillWholeWorm();
+            return;
+        }
+
+        int removedFromChain = 0;
+        int firstRemovedIndex = -1;
+
+        if (_wormController != null)
+            removedFromChain = _wormController.RemoveDestroyedSectionSegments(removedSegments, out firstRemovedIndex);
+
+        if (_wormController != null && removedFromChain > 0)
+            _wormController.RollbackDestroyedGap(removedFromChain, firstRemovedIndex);
+
+        if (rewardTriggered)
+        {
+            float headProgress = _wormController != null
+                ? _wormController.HeadPathProgressNormalized
+                : 0f;
+
+            WormRewardEvents.PublishRewardRequested(
+                rewardProfile,
+                headProgress,
+                DestructionProgressNormalized);
+        }
+    }
+
+    public WormSection ResolveDamageSection(WormSegment segment)
+    {
+        if (_isWormDead)
+            return null;
+
+        if (segment == null || !segment.IsAlive)
+            return null;
+
+        if (_wormController != null && _wormController.IsCatchingUpToCombatStart)
+            return null;
+
+        if (segment.Type == WormSegmentType.Head)
+            return GetFirstAliveSection();
+
+        if (segment.Type == WormSegmentType.Tail)
+            return GetLastAliveSection();
+
+        WormSection section = segment.Section;
+
+        if (section == null || section.IsDestroyed)
+            return null;
+
+        return section;
+    }
+
+    private WormSection GetFirstAliveSection()
+    {
+        for (int i = 0; i < _sections.Count; i++)
+        {
+            WormSection section = _sections[i];
+
+            if (section != null && !section.IsDestroyed)
+                return section;
+        }
+
+        return null;
+    }
+
+    private WormSection GetLastAliveSection()
+    {
+        for (int i = _sections.Count - 1; i >= 0; i--)
+        {
+            WormSection section = _sections[i];
+
+            if (section != null && !section.IsDestroyed)
+                return section;
+        }
+
+        return null;
+    }
+
+    private bool IsFinalAliveSection(WormSection destroyedSection)
+    {
+        if (destroyedSection == null)
+            return false;
+
+        bool containsDestroyedSection = false;
+
+        for (int i = 0; i < _sections.Count; i++)
+        {
+            WormSection section = _sections[i];
+
+            if (section == destroyedSection)
+            {
+                containsDestroyedSection = true;
+                continue;
+            }
+
+            if (section != null && !section.IsDestroyed)
+                return false;
+        }
+
+        return containsDestroyedSection;
+    }
+
+    private void KillWholeWorm()
+    {
+        if (_isWormDead)
+            return;
+
+        _isWormDead = true;
+
+        if (_head != null && _head.IsAlive)
+            _head.KillVisualAndCollision();
+
+        if (_tail != null && _tail.IsAlive)
+            _tail.KillVisualAndCollision();
+
+        _wormController?.ClearWorm();
+        OnWormDied?.Invoke();
+    }
+
+    private void NotifyDestructionProgressChanged()
+    {
+        DestructionProgressChanged?.Invoke(
+            _destroyedProgressSegments,
+            _totalProgressSegments);
+    }
+
+    private static int CountProgressSegments(List<WormSection> sections)
+    {
+        if (sections == null)
+            return 0;
+
+        int count = 0;
+
+        for (int i = 0; i < sections.Count; i++)
+        {
+            WormSection section = sections[i];
+
+            if (section == null)
+                continue;
+
+            count += section.Segments.Count;
+        }
+
+        return count;
+    }
+
+    private static int CountProgressSegments(List<WormSegment> segments)
+    {
+        if (segments == null)
+            return 0;
+
+        int count = 0;
+
+        for (int i = 0; i < segments.Count; i++)
+        {
+            if (segments[i] != null)
+                count++;
+        }
+
+        return count;
+    }
+}

@@ -29,6 +29,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<IWormPathProgressProvider>().FromInstance(_wormController).AsSingle();
             Container.Bind<IWormHpScalingPolicy>().FromInstance(_hpScalingConfig).AsSingle();
             Container.Bind<IWeaponPowerProvider>().To<WeaponPowerProvider>().AsSingle();
+            Container.Bind<WormCombatBurstController>().AsSingle();
             Container.BindInstance(new WormAdaptiveHpSettings(
                 _levelNumber,
                 _upgradeRebalanceInterval,

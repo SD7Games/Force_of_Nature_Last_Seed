@@ -117,6 +117,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Adaptive HP orchestration is extracted from `WormSpawner` into a constructor-injected C# service with explicit policy, weapon-power, path-progress, and settings dependencies; `WormInstaller` owns its scene composition.
 - Adaptive HP policy resolution has EditMode coverage, and the migrated graph is covered by all-scene Zenject validation plus the direct-Game PlayMode smoke test.
 - Section HP, damage, and destruction transitions live in the engine-independent `WormSectionHealth` model; adaptive balancing targets a narrow C# contract rather than a Unity segment implementation.
+- Combat-burst timing, speed transitions, and state changes are isolated in a Zenject-created `WormCombatBurstController`; `WormController` now supplies only rail-derived facts and applies the result to Unity movement.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

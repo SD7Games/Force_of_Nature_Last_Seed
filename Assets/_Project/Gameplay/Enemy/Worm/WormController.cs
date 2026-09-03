@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Controls movement and positioning of the worm segments along a rail path.
@@ -88,12 +89,9 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private bool _isSectionRollback;
     private bool _isReviveRollback;
     private float _sectionRollbackTargetDistance;
-    private bool _hasReachedCombatStart;
     private bool _hasReachedPathEnd;
-    private float _combatBurstTimer;
-    private float _combatBurstRemainingTime;
-    private float _currentForwardSpeed;
     private float _reviveVisualYOffset;
+    private WormCombatBurstController _combatBurstController;
 
     private Vector3 _tmpEuler;
     private RailPath _cachedCatchUpRail;
@@ -111,7 +109,15 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     public bool HasWorm => _segments.Count > 0;
     public bool IsCatchingUpToCombatStart { get; private set; }
-    public bool IsCombatBurstActive { get; private set; }
+    public bool IsCombatBurstActive =>
+        _combatBurstController != null && _combatBurstController.IsActive;
+
+    [Inject]
+    public void Construct(WormCombatBurstController combatBurstController)
+    {
+        _combatBurstController = combatBurstController;
+        _combatBurstController.ActiveStateChanged += HandleCombatBurstStateChanged;
+    }
 
 #if UNITY_EDITOR
     public RailPath EditorRail => _rail;
@@ -187,6 +193,9 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private void OnDestroy()
     {
+        if (_combatBurstController != null)
+            _combatBurstController.ActiveStateChanged -= HandleCombatBurstStateChanged;
+
         CleanupReviveThrowbackVisuals();
     }
 
@@ -216,12 +225,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _rollbackAnchoredDistances.Clear();
         _reviveVisualBaseScales.Clear();
         _sectionRollbackTargetDistance = 0f;
-        _hasReachedCombatStart = false;
         _hasReachedPathEnd = false;
-        _combatBurstTimer = 0f;
-        _combatBurstRemainingTime = 0f;
-        _currentForwardSpeed = Mathf.Max(0f, _speed);
-        SetCombatBurstActive(false);
+        _combatBurstController.Reset(_speed);
         ClearTargetDistanceCaches();
         IsCatchingUpToCombatStart = TryGetCatchUpTargetDistance(out _);
 
@@ -252,12 +257,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
         _sectionRollbackTargetDistance = 0f;
-        _hasReachedCombatStart = false;
         _hasReachedPathEnd = false;
-        _combatBurstTimer = 0f;
-        _combatBurstRemainingTime = 0f;
-        _currentForwardSpeed = Mathf.Max(0f, _speed);
-        SetCombatBurstActive(false);
+        _combatBurstController.Reset(_speed);
         IsCatchingUpToCombatStart = false;
         ClearTargetDistanceCaches();
     }
@@ -303,32 +304,20 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private float GetForwardSpeed(float deltaTime)
     {
         IsCatchingUpToCombatStart = ShouldCatchUp();
+        WormCombatBurstSettings settings = new(
+            _enableCombatSpeedBursts,
+            _combatBurstSpeed,
+            _combatBurstInterval,
+            _combatBurstDuration,
+            _combatBurstSlowdownDuration);
 
-        if (IsCatchingUpToCombatStart)
-        {
-            StopCombatBurst();
-            _currentForwardSpeed = Mathf.Max(0f, _speed);
-            SetCombatBurstActive(false);
-            return Mathf.Max(_currentForwardSpeed, _catchUpSpeed);
-        }
-
-        UpdateCombatBurst(deltaTime);
-
-        float baseSpeed = Mathf.Max(0f, _speed);
-        float targetSpeed = _combatBurstRemainingTime > 0f
-            ? Mathf.Max(baseSpeed, _combatBurstSpeed)
-            : baseSpeed;
-
-        if (targetSpeed > baseSpeed)
-        {
-            _currentForwardSpeed = targetSpeed;
-            SetCombatBurstActive(true);
-            return _currentForwardSpeed;
-        }
-
-        float forwardSpeed = DecelerateToBaseSpeed(deltaTime, baseSpeed);
-        SetCombatBurstActive(forwardSpeed > baseSpeed + 0.01f);
-        return forwardSpeed;
+        return _combatBurstController.ResolveForwardSpeed(
+            deltaTime,
+            _speed,
+            _catchUpSpeed,
+            IsCatchingUpToCombatStart,
+            CanUseCombatBurst(deltaTime),
+            settings);
     }
 
     private bool ShouldCatchUp()
@@ -411,45 +400,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _cachedCombatBurstDisableDistance = 0f;
     }
 
-    private void UpdateCombatBurst(float deltaTime)
-    {
-        if (!_enableCombatSpeedBursts || deltaTime <= 0f)
-        {
-            StopCombatBurst();
-            return;
-        }
-
-        if (!_hasReachedCombatStart)
-        {
-            _hasReachedCombatStart = true;
-            _combatBurstTimer = 0f;
-            _combatBurstRemainingTime = 0f;
-            return;
-        }
-
-        if (!CanUseCombatBurst(deltaTime))
-        {
-            StopCombatBurst();
-            return;
-        }
-
-        if (_combatBurstRemainingTime > 0f)
-        {
-            _combatBurstRemainingTime = Mathf.Max(
-                0f,
-                _combatBurstRemainingTime - deltaTime);
-            return;
-        }
-
-        _combatBurstTimer += deltaTime;
-
-        if (_combatBurstTimer < _combatBurstInterval)
-            return;
-
-        _combatBurstTimer = 0f;
-        _combatBurstRemainingTime = _combatBurstDuration;
-    }
-
     private bool CanUseCombatBurst(float deltaTime)
     {
         if (!TryGetCombatBurstDisableDistance(out float disableDistance))
@@ -490,40 +440,9 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         return true;
     }
 
-    private void StopCombatBurst()
+    private void HandleCombatBurstStateChanged(bool isActive)
     {
-        _combatBurstTimer = 0f;
-        _combatBurstRemainingTime = 0f;
-        SetCombatBurstActive(false);
-    }
-
-    private void SetCombatBurstActive(bool active)
-    {
-        if (IsCombatBurstActive == active)
-            return;
-
-        IsCombatBurstActive = active;
-        CombatBurstStateChanged?.Invoke(active);
-    }
-
-    private float DecelerateToBaseSpeed(float deltaTime, float baseSpeed)
-    {
-        if (_currentForwardSpeed <= baseSpeed || deltaTime <= 0f)
-        {
-            _currentForwardSpeed = baseSpeed;
-            return baseSpeed;
-        }
-
-        float maxBurstSpeed = Mathf.Max(baseSpeed, _combatBurstSpeed);
-        float decelerationRate = (maxBurstSpeed - baseSpeed) /
-            Mathf.Max(0.01f, _combatBurstSlowdownDuration);
-
-        _currentForwardSpeed = Mathf.MoveTowards(
-            _currentForwardSpeed,
-            baseSpeed,
-            decelerationRate * deltaTime);
-
-        return Mathf.Max(baseSpeed, _currentForwardSpeed);
+        CombatBurstStateChanged?.Invoke(isActive);
     }
 
     /// <summary>

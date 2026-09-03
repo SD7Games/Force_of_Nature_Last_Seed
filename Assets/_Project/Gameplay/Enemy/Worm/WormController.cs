@@ -83,9 +83,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private float _headDistance;
     private Coroutine _rollbackRoutine;
     private Coroutine _reviveThrowbackRoutine;
-    private int _activeStartIndex = -1;
-    private int _activeEndIndex = -1;
-
     private bool _isSectionRollback;
     private bool _isReviveRollback;
     private float _sectionRollbackTargetDistance;
@@ -93,8 +90,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private float _reviveVisualYOffset;
     private WormCombatBurstController _combatBurstController;
     private WormRailTargetResolver _railTargetResolver;
-
-    private Vector3 _tmpEuler;
+    private WormSegmentChainPresenter _segmentChainPresenter;
 
     public event Action PathCompleted;
     public event Action<bool> CombatBurstStateChanged;
@@ -107,10 +103,12 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     [Inject]
     public void Construct(
         WormCombatBurstController combatBurstController,
-        WormRailTargetResolver railTargetResolver)
+        WormRailTargetResolver railTargetResolver,
+        WormSegmentChainPresenter segmentChainPresenter)
     {
         _combatBurstController = combatBurstController;
         _railTargetResolver = railTargetResolver;
+        _segmentChainPresenter = segmentChainPresenter;
         _combatBurstController.ActiveStateChanged += HandleCombatBurstStateChanged;
     }
 
@@ -211,8 +209,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _segments.AddRange(segments);
 
         _headDistance = 0f;
-        _activeStartIndex = -1;
-        _activeEndIndex = -1;
+        _segmentChainPresenter.Reset();
 
         _isSectionRollback = false;
         _isReviveRollback = false;
@@ -246,8 +243,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _segments.Clear();
         _rollbackAnchoredDistances.Clear();
         _headDistance = 0f;
-        _activeStartIndex = -1;
-        _activeEndIndex = -1;
+        _segmentChainPresenter.Reset();
         _isSectionRollback = false;
         _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
@@ -384,125 +380,24 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     /// </summary>
     private void UpdateSegments()
     {
-        if (_isSectionRollback || _isReviveRollback)
-        {
-            UpdateSegmentsDuringRollback();
-            return;
-        }
+        WormSegmentChainLayout layout = new(
+            _headDistance,
+            _segmentSpacing,
+            _tailVisualSpacingMultiplier,
+            _headBridgeSpacingMultiplier,
+            _activeDistancePadding,
+            _waveAmplitude,
+            _waveFrequency,
+            GetWaveTime(),
+            _reviveVisualYOffset,
+            _isSectionRollback,
+            _isReviveRollback);
 
-        if (!TryGetActiveRange(out int startIndex, out int endIndex))
-        {
-            HidePreviousActiveRange(-1, -1);
-            return;
-        }
-
-        HidePreviousActiveRange(startIndex, endIndex);
-
-        float waveTime = GetWaveTime();
-
-        for (int i = startIndex; i <= endIndex; i++)
-        {
-            WormSegment segment = _segments[i];
-            if (segment == null)
-                continue;
-
-            float distance = GetSegmentDistance(i, segment);
-            Vector3 position = CalculatePositionAtDistance(distance, waveTime);
-
-            UpdateSegmentPosition(segment, position);
-            UpdateHeadFollowChain(i, segment, distance, waveTime);
-
-            if (i > startIndex && !segment.HasTailVisualChain)
-                UpdateSegmentRotation(i, segment, position);
-
-            UpdateTailVisualChain(i, segment, distance, waveTime);
-            segment.SetRuntimeVisible(true);
-        }
-
-        _activeStartIndex = startIndex;
-        _activeEndIndex = endIndex;
-    }
-
-    private void UpdateSegmentsDuringRollback()
-    {
-        float waveTime = GetWaveTime();
-        float maxDistance = _rail.TotalLength + _activeDistancePadding;
-
-        for (int i = 0; i < _segments.Count; i++)
-        {
-            WormSegment segment = _segments[i];
-
-            if (segment == null)
-                continue;
-
-            float distance = GetSegmentDistance(i, segment);
-
-            if (distance < 0f || distance > maxDistance)
-            {
-                segment.SetRuntimeVisible(false);
-                continue;
-            }
-
-            Vector3 position = CalculatePositionAtDistance(distance, waveTime);
-            UpdateSegmentPosition(segment, position);
-            UpdateHeadFollowChain(i, segment, distance, waveTime);
-
-            if (i > 0 && !segment.HasTailVisualChain)
-                UpdateSegmentRotation(i, segment, position);
-
-            UpdateTailVisualChain(i, segment, distance, waveTime);
-            segment.SetRuntimeVisible(true);
-        }
-
-        _activeStartIndex = -1;
-        _activeEndIndex = -1;
-    }
-
-    private bool TryGetActiveRange(out int startIndex, out int endIndex)
-    {
-        startIndex = -1;
-        endIndex = -1;
-
-        if (_segments.Count == 0 || _rail == null)
-            return false;
-
-        float spacing = Mathf.Max(0.01f, _segmentSpacing);
-        float maxDistance = _rail.TotalLength + _activeDistancePadding;
-
-        startIndex = Mathf.Max(0, Mathf.CeilToInt((_headDistance - maxDistance) / spacing));
-        endIndex = Mathf.Min(_segments.Count - 1, Mathf.FloorToInt(_headDistance / spacing));
-
-        return startIndex <= endIndex;
-    }
-
-    private void HidePreviousActiveRange(int nextStartIndex, int nextEndIndex)
-    {
-        if (_activeStartIndex < 0 || _activeEndIndex < _activeStartIndex)
-            return;
-
-        for (int i = _activeStartIndex; i <= _activeEndIndex; i++)
-        {
-            if (i >= nextStartIndex && i <= nextEndIndex)
-                continue;
-
-            if (i < 0 || i >= _segments.Count)
-                continue;
-
-            WormSegment segment = _segments[i];
-
-            if (segment != null)
-                segment.SetRuntimeVisible(false);
-        }
-    }
-
-    private Vector3 CalculatePositionAtDistance(float distance, float waveTime)
-    {
-        Vector3 pos = _rail.GetPoint(distance);
-
-        float wave = Mathf.Sin(distance * _waveFrequency + waveTime);
-        pos.y += (wave * _waveAmplitude) + _reviveVisualYOffset;
-
-        return pos;
+        _segmentChainPresenter.Render(
+            _segments,
+            _rail,
+            _rollbackAnchoredDistances,
+            layout);
     }
 
     private float GetWaveTime()
@@ -510,192 +405,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         return (_isSectionRollback || _isReviveRollback
             ? Time.unscaledTime
             : Time.time) * _waveSpeed;
-    }
-
-    private void UpdateTailVisualChain(
-        int index,
-        WormSegment segment,
-        float tailDistance,
-        float waveTime)
-    {
-        if (segment == null || !segment.HasTailVisualChain)
-            return;
-
-        segment.ResetTailVisualRootRotation();
-
-        float spacing = Mathf.Max(0.01f, _segmentSpacing * _tailVisualSpacingMultiplier);
-        Vector3 leaderPosition = ResolveTailLeaderPosition(index, segment);
-        Vector3 previousPosition = leaderPosition;
-
-        for (int i = 0; i < segment.TailVisualPartCount; i++)
-        {
-            float visualDistance = Mathf.Max(0f, tailDistance - (i * spacing));
-            Vector3 visualPosition = CalculatePositionAtDistance(visualDistance, waveTime);
-            float angle = CalculateLookAngle(visualPosition, previousPosition);
-
-            segment.SetTailVisualPartPose(i, visualPosition, angle);
-            previousPosition = visualPosition;
-        }
-    }
-
-    private Vector3 ResolveTailLeaderPosition(int index, WormSegment tail)
-    {
-        int previousIndex = index - 1;
-
-        if (previousIndex >= 0 && previousIndex < _segments.Count)
-        {
-            WormSegment previous = _segments[previousIndex];
-
-            if (ShouldAttachTailToHeadFollowChain(index, tail) &&
-                previous != null &&
-                previous.TryGetLastHeadFollowPartPosition(out Vector3 headFollowPosition))
-            {
-                return headFollowPosition;
-            }
-
-            if (previous != null)
-                return previous.CachedTransform.position;
-        }
-
-        return tail.CachedTransform.position;
-    }
-
-    private void UpdateHeadFollowChain(
-        int index,
-        WormSegment segment,
-        float headDistance,
-        float waveTime)
-    {
-        if (segment == null || !segment.HasHeadFollowChain)
-            return;
-
-        bool visible = ShouldShowHeadFollowChain(index, segment);
-        segment.SetHeadFollowChainVisible(visible);
-
-        if (!visible)
-            return;
-
-        float spacing = GetHeadBridgeSpacing();
-        Vector3 previousPosition = segment.CachedTransform.position;
-
-        for (int i = 0; i < segment.HeadFollowPartCount; i++)
-        {
-            float visualDistance = Mathf.Max(0f, headDistance - ((i + 1) * spacing));
-            Vector3 visualPosition = CalculatePositionAtDistance(visualDistance, waveTime);
-            float angle = CalculateLookAngle(visualPosition, previousPosition);
-
-            segment.SetHeadFollowPartPose(i, visualPosition, angle);
-            previousPosition = visualPosition;
-        }
-    }
-
-    private static float CalculateLookAngle(Vector3 from, Vector3 to)
-    {
-        Vector3 dir = to - from;
-
-        if (dir.sqrMagnitude <= 0.0001f)
-            return 0f;
-
-        return Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-    }
-
-    /// <summary>
-    /// Moves segment transform if the position changed.
-    /// Small threshold avoids unnecessary transform updates.
-    /// </summary>
-    private void UpdateSegmentPosition(WormSegment segment, Vector3 pos)
-    {
-        Transform tr = segment.CachedTransform;
-        Vector3 currentPos = tr.position;
-
-        if ((currentPos - pos).sqrMagnitude > 0.000001f)
-            tr.position = pos;
-    }
-
-    /// <summary>
-    /// Rotates segment visual towards the previous segment
-    /// creating the worm bending effect.
-    /// </summary>
-    private void UpdateSegmentRotation(int index, WormSegment segment, Vector3 pos)
-    {
-        WormSegment previous = _segments[index - 1];
-        if (previous == null)
-            return;
-
-        Vector3 dir = previous.CachedTransform.position - pos;
-
-        if (dir.sqrMagnitude <= 0.0001f)
-            return;
-
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
-        Transform visual = segment.VisualRoot;
-        if (visual == null)
-            return;
-
-        Vector3 currentEuler = visual.localEulerAngles;
-
-        if (Mathf.Abs(Mathf.DeltaAngle(currentEuler.z, angle)) > 0.1f)
-        {
-            _tmpEuler.z = angle;
-            visual.localEulerAngles = _tmpEuler;
-        }
-    }
-
-    /// <summary>
-    /// Calculates rail distance for the specified segment index.
-    /// During rollback, detached rear segments advance from their anchor
-    /// distance until the moving front chain reconnects with them.
-    /// </summary>
-    private float GetSegmentDistance(int index, WormSegment segment)
-    {
-        float distance = _headDistance - (index * _segmentSpacing);
-
-        if (ShouldAttachTailToHeadFollowChain(index, segment))
-            distance -= GetHeadFollowChainDistanceOffset();
-
-        if (!_isSectionRollback || segment == null)
-            return distance;
-
-        return _rollbackAnchoredDistances.TryGetValue(segment, out float anchoredDistance)
-            ? Mathf.Min(distance, anchoredDistance)
-            : distance;
-    }
-
-    private bool ShouldShowHeadFollowChain(int index, WormSegment segment)
-    {
-        return index == 0 &&
-            segment != null &&
-            segment.Type == WormSegmentType.Head &&
-            segment.HasHeadFollowChain &&
-            _segments.Count == 2 &&
-            _segments[1] != null &&
-            _segments[1].Type == WormSegmentType.Tail;
-    }
-
-    private bool ShouldAttachTailToHeadFollowChain(int index, WormSegment segment)
-    {
-        return index == 1 &&
-            segment != null &&
-            segment.Type == WormSegmentType.Tail &&
-            _segments.Count == 2 &&
-            _segments[0] != null &&
-            _segments[0].HasHeadFollowChain;
-    }
-
-    private float GetHeadFollowChainDistanceOffset()
-    {
-        WormSegment head = _segments.Count > 0 ? _segments[0] : null;
-
-        return head != null
-            ? ((head.HeadFollowPartCount + 1) * GetHeadBridgeSpacing()) -
-                Mathf.Max(0.01f, _segmentSpacing)
-            : 0f;
-    }
-
-    private float GetHeadBridgeSpacing()
-    {
-        return Mathf.Max(0.01f, _segmentSpacing * _headBridgeSpacingMultiplier);
     }
 
     /// <summary>
@@ -881,8 +590,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private IEnumerator ReviveThrowbackRoutine(float target, Action onComplete)
     {
         _isReviveRollback = true;
-        _activeStartIndex = -1;
-        _activeEndIndex = -1;
+        _segmentChainPresenter.Reset();
         _reviveVisualYOffset = 0f;
 
         float start = _headDistance;
@@ -1134,8 +842,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private void ClearSectionRollbackState()
     {
         _isSectionRollback = false;
-        _activeStartIndex = -1;
-        _activeEndIndex = -1;
+        _segmentChainPresenter.Reset();
         _rollbackAnchoredDistances.Clear();
         _sectionRollbackTargetDistance = 0f;
     }
@@ -1156,7 +863,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             _rollbackAnchoredDistances.Add(segment, anchoredDistance);
         }
 
-        _activeStartIndex = -1;
-        _activeEndIndex = -1;
+        _segmentChainPresenter.Reset();
     }
 }

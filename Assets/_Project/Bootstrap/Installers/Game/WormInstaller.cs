@@ -31,6 +31,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<IWeaponPowerProvider>().To<WeaponPowerProvider>().AsSingle();
             Container.Bind<WormCombatBurstController>().AsSingle();
             Container.Bind<WormRailTargetResolver>().AsSingle();
+            Container.Bind<WormSegmentChainPresenter>().AsSingle();
             Container.BindInstance(new WormAdaptiveHpSettings(
                 _levelNumber,
                 _upgradeRebalanceInterval,

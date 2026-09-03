@@ -40,6 +40,7 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(FindInScene<GameplayUpdateDriver>(gameplayScene), Is.Not.Null);
 
             AssertPlayerServices(sceneContext.Container);
+            AssertWormServices(sceneContext.Container);
             AssertCombatSessionSignals(sceneContext.Container);
             LogAssert.NoUnexpectedReceived();
         }
@@ -49,6 +50,14 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(sceneContainer.Resolve<PlayerMovementController>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<PlayerWeaponController>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<ProjectileWeapon>(), Is.Not.Null);
+        }
+
+        private static void AssertWormServices(DiContainer sceneContainer)
+        {
+            Assert.That(sceneContainer.Resolve<WormAdaptiveHpController>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormCombatBurstController>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormRailTargetResolver>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormSegmentChainPresenter>(), Is.Not.Null);
         }
 
         [UnityTearDown]

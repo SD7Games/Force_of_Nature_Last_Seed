@@ -119,6 +119,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Section HP, damage, and destruction transitions live in the engine-independent `WormSectionHealth` model; adaptive balancing targets a narrow C# contract rather than a Unity segment implementation.
 - Combat-burst timing, speed transitions, and state changes are isolated in a Zenject-created `WormCombatBurstController`; `WormController` now supplies only rail-derived facts and applies the result to Unity movement.
 - Catch-up, revive, and burst-disable target lookup/caching are isolated behind `IWormRailPath`; the resolver is engine-independent and `RailPath` is its Unity adapter.
+- Per-frame segment visibility, rail sampling, transform rotation, wave offsets, and head/tail visual-chain layout are owned by the injected `WormSegmentChainPresenter`, leaving `WormController` as lifecycle/movement coordination rather than presentation implementation.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

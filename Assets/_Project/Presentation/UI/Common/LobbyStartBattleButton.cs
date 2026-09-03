@@ -1,5 +1,7 @@
+using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Button))]
@@ -7,7 +9,14 @@ public sealed class LobbyStartBattleButton : MonoBehaviour
 {
     [SerializeField] private Button _button;
 
+    private ISceneNavigationService _sceneNavigationService;
     private bool _isLoadingRequested;
+
+    [Inject]
+    public void Construct(ISceneNavigationService sceneNavigationService)
+    {
+        _sceneNavigationService = sceneNavigationService;
+    }
 
     private void Awake()
     {
@@ -45,7 +54,7 @@ public sealed class LobbyStartBattleButton : MonoBehaviour
         _isLoadingRequested = true;
         SetInteractable(false);
 
-        if (!SceneNavigationEvents.RequestGame())
+        if (!_sceneNavigationService.TryLoadGameplayScene())
         {
             _isLoadingRequested = false;
             SetInteractable(true);

@@ -6,7 +6,9 @@
     "LastSeed.Gameplay",
     "LastSeed.Infrastructure",
     "LastSeed.Presentation",
-    "LastSeed.Bootstrap"
+    "LastSeed.Bootstrap",
+    "Zenject",
+    "Zenject-Editor"
   ],
   "includePlatforms": [
     "Editor"

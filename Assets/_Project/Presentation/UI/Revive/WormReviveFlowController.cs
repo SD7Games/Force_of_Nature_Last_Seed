@@ -1,5 +1,7 @@
+using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WormReviveFlowController : MonoBehaviour
@@ -27,6 +29,13 @@ public sealed class WormReviveFlowController : MonoBehaviour
     private bool _isReviving;
     private bool _isRevivePopupClosePending;
     private bool _isReviveRollbackPending;
+    private ISceneNavigationService _sceneNavigationService;
+
+    [Inject]
+    public void Construct(ISceneNavigationService sceneNavigationService)
+    {
+        _sceneNavigationService = sceneNavigationService;
+    }
 
 #if UNITY_EDITOR
     public int EditorMaxReviveAttempts => _maxReviveAttempts;
@@ -199,7 +208,7 @@ public sealed class WormReviveFlowController : MonoBehaviour
     private void RequestLobbyLoad()
     {
         _popupRoot?.HideActive();
-        SceneNavigationEvents.RequestLobby();
+        _sceneNavigationService.TryLoadLobbyScene();
     }
 
     private void PlayPopupCloseAnimation(System.Action onComplete)

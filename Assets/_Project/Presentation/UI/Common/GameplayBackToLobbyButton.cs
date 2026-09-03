@@ -1,5 +1,7 @@
+using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 namespace _Project.App.Presentation
 {
@@ -9,7 +11,14 @@ namespace _Project.App.Presentation
     {
         [SerializeField] private Button _button;
 
+        private ISceneNavigationService _sceneNavigationService;
         private bool _isReturnRequested;
+
+        [Inject]
+        public void Construct(ISceneNavigationService sceneNavigationService)
+        {
+            _sceneNavigationService = sceneNavigationService;
+        }
 
         private void Awake()
         {
@@ -47,7 +56,7 @@ namespace _Project.App.Presentation
             _isReturnRequested = true;
             SetInteractable(false);
 
-            if (!SceneNavigationEvents.RequestLobby())
+            if (!_sceneNavigationService.TryLoadLobbyScene())
             {
                 _isReturnRequested = false;
                 SetInteractable(true);

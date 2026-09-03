@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using DG.Tweening;
+using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WinPopupView : PopupView
@@ -32,6 +34,13 @@ public sealed class WinPopupView : PopupView
     private bool _hasContentBaseScale;
     private Sequence _showSequence;
     private Sequence _restartSequence;
+    private ISceneNavigationService _sceneNavigationService;
+
+    [Inject]
+    public void Construct(ISceneNavigationService sceneNavigationService)
+    {
+        _sceneNavigationService = sceneNavigationService;
+    }
 
     private void OnEnable()
     {
@@ -92,7 +101,7 @@ public sealed class WinPopupView : PopupView
             if (closeOnComplete)
                 RequestClose();
 
-            SceneNavigationEvents.RequestLobby();
+            _sceneNavigationService.TryLoadLobbyScene();
         });
     }
 

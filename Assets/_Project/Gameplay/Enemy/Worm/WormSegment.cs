@@ -55,6 +55,7 @@ public sealed class WormSegment : MonoBehaviour
     private bool _usesSyncedCocoonShake;
 
     public Transform CachedTransform { get; private set; }
+    public WormFaceVisualController FaceVisual { get; private set; }
     public WormSection Section { get; internal set; }
     public int Index { get; set; }
 
@@ -76,6 +77,9 @@ public sealed class WormSegment : MonoBehaviour
     {
         CachedTransform = transform;
         _cachedCollider = GetComponent<Collider2D>();
+
+        if (Type == WormSegmentType.Head)
+            FaceVisual = GetComponentInChildren<WormFaceVisualController>(true);
 
         if (VisualRoot != null)
             _renderer = VisualRoot.GetComponentInChildren<SpriteRenderer>();

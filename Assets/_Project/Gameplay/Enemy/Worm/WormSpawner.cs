@@ -24,7 +24,7 @@ public sealed class WormSpawner : MonoBehaviour
     private readonly List<WormSegment> _spawnedSegments = new();
 
     private bool _isSpawned;
-    private WormFaceVisualController _activeFaceVisual;
+    private WormFaceBurstPresenter _faceBurstPresenter;
     private SignalBus _signalBus;
     private bool _isSubscribedToSignals;
     private ProjectileWeapon _weapon;
@@ -37,6 +37,7 @@ public sealed class WormSpawner : MonoBehaviour
         WormSegmentPool segmentPool,
         WormFactory wormFactory,
         WormSpawnSettings spawnSettings,
+        WormFaceBurstPresenter faceBurstPresenter,
         ProjectileWeapon weapon,
         AcaciaThornWeapon acaciaThornWeapon)
     {
@@ -45,6 +46,7 @@ public sealed class WormSpawner : MonoBehaviour
         _segmentPool = segmentPool;
         _wormFactory = wormFactory;
         _spawnSettings = spawnSettings;
+        _faceBurstPresenter = faceBurstPresenter;
         _weapon = weapon;
         _acaciaThornWeapon = acaciaThornWeapon;
         SubscribeToSignals();
@@ -61,7 +63,7 @@ public sealed class WormSpawner : MonoBehaviour
             _acaciaThornWeapon.RuntimeStatsChanged += OnWeaponRuntimeStatsChanged;
 
         if (_isSpawned)
-            BindWormFace(GetSpawnedHead());
+            _faceBurstPresenter?.Bind(GetSpawnedHead()?.FaceVisual);
     }
 
     private void OnDisable()
@@ -74,7 +76,7 @@ public sealed class WormSpawner : MonoBehaviour
         if (_acaciaThornWeapon != null)
             _acaciaThornWeapon.RuntimeStatsChanged -= OnWeaponRuntimeStatsChanged;
 
-        UnbindWormFace();
+        _faceBurstPresenter?.Unbind();
     }
 
     private IEnumerator Start()
@@ -122,7 +124,7 @@ public sealed class WormSpawner : MonoBehaviour
         _wormFactory.AttachDamageReceivers(segments, _wormCombat);
 
         _wormController.Init(segments);
-        BindWormFace(head);
+        _faceBurstPresenter.Bind(head.FaceVisual);
         _wormCombat.Init(head, tail, sections);
         _hpPresenter.BindSections(sections);
 
@@ -137,7 +139,7 @@ public sealed class WormSpawner : MonoBehaviour
 
     public void DespawnWorm()
     {
-        UnbindWormFace();
+        _faceBurstPresenter?.Unbind();
 
         _hpPresenter?.Clear();
         _wormCombat?.Clear();
@@ -153,38 +155,6 @@ public sealed class WormSpawner : MonoBehaviour
         _sections.Clear();
         _adaptiveHpController?.Reset(Time.time);
         _isSpawned = false;
-    }
-
-    private void BindWormFace(WormSegment head)
-    {
-        UnbindWormFace();
-
-        if (_wormController == null || head == null)
-            return;
-
-        _activeFaceVisual = head.GetComponentInChildren<WormFaceVisualController>(true);
-        if (_activeFaceVisual == null)
-            return;
-
-        _activeFaceVisual.SetBoostActive(_wormController.IsCombatBurstActive);
-        _wormController.CombatBurstStateChanged += OnCombatBurstStateChanged;
-    }
-
-    private void UnbindWormFace()
-    {
-        if (_wormController != null)
-            _wormController.CombatBurstStateChanged -= OnCombatBurstStateChanged;
-
-        if (_activeFaceVisual != null)
-            _activeFaceVisual.SetBoostActive(false);
-
-        _activeFaceVisual = null;
-    }
-
-    private void OnCombatBurstStateChanged(bool isActive)
-    {
-        if (_activeFaceVisual != null)
-            _activeFaceVisual.SetBoostActive(isActive);
     }
 
     private WormSegment GetSpawnedHead()

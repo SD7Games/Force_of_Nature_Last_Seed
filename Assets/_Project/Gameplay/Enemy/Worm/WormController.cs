@@ -93,7 +93,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
 
     public event Action PathCompleted;
-    public event Action<bool> CombatBurstStateChanged;
 
     public bool HasWorm => _segments.Count > 0;
     public bool IsCatchingUpToCombatStart { get; private set; }
@@ -115,7 +114,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _reviveMotionCalculator = reviveMotionCalculator;
         _reviveVisualScaler = reviveVisualScaler;
         _sectionRollbackState = sectionRollbackState;
-        _combatBurstController.ActiveStateChanged += HandleCombatBurstStateChanged;
     }
 
 #if UNITY_EDITOR
@@ -192,9 +190,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private void OnDestroy()
     {
-        if (_combatBurstController != null)
-            _combatBurstController.ActiveStateChanged -= HandleCombatBurstStateChanged;
-
         CleanupReviveThrowbackVisuals();
     }
 
@@ -369,11 +364,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             _combatBurstDisableRailPointIndex,
             _combatBurstDisablePathProgress,
             out distance);
-    }
-
-    private void HandleCombatBurstStateChanged(bool isActive)
-    {
-        CombatBurstStateChanged?.Invoke(isActive);
     }
 
     /// <summary>

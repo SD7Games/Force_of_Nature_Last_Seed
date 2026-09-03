@@ -125,6 +125,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Revive trajectory/easing calculations are engine-independent in `WormReviveMotionCalculator`; cached Transform scale capture/application is isolated in `WormReviveVisualScaler`, and both are composed through Zenject.
 - Section rollback targets and anchored-tail lifecycle are owned by the generic engine-independent `WormSectionRollbackState<TSegment>`; repeated destroyed-segment lookup reuses a `HashSet` and no longer allocates a closure for `List.RemoveAll`.
 - Worm spawn/pool settings, `WormSegmentPool`, and `WormFactory` are composed by `WormInstaller`; `WormSpawner` no longer acts as a hidden composition root or constructs gameplay collaborators in `Awake`.
+- Combat-burst changes are published as immutable scene-scoped signals by a lifecycle-managed adapter; the face presenter reacts through SignalBus and no longer couples `WormSpawner` directly to controller events or runtime component searches.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

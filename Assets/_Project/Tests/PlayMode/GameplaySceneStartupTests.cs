@@ -42,6 +42,7 @@ namespace LastSeed.Tests.PlayMode
             AssertPlayerServices(sceneContext.Container);
             AssertWormServices(sceneContext.Container);
             AssertCombatSessionSignals(sceneContext.Container);
+            AssertWormBurstSignal(sceneContext.Container);
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -66,6 +67,34 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(sceneContainer.Resolve<WormSpawnSettings>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormSegmentPool>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormFactory>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormCombatBurstSignalPublisher>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormFaceBurstPresenter>(), Is.Not.Null);
+        }
+
+        private static void AssertWormBurstSignal(DiContainer sceneContainer)
+        {
+            SignalBus signalBus = sceneContainer.Resolve<SignalBus>();
+            WormCombatBurstController burstController =
+                sceneContainer.Resolve<WormCombatBurstController>();
+            bool receivedActiveState = false;
+            Action<WormCombatBurstStateChangedSignal> handler = signal =>
+                receivedActiveState = signal.IsActive;
+            WormCombatBurstSettings settings = new(
+                enabled: true,
+                burstSpeed: 3f,
+                interval: 0.1f,
+                duration: 1f,
+                slowdownDuration: 0.2f);
+
+            signalBus.Subscribe(handler);
+            burstController.Reset(baseSpeed: 1f);
+            burstController.ResolveForwardSpeed(0.1f, 1f, 1f, false, true, settings);
+            burstController.ResolveForwardSpeed(0.1f, 1f, 1f, false, true, settings);
+
+            Assert.That(receivedActiveState, Is.True);
+
+            signalBus.Unsubscribe(handler);
+            burstController.Reset(baseSpeed: 1f);
         }
 
         [UnityTearDown]

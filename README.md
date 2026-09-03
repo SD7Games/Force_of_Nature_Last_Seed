@@ -1,10 +1,16 @@
 # Last Seed Survivor
 
-2D mobile auto-shooter built in Unity 6 and C#, focused on modular gameplay systems, mobile performance, data-driven balancing, and maintainable feature implementation.
+Unity 6 mobile 2D auto-shooter project focused on modular combat, ScriptableObject-driven rewards, segmented enemy behavior, object pooling, balance simulations, and Android release preparation.
 
-Portfolio hub: https://tokarevdev.github.io/
+Portfolio hub: https://tokarevdev.github.io
 
-Status: in development, Android-focused, prepared around a public mobile release workflow. Closed testing is complete; Google Play post-test review/release preparation is in progress.
+Gameplay video: https://youtube.com/shorts/HiQBlYjienI?feature=share
+
+Architecture notes: ./ARCHITECTURE.md
+
+Development period: Mar 2026 - present.
+
+Status: closed test passed. Android release preparation continues with modular combat, pooled runtime systems, and deterministic balance tooling ready for review.
 
 ## Quick Review
 
@@ -20,7 +26,7 @@ Start here:
 
 ## Overview
 
-Last Seed Survivor is my current main Unity project. The goal is to build a mobile auto-shooter where combat, rewards, enemy behavior, UI flow, and balancing can grow without turning the project into tightly coupled scene logic.
+Last Seed Survivor is my current main Unity systems project. The goal is to build mobile survival gameplay where combat, rewards, enemy behavior, UI flow, and balance data can grow without becoming tightly coupled scene logic.
 
 The project is structured around practical production concerns:
 
@@ -30,130 +36,55 @@ The project is structured around practical production concerns:
 - UI/presentation should not own core gameplay rules;
 - mobile runtime behavior should stay stable under object-heavy combat.
 
+## Impact
+
+- Challenge: mobile survival gameplay needed scalable combat, rewards, enemy pressure, and tuning instead of one-off prototype logic.
+- Action: separated data, runtime systems, UI binding, bootstrap, pooling, segmented enemy logic, and balance simulation tools.
+- Result: built a one-click deterministic validation cycle covering 4,000 battles across four player-behavior scenarios, with zero combat-logic failures detected in repeated runs.
+
 ## My Role
 
-Solo Unity C# development across gameplay programming, Unity scene/prefab setup, UI flow, reward balancing, performance work, debugging, and Android build preparation.
+Solo Unity C# development across gameplay programming, Unity scene/prefab setup, UI flow, reward balancing, performance work, debugging, Android build preparation, and code review readiness.
 
-## Key Systems I Built
+## Key Systems
 
 ### Modular Weapon System
 
-The weapon layer is built around runtime state, weapon configs, projectile configs, and modifier-driven shooting behavior.
-
-Implemented work includes:
-
-- projectile weapon system;
-- Acacia Thorn secondary weapon system;
-- runtime weapon progression state;
-- shot pattern builder;
-- damage, fire rate, critical chance, critical power, penetration, salvo, projectile speed, and parallel projectile modifiers;
-- safety clamp for extreme projectile counts;
-- weapon rebuild flow when rewards modify runtime stats.
-
-Engineering value:
-
-- weapon behavior can be extended without rewriting the whole shooter;
-- balancing data is separated from runtime state;
-- projectile spawning is routed through pools instead of direct repeated instantiation.
+- Projectile weapon system, Acacia Thorn secondary weapon, runtime weapon progression state, shot pattern builder, and weapon rebuild flow when rewards modify runtime stats.
+- Runtime modifiers cover damage, fire rate, critical chance, critical power, penetration, salvo count, projectile speed, and parallel projectiles.
+- Weapon behavior can be extended without rewriting the whole shooter, while balancing data stays separated from runtime state.
 
 ### Reward Choice System
 
-The reward system uses a runtime context, reward database, roll service, apply service, reward effects, rarity slots, and category rules.
-
-Implemented work includes:
-
-- 3-choice reward roll flow;
-- rarity-based reward pools;
-- reward category uniqueness rules;
-- guaranteed rarity support;
-- new weapon unlock gating based on worm progress;
-- DPS-aware reward bias to help weaker weapon groups catch up;
-- reward apply service that modifies runtime weapon state;
-- UI-facing reward choice data;
-- reroll, ad-reroll, take-all, and revive-related reward flow support.
-
-Engineering value:
-
-- reward logic is testable and readable outside UI code;
-- reward data can be tuned without hardcoding values in gameplay components;
-- future reward effects can be added through dedicated effect classes.
+- Three-choice reward roll flow, rarity-based pools, category uniqueness rules, guaranteed rarity support, weapon unlock gating, rerolls, ad-reroll, take-all, and revive-related reward flow support.
+- DPS-aware reward bias helps weaker weapon groups catch up during progression.
+- Reward roll/apply services are separated from UI binding, so future reward effects can be added through dedicated effect classes.
 
 ### Segmented Worm Enemy
 
-The main enemy is a segmented worm built from sections and segments, moving along a rail path with combat sections, rollback behavior, HP scaling, and presentation controllers.
-
-Implemented work includes:
-
-- worm spawner, factory, controller, section builder, and pattern builder;
-- worm segment pool;
-- rail path movement;
-- worm section HP generation;
-- damage receivers for worm segments;
-- combat progress tracking;
-- rollback behavior when sections are destroyed;
-- cocoon rules and visual states;
-- HP/progress/damage popup presenters.
-
-Engineering value:
-
-- enemy logic is split between movement, combat, balance, and presentation;
-- pooled segments reduce object churn;
-- section-based combat supports more interesting enemy behavior than a single health value.
+- Worm spawner, factory, controller, section builder, pattern builder, rail-path movement, section HP generation, damage receivers, combat progress tracking, rollback behavior, cocoon rules, and visual states.
+- Worm segments are pooled to reduce runtime object churn.
+- Enemy logic is split between movement, combat, balance, and presentation instead of using one large enemy script.
 
 ### Object Pooling And Runtime Performance
 
-The project uses custom pools for frequently reused gameplay objects.
-
-Implemented work includes:
-
-- projectile pool with prewarm;
-- pool registry;
-- worm segment pool;
-- active projectile release flow;
-- screen bounds service for projectile lifecycle;
-- mobile target frame-rate bootstrap based on refresh rate, memory, and CPU tier.
-
-Engineering value:
-
-- reduced runtime Instantiate/Destroy pressure;
-- fewer GC spikes during combat-heavy scenes;
-- more stable runtime behavior on mobile devices.
+- Projectile pool with prewarm, pool registry, worm segment pool, active projectile release flow, screen bounds service, and mobile target frame-rate bootstrap.
+- Frequent gameplay objects are reused instead of repeatedly instantiated/destroyed during combat-heavy scenes.
+- Cached references and setup-time dependency resolution reduce hidden runtime searches.
 
 ### UI And Popup Flow
 
-Gameplay UI and popup presentation are separated from core reward/combat rules.
+- Reward popup view and choice binding, popup root/events, win and revival popups, reward animation helpers, interaction gates, reward text formatting, and visual catalog data.
+- Gameplay logic can request UI changes without directly owning UI object state.
+- Popup behavior can be iterated without changing combat and reward rules.
 
-Implemented work includes:
+### Unity Editor Balance Lab
 
-- reward popup view and choice binding;
-- popup root and popup events;
-- win and revival popup views;
-- reward popup animation helpers;
-- interaction gates for safe UI state transitions;
-- reward text formatting and visual catalog data.
-
-Engineering value:
-
-- gameplay logic can request UI changes without directly owning UI object state;
-- popup behavior is easier to iterate without changing combat code.
-
-### Unity Editor Balancing Tool
-
-The project includes a custom Editor tool for balance simulations.
-
-Implemented work includes:
-
-- Worm Balance Lab editor window;
-- deterministic simulation seed;
-- configurable simulation count, level number, worm sections, path timing, hit efficiency, reward strategy, rerolls, ad assists, and revive behavior;
-- simulation using real reward database, reward effects, weapon configs, HP resolver, and DPS estimation;
-- summary output for balance iteration.
-
-Engineering value:
-
-- balancing can be tested faster than by replaying manually every time;
-- real project data is used in simulations;
-- combat tuning becomes more measurable and less guess-based.
+- Custom Worm Balance Lab editor window with deterministic simulation seed, configurable simulation count, level number, worm sections, path timing, hit efficiency, reward strategy, rerolls, ad assists, and revive behavior.
+- Simulations use real reward database, reward effects, weapon configs, HP resolver, and DPS estimation.
+- The standard one-click validation cycle runs four player-behavior scenarios of 1,000 battles each, covering ad engagement and revive combinations.
+- Repeated 4,000-battle cycles completed with zero detected combat-logic failures.
+- Balance iteration becomes measurable instead of relying only on manual replay.
 
 ## Architecture
 
@@ -167,16 +98,26 @@ The project is organized around clear responsibility boundaries:
 
 Architecture principles used:
 
-- Single Responsibility Principle;
-- composition through scene/bootstrap references;
-- ScriptableObject-driven configuration;
-- event-driven UI/gameplay communication where it reduces coupling;
-- pooled objects for frequent runtime entities;
-- cached references and setup-time dependency resolution.
+- Single Responsibility Principle.
+- Composition through scene/bootstrap references.
+- ScriptableObject-driven configuration.
+- Event-driven UI/gameplay communication where it reduces coupling.
+- Pooled objects for frequent runtime entities.
+- Cached references and setup-time dependency resolution.
+
+## Code Review Map
+
+- Main project code: `Assets/_Project/App/`
+- Bootstrap and scene startup: `Assets/_Project/App/Bootstrap/`
+- Gameplay combat, weapons, projectiles, and rewards: `Assets/_Project/App/Gameplay/Combat/`
+- Segmented enemy systems and balance tooling: `Assets/_Project/App/Gameplay/Enemy/Worm/`
+- Presentation/UI-related gameplay flow: `Assets/_Project/App/Presentation/`
+
+Unity vendor packages and imported assets are present in the repository, but the portfolio-relevant code lives under `Assets/_Project/App/`.
 
 ## Tech Stack
 
-Unity 6, C#, UGUI, ScriptableObjects, Input System, Physics2D, DOTween, URP, custom object pooling, Unity Editor tooling, Android/mobile-oriented runtime constraints.
+Unity 6, C#, UGUI, ScriptableObjects, Input System, Physics2D, DOTween, URP, custom object pooling, deterministic balance simulations, Unity Editor tooling, Android/mobile-oriented runtime constraints.
 
 ## What This Project Demonstrates
 
@@ -186,8 +127,16 @@ Unity 6, C#, UGUI, ScriptableObjects, Input System, Physics2D, DOTween, URP, cus
 - Thinking about mobile performance before the project becomes object-heavy.
 - Turning a prototype into a project that can be balanced, debugged, and prepared for release.
 
+## Repository Notes
+
+The repository is public as a portfolio/code review sample. Some visual assets, final balancing, gameplay media, and release materials may change while the project is still in development.
+
 ## Author
 
-Oleksandr Tokarev  
-Unity C# Developer / C# Gameplay Programmer  
+Oleksandr Tokarev
+
+Unity Developer | C# Gameplay Programmer
+
+Email: otokarevdev@gmail.com
+
 Portfolio: https://tokarevdev.github.io/

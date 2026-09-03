@@ -32,12 +32,14 @@ public sealed class WormReviveFlowController : MonoBehaviour
     private bool _isReviveRollbackPending;
     private ISceneNavigationService _sceneNavigationService;
     private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
 
     [Inject]
     public void Construct(ISceneNavigationService sceneNavigationService, SignalBus signalBus)
     {
         _sceneNavigationService = sceneNavigationService;
         _signalBus = signalBus;
+        SubscribeToSignals();
     }
 
 #if UNITY_EDITOR
@@ -51,8 +53,7 @@ public sealed class WormReviveFlowController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_wormController != null)
-            _wormController.PathCompleted += HandlePathCompleted;
+        SubscribeToSignals();
 
         if (_revivalPopup != null)
         {
@@ -63,8 +64,7 @@ public sealed class WormReviveFlowController : MonoBehaviour
 
     private void OnDisable()
     {
-        if (_wormController != null)
-            _wormController.PathCompleted -= HandlePathCompleted;
+        UnsubscribeFromSignals();
 
         if (_revivalPopup != null)
         {
@@ -77,7 +77,7 @@ public sealed class WormReviveFlowController : MonoBehaviour
         _isReviveRollbackPending = false;
     }
 
-    private void HandlePathCompleted()
+    private void HandlePathCompleted(WormPathCompletedSignal signal)
     {
         if (_isFailState || _isReviving)
             return;
@@ -85,6 +85,24 @@ public sealed class WormReviveFlowController : MonoBehaviour
         ClearTransientGameplay();
         _isFailState = true;
         ShowRevivalPopup();
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<WormPathCompletedSignal>(HandlePathCompleted);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<WormPathCompletedSignal>(HandlePathCompleted);
+        _isSubscribedToSignals = false;
     }
 
     private void ShowRevivalPopup()

@@ -16,6 +16,9 @@ namespace LastSeed.Bootstrap.Installers
             Container.DeclareSignal<WormReviveGrantedSignal>();
             Container.DeclareSignal<WormReviveRollbackCompletedSignal>();
             Container.DeclareSignal<WormCombatBurstStateChangedSignal>();
+            Container.DeclareSignal<WormDamageDealtSignal>();
+            Container.DeclareSignal<WormDestructionProgressChangedSignal>();
+            Container.DeclareSignal<WormPathCompletedSignal>();
             Container.DeclareSignal<ShowPopupRequestedSignal>();
         }
     }

@@ -978,7 +978,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c2f3bb0411b4b319d58589e8ad6a74d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormProgressPresenter
-  _wormCombat: {fileID: 91581457}
   _text: {fileID: 352036266}
   _format: 'Progress: {0}%'
 --- !u!1 &459544096
@@ -2494,7 +2493,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 813858900e91ff448af6b436c29894e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WormDamagePopupPresenter
-  _combat: {fileID: 91581457}
   _popupPrefab: {fileID: 6859803841460623452, guid: 39064a594808ef143b34b501a0ab4629, type: 3}
   _initialPoolSize: 100
   _normalPopupLimit: 4

@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WormDamagePopupPresenter : MonoBehaviour
 {
-    [SerializeField] private WormCombatController _combat;
     [SerializeField] private WormDamagePopupView _popupPrefab;
     [SerializeField, Min(0)] private int _initialPoolSize = 20;
 
@@ -28,13 +29,19 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
     private int _activeNormalCount;
     private int _activeDamageOverTimeCount;
     private System.Action<WormDamagePopupView> _popupCompleteHandler;
+    private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+        SubscribeToSignals();
+    }
 
     private void Awake()
     {
         _popupCompleteHandler = OnPopupComplete;
-
-        if (_combat == null)
-            Debug.LogError("DamagePopupPresenter: Combat not assigned", this);
 
         if (_popupPrefab == null)
             Debug.LogError("DamagePopupPresenter: Popup prefab not assigned", this);
@@ -48,18 +55,17 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_combat != null)
-            _combat.DamageDealt += OnDamageDealt;
+        SubscribeToSignals();
     }
 
     private void OnDisable()
     {
-        if (_combat != null)
-            _combat.DamageDealt -= OnDamageDealt;
+        UnsubscribeFromSignals();
     }
 
-    private void OnDamageDealt(DamageViewRequest request)
+    private void OnDamageDealt(WormDamageDealtSignal signal)
     {
+        DamageViewRequest request = signal.Request;
         bool isCritical = IsCritical(request);
 
         if (!CanShow(request, isCritical))
@@ -81,6 +87,24 @@ public sealed class WormDamagePopupPresenter : MonoBehaviour
 
         popup.gameObject.SetActive(true);
         popup.Show(request, animationMode, scaleMultiplier, _popupCompleteHandler);
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<WormDamageDealtSignal>(OnDamageDealt);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<WormDamageDealtSignal>(OnDamageDealt);
+        _isSubscribedToSignals = false;
     }
 
     private void OnPopupComplete(WormDamagePopupView view)

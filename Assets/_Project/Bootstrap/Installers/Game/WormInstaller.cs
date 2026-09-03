@@ -53,6 +53,9 @@ namespace LastSeed.Bootstrap.Installers
             Container.BindInterfacesAndSelfTo<WormCombatBurstSignalPublisher>()
                 .AsSingle()
                 .NonLazy();
+            Container.BindInterfacesAndSelfTo<WormPathCompletedSignalPublisher>()
+                .AsSingle()
+                .NonLazy();
             Container.Bind<WormRailTargetResolver>().AsSingle();
             Container.Bind<WormSegmentChainPresenter>().AsSingle();
             Container.Bind<WormReviveMotionCalculator>().AsSingle();

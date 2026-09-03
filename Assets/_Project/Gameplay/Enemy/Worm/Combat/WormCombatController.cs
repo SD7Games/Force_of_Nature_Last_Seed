@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using LastSeed.Gameplay.Signals;
 using UnityEngine;
@@ -11,11 +10,6 @@ using Zenject;
 [DisallowMultipleComponent]
 public sealed class WormCombatController : MonoBehaviour
 {
-    public event Action<WormSection, int> SectionDamaged;
-
-    public event Action<DamageViewRequest> DamageDealt;
-    public event Action<int, int> DestructionProgressChanged;
-
     [SerializeField] private WormController _wormController;
 
     private readonly List<WormSection> _sections = new();
@@ -81,8 +75,8 @@ public sealed class WormCombatController : MonoBehaviour
             return;
 
         section.Damage(damageInfo.Amount);
-        SectionDamaged?.Invoke(section, damageInfo.Amount);
-        DamageDealt?.Invoke(DamageViewRequest.FromDamageInfo(damageInfo));
+        _signalBus.Fire(new WormDamageDealtSignal(
+            DamageViewRequest.FromDamageInfo(damageInfo)));
 
         if (!section.IsDestroyed)
             return;
@@ -240,9 +234,10 @@ public sealed class WormCombatController : MonoBehaviour
 
     private void NotifyDestructionProgressChanged()
     {
-        DestructionProgressChanged?.Invoke(
+        _signalBus.Fire(new WormDestructionProgressChangedSignal(
             _destroyedProgressSegments,
-            _totalProgressSegments);
+            _totalProgressSegments,
+            DestructionProgressNormalized));
     }
 
     private static int CountProgressSegments(List<WormSection> sections)

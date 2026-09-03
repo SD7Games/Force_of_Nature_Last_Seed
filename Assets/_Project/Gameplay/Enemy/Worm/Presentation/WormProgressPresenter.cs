@@ -1,12 +1,22 @@
+using LastSeed.Gameplay.Signals;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WormProgressPresenter : MonoBehaviour
 {
-    [SerializeField] private WormCombatController _wormCombat;
     [SerializeField] private TMP_Text _text;
     [SerializeField] private string _format = "Progress: {0}%";
+    private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+        SubscribeToSignals();
+    }
 
     private void Awake()
     {
@@ -16,19 +26,36 @@ public sealed class WormProgressPresenter : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_wormCombat != null)
-            _wormCombat.DestructionProgressChanged += UpdateProgress;
-
-        int destroyed = _wormCombat != null ? _wormCombat.DestroyedProgressSegments : 0;
-        int total = _wormCombat != null ? _wormCombat.TotalProgressSegments : 0;
-
-        UpdateProgress(destroyed, total);
+        SubscribeToSignals();
+        UpdateProgress(0, 0);
     }
 
     private void OnDisable()
     {
-        if (_wormCombat != null)
-            _wormCombat.DestructionProgressChanged -= UpdateProgress;
+        UnsubscribeFromSignals();
+    }
+
+    private void UpdateProgress(WormDestructionProgressChangedSignal signal)
+    {
+        UpdateProgress(signal.DestroyedSegments, signal.TotalSegments);
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<WormDestructionProgressChangedSignal>(UpdateProgress);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<WormDestructionProgressChangedSignal>(UpdateProgress);
+        _isSubscribedToSignals = false;
     }
 
     private void UpdateProgress(int destroyedSegments, int totalSegments)

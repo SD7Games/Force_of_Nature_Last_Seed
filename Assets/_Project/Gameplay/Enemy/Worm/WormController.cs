@@ -77,14 +77,12 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingYScale = 0.86f;
 
     private readonly List<WormSegment> _segments = new();
-    private readonly Dictionary<WormSegment, float> _rollbackAnchoredDistances = new();
+    private readonly HashSet<WormSegment> _destroyedSegmentLookup = new();
 
     private float _headDistance;
     private Coroutine _rollbackRoutine;
     private Coroutine _reviveThrowbackRoutine;
-    private bool _isSectionRollback;
     private bool _isReviveRollback;
-    private float _sectionRollbackTargetDistance;
     private bool _hasReachedPathEnd;
     private float _reviveVisualYOffset;
     private WormCombatBurstController _combatBurstController;
@@ -92,6 +90,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private WormSegmentChainPresenter _segmentChainPresenter;
     private WormReviveMotionCalculator _reviveMotionCalculator;
     private WormReviveVisualScaler _reviveVisualScaler;
+    private WormSectionRollbackState<WormSegment> _sectionRollbackState;
 
     public event Action PathCompleted;
     public event Action<bool> CombatBurstStateChanged;
@@ -107,13 +106,15 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         WormRailTargetResolver railTargetResolver,
         WormSegmentChainPresenter segmentChainPresenter,
         WormReviveMotionCalculator reviveMotionCalculator,
-        WormReviveVisualScaler reviveVisualScaler)
+        WormReviveVisualScaler reviveVisualScaler,
+        WormSectionRollbackState<WormSegment> sectionRollbackState)
     {
         _combatBurstController = combatBurstController;
         _railTargetResolver = railTargetResolver;
         _segmentChainPresenter = segmentChainPresenter;
         _reviveMotionCalculator = reviveMotionCalculator;
         _reviveVisualScaler = reviveVisualScaler;
+        _sectionRollbackState = sectionRollbackState;
         _combatBurstController.ActiveStateChanged += HandleCombatBurstStateChanged;
     }
 
@@ -212,15 +213,14 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         CleanupReviveThrowbackVisuals();
         _segments.Clear();
         _segments.AddRange(segments);
+        _destroyedSegmentLookup.Clear();
 
         _headDistance = 0f;
         _segmentChainPresenter.Reset();
 
-        _isSectionRollback = false;
+        _sectionRollbackState.Complete();
         _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
-        _rollbackAnchoredDistances.Clear();
-        _sectionRollbackTargetDistance = 0f;
         _hasReachedPathEnd = false;
         _combatBurstController.Reset(_speed);
         ClearTargetDistanceCaches();
@@ -245,13 +245,12 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
         CleanupReviveThrowbackVisuals();
         _segments.Clear();
-        _rollbackAnchoredDistances.Clear();
+        _destroyedSegmentLookup.Clear();
         _headDistance = 0f;
         _segmentChainPresenter.Reset();
-        _isSectionRollback = false;
+        _sectionRollbackState.Complete();
         _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
-        _sectionRollbackTargetDistance = 0f;
         _hasReachedPathEnd = false;
         _combatBurstController.Reset(_speed);
         IsCatchingUpToCombatStart = false;
@@ -263,7 +262,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (_segments.Count == 0 || _rail == null)
             return;
 
-        if (!_isSectionRollback && !_isReviveRollback)
+        if (!_sectionRollbackState.IsActive && !_isReviveRollback)
             MoveForward(Time.deltaTime);
 
         UpdateSegments();
@@ -394,19 +393,19 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             _waveFrequency,
             GetWaveTime(),
             _reviveVisualYOffset,
-            _isSectionRollback,
+            _sectionRollbackState.IsActive,
             _isReviveRollback);
 
         _segmentChainPresenter.Render(
             _segments,
             _rail,
-            _rollbackAnchoredDistances,
+            _sectionRollbackState.AnchoredDistances,
             layout);
     }
 
     private float GetWaveTime()
     {
-        return (_isSectionRollback || _isReviveRollback
+        return (_sectionRollbackState.IsActive || _isReviveRollback
             ? Time.unscaledTime
             : Time.time) * _waveSpeed;
     }
@@ -422,26 +421,37 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (destroyed == null || destroyed.Count == 0)
             return 0;
 
-        HashSet<WormSegment> destroyedSet = new(destroyed);
+        _destroyedSegmentLookup.Clear();
+
+        for (int index = 0; index < destroyed.Count; index++)
+        {
+            WormSegment segment = destroyed[index];
+            if (segment != null)
+                _destroyedSegmentLookup.Add(segment);
+        }
 
         for (int i = 0; i < _segments.Count; i++)
         {
-            if (destroyedSet.Contains(_segments[i]))
+            if (_destroyedSegmentLookup.Contains(_segments[i]))
             {
                 firstRemovedIndex = i;
                 break;
             }
         }
 
-        int removed = _segments.RemoveAll(seg => seg != null && destroyedSet.Contains(seg));
+        int removed = 0;
 
-        for (int i = 0; i < destroyed.Count; i++)
+        for (int index = _segments.Count - 1; index >= 0; index--)
         {
-            WormSegment segment = destroyed[i];
+            if (!_destroyedSegmentLookup.Contains(_segments[index]))
+                continue;
 
-            if (segment != null)
-                _rollbackAnchoredDistances.Remove(segment);
+            _segments.RemoveAt(index);
+            removed++;
         }
+
+        _sectionRollbackState.Forget(destroyed);
+        _destroyedSegmentLookup.Clear();
 
         return removed;
     }
@@ -461,18 +471,15 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (_isReviveRollback)
             return;
 
-        float rollbackDistance = destroyedCount * Mathf.Max(0.01f, _segmentSpacing);
-        bool rollbackInProgress = _isSectionRollback || _rollbackRoutine != null;
+        bool shouldStartRoutine = _sectionRollbackState.BeginOrExtend(
+            _segments,
+            splitIndex,
+            destroyedCount,
+            _headDistance,
+            _segmentSpacing);
+        _segmentChainPresenter.Reset();
 
-        AnchorRollbackTail(splitIndex, destroyedCount);
-
-        _sectionRollbackTargetDistance = Mathf.Max(
-            0f,
-            (rollbackInProgress
-                ? _sectionRollbackTargetDistance
-                : _headDistance) - rollbackDistance);
-
-        if (rollbackInProgress)
+        if (!shouldStartRoutine || _rollbackRoutine != null)
             return;
 
         _rollbackRoutine = StartCoroutine(SectionRollbackRoutine());
@@ -525,15 +532,11 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     /// </summary>
     private IEnumerator SectionRollbackRoutine()
     {
-        _isSectionRollback = true;
-
-        while (_headDistance > _sectionRollbackTargetDistance)
+        while (_headDistance > _sectionRollbackState.TargetDistance)
         {
             float deltaTime = Time.unscaledDeltaTime;
-            float target = _sectionRollbackTargetDistance;
-
             AdvanceSectionRollbackTail(deltaTime);
-            target = _sectionRollbackTargetDistance;
+            float target = _sectionRollbackState.TargetDistance;
 
             if (_headDistance <= target)
                 break;
@@ -548,13 +551,11 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             yield return null;
         }
 
-        _headDistance = Mathf.Min(_headDistance, _sectionRollbackTargetDistance);
+        _headDistance = Mathf.Min(_headDistance, _sectionRollbackState.TargetDistance);
         UpdateSegments();
         CompletePathIfReached(_headDistance - 0.001f, _rail.TotalLength);
 
-        _isSectionRollback = false;
-        _rollbackAnchoredDistances.Clear();
-        _sectionRollbackTargetDistance = 0f;
+        _sectionRollbackState.Complete();
         _rollbackRoutine = null;
     }
 
@@ -563,32 +564,12 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (deltaTime <= 0f || _rail == null)
             return;
 
-        float forwardDistance = Mathf.Max(0f, _speed) *
-            Mathf.Max(0f, _sectionRollbackForwardSpeedMultiplier) *
-            deltaTime;
-
-        if (forwardDistance <= 0f)
-            return;
-
-        float maxDistance = _rail.TotalLength;
-        _sectionRollbackTargetDistance = Mathf.Min(
-            maxDistance,
-            _sectionRollbackTargetDistance + forwardDistance);
-
-        for (int i = 0; i < _segments.Count; i++)
-        {
-            WormSegment segment = _segments[i];
-
-            if (segment == null)
-                continue;
-
-            if (_rollbackAnchoredDistances.TryGetValue(segment, out float distance))
-            {
-                _rollbackAnchoredDistances[segment] = Mathf.Min(
-                    maxDistance,
-                    distance + forwardDistance);
-            }
-        }
+        _sectionRollbackState.AdvanceAnchoredTail(
+            _segments,
+            _rail.TotalLength,
+            _speed,
+            _sectionRollbackForwardSpeedMultiplier,
+            deltaTime);
     }
 
     private IEnumerator ReviveThrowbackRoutine(float target, Action onComplete)
@@ -740,28 +721,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private void ClearSectionRollbackState()
     {
-        _isSectionRollback = false;
         _segmentChainPresenter.Reset();
-        _rollbackAnchoredDistances.Clear();
-        _sectionRollbackTargetDistance = 0f;
-    }
-
-    private void AnchorRollbackTail(int splitIndex, int destroyedCount)
-    {
-        float spacing = Mathf.Max(0.01f, _segmentSpacing);
-        int startIndex = Mathf.Clamp(splitIndex, 0, _segments.Count);
-
-        for (int i = startIndex; i < _segments.Count; i++)
-        {
-            WormSegment segment = _segments[i];
-
-            if (segment == null || _rollbackAnchoredDistances.ContainsKey(segment))
-                continue;
-
-            float anchoredDistance = _headDistance - ((i + destroyedCount) * spacing);
-            _rollbackAnchoredDistances.Add(segment, anchoredDistance);
-        }
-
-        _segmentChainPresenter.Reset();
+        _sectionRollbackState.Complete();
     }
 }

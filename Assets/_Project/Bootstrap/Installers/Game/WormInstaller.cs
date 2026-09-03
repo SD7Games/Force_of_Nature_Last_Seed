@@ -34,6 +34,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<WormSegmentChainPresenter>().AsSingle();
             Container.Bind<WormReviveMotionCalculator>().AsSingle();
             Container.Bind<WormReviveVisualScaler>().AsSingle();
+            Container.Bind<WormSectionRollbackState<WormSegment>>().AsSingle();
             Container.BindInstance(new WormAdaptiveHpSettings(
                 _levelNumber,
                 _upgradeRebalanceInterval,

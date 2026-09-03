@@ -121,6 +121,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Catch-up, revive, and burst-disable target lookup/caching are isolated behind `IWormRailPath`; the resolver is engine-independent and `RailPath` is its Unity adapter.
 - Per-frame segment visibility, rail sampling, transform rotation, wave offsets, and head/tail visual-chain layout are owned by the injected `WormSegmentChainPresenter`, leaving `WormController` as lifecycle/movement coordination rather than presentation implementation.
 - Revive trajectory/easing calculations are engine-independent in `WormReviveMotionCalculator`; cached Transform scale capture/application is isolated in `WormReviveVisualScaler`, and both are composed through Zenject.
+- Section rollback targets and anchored-tail lifecycle are owned by the generic engine-independent `WormSectionRollbackState<TSegment>`; repeated destroyed-segment lookup reuses a `HashSet` and no longer allocates a closure for `List.RemoveAll`.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

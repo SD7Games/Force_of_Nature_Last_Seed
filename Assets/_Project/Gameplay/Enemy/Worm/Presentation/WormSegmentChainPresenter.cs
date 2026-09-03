@@ -21,7 +21,7 @@ public sealed class WormSegmentChainPresenter
     public void Render(
         List<WormSegment> segments,
         RailPath rail,
-        Dictionary<WormSegment, float> rollbackAnchoredDistances,
+        IReadOnlyDictionary<WormSegment, float> rollbackAnchoredDistances,
         in WormSegmentChainLayout layout)
     {
         if (segments == null || segments.Count == 0 || rail == null)
@@ -72,7 +72,7 @@ public sealed class WormSegmentChainPresenter
     private void RenderDuringRollback(
         List<WormSegment> segments,
         RailPath rail,
-        Dictionary<WormSegment, float> rollbackAnchoredDistances,
+        IReadOnlyDictionary<WormSegment, float> rollbackAnchoredDistances,
         in WormSegmentChainLayout layout)
     {
         float maxDistance = rail.TotalLength + layout.ActiveDistancePadding;
@@ -292,7 +292,7 @@ public sealed class WormSegmentChainPresenter
 
     private static float GetSegmentDistance(
         List<WormSegment> segments,
-        Dictionary<WormSegment, float> rollbackAnchoredDistances,
+        IReadOnlyDictionary<WormSegment, float> rollbackAnchoredDistances,
         int index,
         WormSegment segment,
         in WormSegmentChainLayout layout)

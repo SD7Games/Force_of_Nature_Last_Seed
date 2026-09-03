@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Applies damage to worm sections and coordinates section removal
@@ -14,8 +16,6 @@ public sealed class WormCombatController : MonoBehaviour
     public event Action<DamageViewRequest> DamageDealt;
     public event Action<int, int> DestructionProgressChanged;
 
-    public static event Action OnWormDied;
-
     [SerializeField] private WormController _wormController;
 
     private readonly List<WormSection> _sections = new();
@@ -25,6 +25,13 @@ public sealed class WormCombatController : MonoBehaviour
     private int _totalProgressSegments;
     private int _destroyedProgressSegments;
     private bool _isWormDead;
+    private SignalBus _signalBus;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+    }
 
     public int TotalProgressSegments => _totalProgressSegments;
     public int DestroyedProgressSegments => _destroyedProgressSegments;
@@ -132,10 +139,10 @@ public sealed class WormCombatController : MonoBehaviour
                 ? _wormController.HeadPathProgressNormalized
                 : 0f;
 
-            WormRewardEvents.PublishRewardRequested(
+            _signalBus.Fire(new WormRewardRequestedSignal(
                 rewardProfile,
                 headProgress,
-                DestructionProgressNormalized);
+                DestructionProgressNormalized));
         }
     }
 
@@ -228,7 +235,7 @@ public sealed class WormCombatController : MonoBehaviour
             _tail.KillVisualAndCollision();
 
         _wormController?.ClearWorm();
-        OnWormDied?.Invoke();
+        _signalBus.Fire<WormDiedSignal>();
     }
 
     private void NotifyDestructionProgressChanged()

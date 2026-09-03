@@ -1,4 +1,6 @@
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WormPressureDirector : MonoBehaviour
@@ -12,6 +14,15 @@ public sealed class WormPressureDirector : MonoBehaviour
     private float _runtimePressureMultiplier = 1f;
     private bool _isTracking;
     private bool _hasStartedForCurrentWorm;
+    private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+        SubscribeToSignals();
+    }
 
 #if UNITY_EDITOR
     public WormPressureConfig EditorConfig => _config;
@@ -19,16 +30,12 @@ public sealed class WormPressureDirector : MonoBehaviour
 
     private void OnEnable()
     {
-        CombatState.OnShootStateChanged += HandleShootStateChanged;
-        WormCombatController.OnWormDied += HandleWormDied;
-        WormReviveEvents.ReviveRollbackCompleted += HandleReviveRollbackCompleted;
+        SubscribeToSignals();
     }
 
     private void OnDisable()
     {
-        CombatState.OnShootStateChanged -= HandleShootStateChanged;
-        WormCombatController.OnWormDied -= HandleWormDied;
-        WormReviveEvents.ReviveRollbackCompleted -= HandleReviveRollbackCompleted;
+        UnsubscribeFromSignals();
     }
 
     private void Update()
@@ -54,9 +61,9 @@ public sealed class WormPressureDirector : MonoBehaviour
         UpdatePressure();
     }
 
-    private void HandleShootStateChanged(bool canShoot)
+    private void HandleShootingStateChanged(CombatShootingStateChangedSignal signal)
     {
-        if (canShoot)
+        if (signal.IsShootingEnabled)
         {
             StartTracking();
             return;
@@ -65,12 +72,12 @@ public sealed class WormPressureDirector : MonoBehaviour
         StopTracking(resetPressure: false);
     }
 
-    private void HandleWormDied()
+    private void HandleWormDied(WormDiedSignal signal)
     {
         StopTracking(resetPressure: true);
     }
 
-    private void HandleReviveRollbackCompleted()
+    private void HandleReviveRollbackCompleted(WormReviveRollbackCompletedSignal signal)
     {
         if (_config == null || !_config.Enabled)
             return;
@@ -155,5 +162,27 @@ public sealed class WormPressureDirector : MonoBehaviour
 
         if (_wormSpawner != null)
             _wormSpawner.SetRuntimePressureMultiplier(_runtimePressureMultiplier);
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<CombatShootingStateChangedSignal>(HandleShootingStateChanged);
+        _signalBus.Subscribe<WormDiedSignal>(HandleWormDied);
+        _signalBus.Subscribe<WormReviveRollbackCompletedSignal>(HandleReviveRollbackCompleted);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<CombatShootingStateChangedSignal>(HandleShootingStateChanged);
+        _signalBus.Unsubscribe<WormDiedSignal>(HandleWormDied);
+        _signalBus.Unsubscribe<WormReviveRollbackCompletedSignal>(HandleReviveRollbackCompleted);
+        _isSubscribedToSignals = false;
     }
 }

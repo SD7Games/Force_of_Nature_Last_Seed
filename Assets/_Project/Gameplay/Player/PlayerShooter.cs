@@ -1,4 +1,6 @@
+using LastSeed.Gameplay.Combat;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Controls player's weapon firing logic.
@@ -20,7 +22,14 @@ public sealed class PlayerShooter : MonoBehaviour
     [SerializeField] private WeaponConfig _startConfig;
 
     private IWeapon _weapon;
+    private ICombatSessionState _combatSessionState;
     private bool _initialized;
+
+    [Inject]
+    public void Construct(ICombatSessionState combatSessionState)
+    {
+        _combatSessionState = combatSessionState;
+    }
 
 #if UNITY_EDITOR
     public WeaponConfig EditorStartConfig => _startConfig;
@@ -83,7 +92,7 @@ public sealed class PlayerShooter : MonoBehaviour
         if (!_initialized)
             return;
 
-        if (!CombatState.CanShoot)
+        if (!_combatSessionState.IsShootingEnabled)
             return;
 
         _weapon.Tick();

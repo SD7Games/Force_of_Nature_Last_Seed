@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using LastSeed.Gameplay.Input;
+using LastSeed.Presentation.UI.Popups;
 using UnityEngine;
 using Zenject;
 
@@ -18,14 +19,18 @@ public sealed class PopupRoot : MonoBehaviour
 
     private PopupView _activePopup;
     private IGameplayInputLock _gameplayInputLock;
+    private SignalBus _signalBus;
     private IDisposable _gameplayInputLockHandle;
     private float _timeScaleBeforeLock = 1f;
     private bool _hasTimeScaleLock;
+    private bool _isSubscribedToSignals;
 
     [Inject]
-    public void Construct(IGameplayInputLock gameplayInputLock)
+    public void Construct(IGameplayInputLock gameplayInputLock, SignalBus signalBus)
     {
         _gameplayInputLock = gameplayInputLock;
+        _signalBus = signalBus;
+        SubscribeToSignals();
     }
 
     private void Awake()
@@ -38,14 +43,12 @@ public sealed class PopupRoot : MonoBehaviour
 
     private void OnEnable()
     {
-        PopupEvents.ShowRequested += HandleShowRequested;
-        PopupEvents.HideActiveRequested += HandleHideActiveRequested;
+        SubscribeToSignals();
     }
 
     private void OnDisable()
     {
-        PopupEvents.ShowRequested -= HandleShowRequested;
-        PopupEvents.HideActiveRequested -= HandleHideActiveRequested;
+        UnsubscribeFromSignals();
         _queuedPopups.Clear();
         HideActiveInternal(true, false);
     }
@@ -212,14 +215,9 @@ public sealed class PopupRoot : MonoBehaviour
         popup?.Hide();
     }
 
-    private void HandleHideActiveRequested()
+    private void HandleShowRequested(ShowPopupRequestedSignal signal)
     {
-        HideActive();
-    }
-
-    private void HandleShowRequested(string popupId)
-    {
-        Show(popupId);
+        Show(signal.PopupId);
     }
 
     private void EnqueuePopup(PopupView popup)
@@ -284,6 +282,24 @@ public sealed class PopupRoot : MonoBehaviour
         _timeScaleBeforeLock = Time.timeScale;
         Time.timeScale = 0f;
         _hasTimeScaleLock = true;
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<ShowPopupRequestedSignal>(HandleShowRequested);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<ShowPopupRequestedSignal>(HandleShowRequested);
+        _isSubscribedToSignals = false;
     }
 
 #if UNITY_EDITOR

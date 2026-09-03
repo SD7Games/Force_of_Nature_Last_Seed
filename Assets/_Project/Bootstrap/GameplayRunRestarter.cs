@@ -35,16 +35,6 @@ namespace _Project.App.Gameplay
             _playerInputSnapshotProvider = playerInputSnapshotProvider;
         }
 
-        private void OnEnable()
-        {
-            GameplayRunRestartEvents.RestartRequested += RestartRun;
-        }
-
-        private void OnDisable()
-        {
-            GameplayRunRestartEvents.RestartRequested -= RestartRun;
-        }
-
         public void RestartRun()
         {
             if (_isRestarting)

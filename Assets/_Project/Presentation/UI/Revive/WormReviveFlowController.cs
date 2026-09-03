@@ -1,3 +1,4 @@
+using LastSeed.Gameplay.Signals;
 using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -30,11 +31,13 @@ public sealed class WormReviveFlowController : MonoBehaviour
     private bool _isRevivePopupClosePending;
     private bool _isReviveRollbackPending;
     private ISceneNavigationService _sceneNavigationService;
+    private SignalBus _signalBus;
 
     [Inject]
-    public void Construct(ISceneNavigationService sceneNavigationService)
+    public void Construct(ISceneNavigationService sceneNavigationService, SignalBus signalBus)
     {
         _sceneNavigationService = sceneNavigationService;
+        _signalBus = signalBus;
     }
 
 #if UNITY_EDITOR
@@ -138,7 +141,7 @@ public sealed class WormReviveFlowController : MonoBehaviour
             return;
         }
 
-        WormReviveEvents.PublishReviveGranted();
+        _signalBus.Fire<WormReviveGrantedSignal>();
         StartReviveRollbackWithPopupClose();
     }
 
@@ -173,7 +176,7 @@ public sealed class WormReviveFlowController : MonoBehaviour
         _isReviving = false;
         _isReviveRollbackPending = false;
 
-        WormReviveEvents.PublishReviveRollbackCompleted();
+        _signalBus.Fire<WormReviveRollbackCompletedSignal>();
         ReleaseGameplayLockWhenReviveVisualsComplete();
     }
 

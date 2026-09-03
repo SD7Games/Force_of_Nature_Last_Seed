@@ -83,10 +83,14 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 
 ### 3. Signals and session state
 
-- Install SignalBus in Game SceneContext.
-- Replace `WormRewardEvents`, `WormReviveEvents`, `GameplayRunRestartEvents`, `PopupEvents`, and static combat events.
-- Replace static `CombatState` with a scene-scoped session model.
-- Use direct interfaces when a caller requires a return value; use signals for one-to-many notifications.
+**Status: completed and verified by automated EditMode and PlayMode tests.**
+
+- [x] Install SignalBus in Game SceneContext through a focused `GameSignalsInstaller`.
+- [x] Replace static worm reward, revive, death, popup, and combat notifications with declared scene-scoped signals.
+- [x] Remove the unused static gameplay restart event bus while preserving the explicit restart command API.
+- [x] Replace static `CombatState` with scene-scoped `ICombatSessionState` and `CombatSessionState`.
+- [x] Add `GameSessionInstaller` so mutable run state is owned by the Game SceneContext.
+- [x] Verify SignalBus delivery and session-state resolution in the direct-Game PlayMode smoke test.
 
 ### 4. Player and weapons
 

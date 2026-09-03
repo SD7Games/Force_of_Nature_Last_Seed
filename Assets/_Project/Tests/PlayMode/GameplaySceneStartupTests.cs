@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
 using LastSeed.Bootstrap.GameplayLoop;
+using LastSeed.Gameplay.Combat;
+using LastSeed.Gameplay.Signals;
 using LastSeed.Infrastructure.Input;
 using LastSeed.Infrastructure.Navigation;
 using NUnit.Framework;
@@ -28,12 +31,15 @@ namespace LastSeed.Tests.PlayMode
                 yield return null;
 
             Scene gameplayScene = SceneManager.GetActiveScene();
+            SceneContext sceneContext = FindInScene<SceneContext>(gameplayScene);
 
             Assert.That(gameplayScene.name, Is.EqualTo(GameSceneNames.Gameplay));
             Assert.That(ProjectContext.HasInstance, Is.True);
-            Assert.That(FindInScene<SceneContext>(gameplayScene), Is.Not.Null);
+            Assert.That(sceneContext, Is.Not.Null);
             Assert.That(FindInScene<PlayerInputSnapshotProvider>(gameplayScene), Is.Not.Null);
             Assert.That(FindInScene<GameplayUpdateDriver>(gameplayScene), Is.Not.Null);
+
+            AssertCombatSessionSignals(sceneContext.Container);
             LogAssert.NoUnexpectedReceived();
         }
 
@@ -41,7 +47,7 @@ namespace LastSeed.Tests.PlayMode
         public IEnumerator TearDown()
         {
             if (ProjectContext.HasInstance)
-                Object.Destroy(ProjectContext.Instance.gameObject);
+                UnityEngine.Object.Destroy(ProjectContext.Instance.gameObject);
 
             yield return null;
         }
@@ -60,6 +66,24 @@ namespace LastSeed.Tests.PlayMode
             }
 
             return null;
+        }
+
+        private static void AssertCombatSessionSignals(DiContainer sceneContainer)
+        {
+            ICombatSessionState combatSessionState = sceneContainer.Resolve<ICombatSessionState>();
+            SignalBus signalBus = sceneContainer.Resolve<SignalBus>();
+            bool receivedShootingEnabledSignal = false;
+            Action<CombatShootingStateChangedSignal> signalHandler = signal =>
+                receivedShootingEnabledSignal = signal.IsShootingEnabled;
+
+            signalBus.Subscribe(signalHandler);
+            combatSessionState.SetShootingEnabled(true);
+
+            Assert.That(combatSessionState.IsShootingEnabled, Is.True);
+            Assert.That(receivedShootingEnabledSignal, Is.True);
+
+            signalBus.Unsubscribe(signalHandler);
+            combatSessionState.Reset();
         }
     }
 }

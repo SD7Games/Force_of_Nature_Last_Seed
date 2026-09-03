@@ -1,4 +1,7 @@
+using LastSeed.Gameplay.Combat;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Animator))]
@@ -22,6 +25,17 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
     private float _currentAnimationDuration;
     private bool _isPlaying;
     private bool _projectileReleased;
+    private ICombatSessionState _combatSessionState;
+    private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
+
+    [Inject]
+    public void Construct(ICombatSessionState combatSessionState, SignalBus signalBus)
+    {
+        _combatSessionState = combatSessionState;
+        _signalBus = signalBus;
+        SubscribeToSignals();
+    }
 
     private void Reset()
     {
@@ -48,9 +62,9 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
         else
             Debug.LogWarning("WeaponAutoAttackAnimator: weapon reference is missing.", this);
 
-        CombatState.OnShootStateChanged += HandleShootStateChanged;
+        SubscribeToSignals();
 
-        if (!CombatState.CanShoot)
+        if (_combatSessionState != null && !_combatSessionState.IsShootingEnabled)
             StopAnimation();
     }
 
@@ -59,7 +73,7 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
         if (_weapon != null)
             _weapon.AttackCycleStarted -= HandleAttackCycleStarted;
 
-        CombatState.OnShootStateChanged -= HandleShootStateChanged;
+        UnsubscribeFromSignals();
         _isPlaying = false;
         _projectileReleased = false;
         _currentAnimationDuration = 0f;
@@ -82,7 +96,7 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
         if (_animationTimer <= 0f)
         {
-            if (!_projectileReleased && CombatState.CanShoot)
+            if (!_projectileReleased && _combatSessionState.IsShootingEnabled)
                 ReleaseProjectileAtNormalizedTime(1f);
 
             StopAnimation();
@@ -91,7 +105,7 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
     private void HandleAttackCycleStarted(float currentCooldown, float baseCooldown)
     {
-        if (!CombatState.CanShoot)
+        if (!_combatSessionState.IsShootingEnabled)
             return;
 
         PlayAnimation(GetScaledAnimationDuration(currentCooldown, baseCooldown));
@@ -102,9 +116,9 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
         // Kept intentionally so stale Animation Events do not release the shot early.
     }
 
-    private void HandleShootStateChanged(bool canShoot)
+    private void HandleShootingStateChanged(CombatShootingStateChangedSignal signal)
     {
-        if (!canShoot)
+        if (!signal.IsShootingEnabled)
             StopAnimation();
     }
 
@@ -127,7 +141,7 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
     private void TryReleaseProjectileFromAnimationProgress()
     {
-        if (_projectileReleased || !CombatState.CanShoot)
+        if (_projectileReleased || !_combatSessionState.IsShootingEnabled)
             return;
 
         float normalizedTime = GetCurrentAnimationNormalizedTime();
@@ -201,5 +215,23 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
             return;
 
         TryGetComponent(out _animator);
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<CombatShootingStateChangedSignal>(HandleShootingStateChanged);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<CombatShootingStateChangedSignal>(HandleShootingStateChanged);
+        _isSubscribedToSignals = false;
     }
 }

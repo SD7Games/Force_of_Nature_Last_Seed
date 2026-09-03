@@ -402,6 +402,8 @@ GameObject:
   - component: {fileID: 141515093}
   - component: {fileID: 141515092}
   - component: {fileID: 141515091}
+  - component: {fileID: 141515096}
+  - component: {fileID: 141515095}
   m_Layer: 0
   m_Name: Scene Context
   m_TagString: Untagged
@@ -441,6 +443,8 @@ MonoBehaviour:
   - {fileID: 141515093}
   - {fileID: 141515092}
   - {fileID: 141515091}
+  - {fileID: 141515096}
+  - {fileID: 141515095}
   _installerPrefabs: []
   _findSiblingMonoInstallers: 0
   _autoRun: 1
@@ -527,6 +531,30 @@ MonoBehaviour:
   _playerController: {fileID: 501089292}
   _playerMover: {fileID: 501089290}
   _playerShooter: {fileID: 501089294}
+--- !u!114 &141515095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73b5e527d43289d4d8e81208414c4986, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.GameSessionInstaller
+--- !u!114 &141515096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141515087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7401c3494cf5c2648b4f1d4e9465b1de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.GameSignalsInstaller
 --- !u!1 &192453717
 GameObject:
   m_ObjectHideFlags: 0

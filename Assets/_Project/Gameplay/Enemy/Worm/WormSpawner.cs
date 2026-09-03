@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class WormSpawner : MonoBehaviour
@@ -59,6 +61,15 @@ public sealed class WormSpawner : MonoBehaviour
     private bool _hasAppliedAdaptiveUpgradeRebalance;
     private WormFaceVisualController _activeFaceVisual;
     private bool _hasRevivedThisRun;
+    private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+        SubscribeToSignals();
+    }
 
 #if UNITY_EDITOR
     public WormHpScalingConfig EditorHpScalingConfig => _hpScalingConfig;
@@ -68,7 +79,7 @@ public sealed class WormSpawner : MonoBehaviour
 
     private void OnEnable()
     {
-        WormReviveEvents.ReviveGranted += OnReviveGranted;
+        SubscribeToSignals();
 
         if (_weapon != null)
             _weapon.RuntimeStatsChanged += OnWeaponRuntimeStatsChanged;
@@ -82,7 +93,7 @@ public sealed class WormSpawner : MonoBehaviour
 
     private void OnDisable()
     {
-        WormReviveEvents.ReviveGranted -= OnReviveGranted;
+        UnsubscribeFromSignals();
 
         if (_weapon != null)
             _weapon.RuntimeStatsChanged -= OnWeaponRuntimeStatsChanged;
@@ -473,7 +484,7 @@ public sealed class WormSpawner : MonoBehaviour
             : CocoonRewardProfile.Defaults;
     }
 
-    private void OnReviveGranted()
+    private void HandleReviveGranted(WormReviveGrantedSignal signal)
     {
         if (_hasRevivedThisRun)
             return;
@@ -482,5 +493,23 @@ public sealed class WormSpawner : MonoBehaviour
 
         if (_isSpawned && _hpScalingConfig != null && _hpScalingConfig.Enabled)
             RebalanceFutureSections(allowHpDecrease: true);
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<WormReviveGrantedSignal>(HandleReviveGranted);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<WormReviveGrantedSignal>(HandleReviveGranted);
+        _isSubscribedToSignals = false;
     }
 }

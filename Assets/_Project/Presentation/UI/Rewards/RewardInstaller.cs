@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class RewardInstaller : MonoBehaviour
@@ -25,6 +27,15 @@ public sealed class RewardInstaller : MonoBehaviour
 
     private RewardFlowController _rewardFlow;
     private bool _hasRevivedThisRun;
+    private SignalBus _signalBus;
+    private bool _isSubscribedToSignals;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+        SubscribeToSignals();
+    }
 
     public IReadOnlyList<CocoonRewardProfile> CocoonProfiles =>
         _database != null
@@ -55,14 +66,12 @@ public sealed class RewardInstaller : MonoBehaviour
 
     private void OnEnable()
     {
-        WormReviveEvents.ReviveGranted += HandleReviveGranted;
-        WormRewardEvents.RewardRequested += HandleRewardRequested;
+        SubscribeToSignals();
     }
 
     private void OnDisable()
     {
-        WormReviveEvents.ReviveGranted -= HandleReviveGranted;
-        WormRewardEvents.RewardRequested -= HandleRewardRequested;
+        UnsubscribeFromSignals();
     }
 
     private void OnDestroy()
@@ -100,19 +109,36 @@ public sealed class RewardInstaller : MonoBehaviour
         _rewardFlow?.ResetSession();
     }
 
-    private void HandleReviveGranted()
+    private void HandleReviveGranted(WormReviveGrantedSignal signal)
     {
         _hasRevivedThisRun = true;
     }
 
-    private void HandleRewardRequested(
-        CocoonRewardProfile cocoonProfile,
-        float headPathProgressNormalized,
-        float wormDestructionProgressNormalized)
+    private void HandleRewardRequested(WormRewardRequestedSignal signal)
     {
         OpenReward(
-            cocoonProfile,
-            headPathProgressNormalized,
-            wormDestructionProgressNormalized);
+            signal.RewardProfile,
+            signal.HeadPathProgressNormalized,
+            signal.WormDestructionProgressNormalized);
+    }
+
+    private void SubscribeToSignals()
+    {
+        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+            return;
+
+        _signalBus.Subscribe<WormReviveGrantedSignal>(HandleReviveGranted);
+        _signalBus.Subscribe<WormRewardRequestedSignal>(HandleRewardRequested);
+        _isSubscribedToSignals = true;
+    }
+
+    private void UnsubscribeFromSignals()
+    {
+        if (_signalBus == null || !_isSubscribedToSignals)
+            return;
+
+        _signalBus.Unsubscribe<WormReviveGrantedSignal>(HandleReviveGranted);
+        _signalBus.Unsubscribe<WormRewardRequestedSignal>(HandleRewardRequested);
+        _isSubscribedToSignals = false;
     }
 }

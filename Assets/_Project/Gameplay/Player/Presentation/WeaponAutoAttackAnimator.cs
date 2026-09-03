@@ -61,11 +61,6 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_weapon != null)
-            _weapon.AttackCycleStarted += HandleAttackCycleStarted;
-        else
-            Debug.LogWarning("WeaponAutoAttackAnimator: weapon reference is missing.", this);
-
         SubscribeToSignals();
 
         if (_combatSessionState != null && !_combatSessionState.IsShootingEnabled)
@@ -74,9 +69,6 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
     private void OnDisable()
     {
-        if (_weapon != null)
-            _weapon.AttackCycleStarted -= HandleAttackCycleStarted;
-
         UnsubscribeFromSignals();
         _isPlaying = false;
         _projectileReleased = false;
@@ -107,12 +99,14 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
         }
     }
 
-    private void HandleAttackCycleStarted(float currentCooldown, float baseCooldown)
+    private void HandleAttackCycleStarted(WeaponAttackCycleStartedSignal signal)
     {
         if (!_combatSessionState.IsShootingEnabled)
             return;
 
-        PlayAnimation(GetScaledAnimationDuration(currentCooldown, baseCooldown));
+        PlayAnimation(GetScaledAnimationDuration(
+            signal.CurrentCooldown,
+            signal.BaseCooldown));
     }
 
     public void ReleasePreparedAttack()
@@ -227,6 +221,7 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
             return;
 
         _signalBus.Subscribe<CombatShootingStateChangedSignal>(HandleShootingStateChanged);
+        _signalBus.Subscribe<WeaponAttackCycleStartedSignal>(HandleAttackCycleStarted);
         _isSubscribedToSignals = true;
     }
 
@@ -236,6 +231,7 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
             return;
 
         _signalBus.Unsubscribe<CombatShootingStateChangedSignal>(HandleShootingStateChanged);
+        _signalBus.Unsubscribe<WeaponAttackCycleStartedSignal>(HandleAttackCycleStarted);
         _isSubscribedToSignals = false;
     }
 }

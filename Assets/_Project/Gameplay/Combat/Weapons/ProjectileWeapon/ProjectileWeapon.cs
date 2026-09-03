@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Handles projectile spawning and applies modifier pipeline.
@@ -29,13 +30,17 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
     private readonly ProjectileShotPatternBuilder _shotPatternBuilder = new();
 
     private WeaponRuntimeState _runtimeState;
-
-    public event Action<float, float> AttackCycleStarted;
-    public event Action RuntimeStatsChanged;
+    private SignalBus _signalBus;
 
     public WeaponConfig Config => _config;
     public WeaponRuntimeState RuntimeState => _runtimeState;
     public int CurrentProjectileDamage => BuildProjectileDamage();
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+    }
 
     public void Init(ProjectilePool pool, Transform firePoint)
     {
@@ -53,7 +58,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         ApplyRuntimeLimits();
 
         RebuildModifiers(resetFiringCycle: true);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void Tick(float deltaTime)
@@ -106,7 +111,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
     public void ForceRebuild()
     {
         RebuildModifiers(resetFiringCycle: false);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void ClearTransientState()
@@ -137,7 +142,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
             _weaponCooldownTimer = 0f;
         }
 
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     private void ApplyRuntimeLimits()
@@ -173,15 +178,15 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         _preparedAttackElapsed = 0f;
         _lastAttackReleaseDelay = 0f;
 
-        Action<float, float> attackCycleStarted = AttackCycleStarted;
-
-        if (attackCycleStarted == null)
+        if (_signalBus == null)
         {
             ReleasePreparedAttack();
             return;
         }
 
-        attackCycleStarted.Invoke(_currentShotCooldown, GetBaseShotCooldown());
+        _signalBus.Fire(new WeaponAttackCycleStartedSignal(
+            _currentShotCooldown,
+            GetBaseShotCooldown()));
     }
 
     private float GetBaseShotCooldown()
@@ -308,5 +313,12 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
         return WeaponRuntimeState.ClampDamage(
             _config.Projectile.Damage * (double)_runtimeState.DamageMultiplier);
+    }
+
+    private void PublishRuntimeStatsChanged()
+    {
+        _signalBus?.Fire(new WeaponRuntimeStatsChangedSignal(
+            WeaponRuntimeStatsSource.MainProjectile,
+            Time.time));
     }
 }

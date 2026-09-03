@@ -1,5 +1,6 @@
-using System;
+using LastSeed.Gameplay.Signals;
 using UnityEngine;
+using Zenject;
 
 [DisallowMultipleComponent]
 public sealed class AcaciaThornWeapon : MonoBehaviour
@@ -16,11 +17,16 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
     private int _salvoShotsRemaining;
     private bool _isSalvoActive;
     private bool _initialized;
-
-    public event Action RuntimeStatsChanged;
+    private SignalBus _signalBus;
 
     public AcaciaThornWeaponConfig Config => _config;
     public AcaciaThornRuntimeState RuntimeState => _runtimeState;
+
+    [Inject]
+    public void Construct(SignalBus signalBus)
+    {
+        _signalBus = signalBus;
+    }
 
     public void Init(
         Transform firePoint,
@@ -60,7 +66,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
 
         RebuildCooldown(resetTimer: true);
         _initialized = true;
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void Tick(float deltaTime)
@@ -93,7 +99,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         _salvoTimer = 0f;
         _salvoShotsRemaining = 0;
         _isSalvoActive = false;
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void AddDamageMultiplier(float multiplier)
@@ -102,7 +108,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             return;
 
         _runtimeState.ApplyDamageMultiplier(multiplier);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void AddFireRateBonus(float bonus)
@@ -112,7 +118,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
 
         _runtimeState.AddFireRateBonus(bonus);
         RebuildCooldown(resetTimer: false);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void AddSalvoShots(int extraShots)
@@ -121,7 +127,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             return;
 
         _runtimeState.AddSalvoShots(extraShots);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void AddProjectileSpeedBonus(float bonus)
@@ -130,7 +136,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             return;
 
         _runtimeState.AddProjectileSpeedBonus(bonus);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void AddCriticalChance(float chanceBonus)
@@ -139,7 +145,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             return;
 
         _runtimeState.AddCriticalChance(chanceBonus);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void AddCriticalDamageBonus(float damageBonus)
@@ -148,7 +154,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             return;
 
         _runtimeState.AddCriticalDamageBonus(damageBonus);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     public void ClearTransientState()
@@ -167,7 +173,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         _runtimeState.ResetProgression(baseDamage);
         ApplyRuntimeLimits();
         RebuildCooldown(resetTimer: true);
-        RuntimeStatsChanged?.Invoke();
+        PublishRuntimeStatsChanged();
     }
 
     private void ApplyRuntimeLimits()
@@ -296,6 +302,13 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             _cooldownTimer = 0f;
         else
             _cooldownTimer = Mathf.Min(_cooldownTimer, _currentCooldown);
+    }
+
+    private void PublishRuntimeStatsChanged()
+    {
+        _signalBus?.Fire(new WeaponRuntimeStatsChangedSignal(
+            WeaponRuntimeStatsSource.AcaciaThorn,
+            Time.time));
     }
 
 #if UNITY_EDITOR

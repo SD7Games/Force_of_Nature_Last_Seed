@@ -27,8 +27,6 @@ public sealed class WormSpawner : MonoBehaviour
     private WormFaceBurstPresenter _faceBurstPresenter;
     private SignalBus _signalBus;
     private bool _isSubscribedToSignals;
-    private ProjectileWeapon _weapon;
-    private AcaciaThornWeapon _acaciaThornWeapon;
 
     [Inject]
     public void Construct(
@@ -37,9 +35,7 @@ public sealed class WormSpawner : MonoBehaviour
         WormSegmentPool segmentPool,
         WormFactory wormFactory,
         WormSpawnSettings spawnSettings,
-        WormFaceBurstPresenter faceBurstPresenter,
-        ProjectileWeapon weapon,
-        AcaciaThornWeapon acaciaThornWeapon)
+        WormFaceBurstPresenter faceBurstPresenter)
     {
         _signalBus = signalBus;
         _adaptiveHpController = adaptiveHpController;
@@ -47,20 +43,12 @@ public sealed class WormSpawner : MonoBehaviour
         _wormFactory = wormFactory;
         _spawnSettings = spawnSettings;
         _faceBurstPresenter = faceBurstPresenter;
-        _weapon = weapon;
-        _acaciaThornWeapon = acaciaThornWeapon;
         SubscribeToSignals();
     }
 
     private void OnEnable()
     {
         SubscribeToSignals();
-
-        if (_weapon != null)
-            _weapon.RuntimeStatsChanged += OnWeaponRuntimeStatsChanged;
-
-        if (_acaciaThornWeapon != null)
-            _acaciaThornWeapon.RuntimeStatsChanged += OnWeaponRuntimeStatsChanged;
 
         if (_isSpawned)
             _faceBurstPresenter?.Bind(GetSpawnedHead()?.FaceVisual);
@@ -69,12 +57,6 @@ public sealed class WormSpawner : MonoBehaviour
     private void OnDisable()
     {
         UnsubscribeFromSignals();
-
-        if (_weapon != null)
-            _weapon.RuntimeStatsChanged -= OnWeaponRuntimeStatsChanged;
-
-        if (_acaciaThornWeapon != null)
-            _acaciaThornWeapon.RuntimeStatsChanged -= OnWeaponRuntimeStatsChanged;
 
         _faceBurstPresenter?.Unbind();
     }
@@ -175,9 +157,9 @@ public sealed class WormSpawner : MonoBehaviour
         _adaptiveHpController.SetRuntimePressureMultiplier(multiplier);
     }
 
-    private void OnWeaponRuntimeStatsChanged()
+    private void OnWeaponRuntimeStatsChanged(WeaponRuntimeStatsChangedSignal signal)
     {
-        _adaptiveHpController.NotifyWeaponRuntimeStatsChanged(Time.time);
+        _adaptiveHpController.NotifyWeaponRuntimeStatsChanged(signal.OccurredAt);
     }
 
     private IReadOnlyList<CocoonRewardProfile> GetCocoonProfiles()
@@ -198,6 +180,7 @@ public sealed class WormSpawner : MonoBehaviour
             return;
 
         _signalBus.Subscribe<WormReviveGrantedSignal>(HandleReviveGranted);
+        _signalBus.Subscribe<WeaponRuntimeStatsChangedSignal>(OnWeaponRuntimeStatsChanged);
         _isSubscribedToSignals = true;
     }
 
@@ -207,6 +190,7 @@ public sealed class WormSpawner : MonoBehaviour
             return;
 
         _signalBus.Unsubscribe<WormReviveGrantedSignal>(HandleReviveGranted);
+        _signalBus.Unsubscribe<WeaponRuntimeStatsChangedSignal>(OnWeaponRuntimeStatsChanged);
         _isSubscribedToSignals = false;
     }
 }

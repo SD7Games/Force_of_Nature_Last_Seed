@@ -48,6 +48,8 @@ public sealed class WormSegment : MonoBehaviour
     private Vector3[] _tailRotationOffsets = Array.Empty<Vector3>();
     private Transform[] _headFollowParts = Array.Empty<Transform>();
     private Vector3[] _headFollowRotationOffsets = Array.Empty<Vector3>();
+    private WormSegmentDamageReceiver[] _damageReceivers =
+        Array.Empty<WormSegmentDamageReceiver>();
 
     private Transform _cocoonTransform;
     private bool _usesSyncedCocoonShake;
@@ -307,6 +309,17 @@ public sealed class WormSegment : MonoBehaviour
             gameObject.SetActive(false);
     }
 
+    public void BindDamageReceivers(WormCombatController combat)
+    {
+        if (combat == null)
+            throw new ArgumentNullException(nameof(combat));
+
+        EnsureDamageReceiversCached();
+
+        for (int receiverIndex = 0; receiverIndex < _damageReceivers.Length; receiverIndex++)
+            _damageReceivers[receiverIndex].Initialize(combat, this);
+    }
+
     public void SetRuntimeVisible(bool visible)
     {
         if (!IsAlive)
@@ -430,6 +443,20 @@ public sealed class WormSegment : MonoBehaviour
 
         for (int i = 0; i < _headFollowParts.Length; i++)
             _headFollowRotationOffsets[i] = _headFollowParts[i].localEulerAngles;
+    }
+
+    private void EnsureDamageReceiversCached()
+    {
+        if (_damageReceivers.Length > 0)
+            return;
+
+        if (!TryGetComponent<WormSegmentDamageReceiver>(out _))
+            gameObject.AddComponent<WormSegmentDamageReceiver>();
+
+        _damageReceivers = GetComponentsInChildren<WormSegmentDamageReceiver>(true);
+
+        if (_damageReceivers.Length == 0)
+            throw new InvalidOperationException($"Worm segment '{name}' has no damage receiver.");
     }
 
     private void ClearHeadFollowChain()

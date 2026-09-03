@@ -113,6 +113,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 
 ### 6. Worm domain
 
+- In progress: worm segment creation is transactional and rolls every rented segment back on partial failure; damage receivers are cached once per pooled segment and rebound on reuse.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

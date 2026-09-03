@@ -44,19 +44,8 @@ public sealed class ProjectilePool : MonoBehaviour
         Vector3 position,
         Quaternion rotation)
     {
-        Projectile projectile = _pool.Rent();
-
-        try
-        {
-            projectile.ApplyConfig(config, stats);
-            projectile.Activate(position, rotation);
-            return projectile;
-        }
-        catch
-        {
-            _pool.Return(projectile);
-            throw;
-        }
+        ProjectileSpawnRequest request = new(config, stats, position, rotation);
+        return _pool.Rent(request, InitializeProjectile);
     }
 
     /// <summary>
@@ -82,5 +71,13 @@ public sealed class ProjectilePool : MonoBehaviour
     private static void Deactivate(Projectile projectile)
     {
         projectile.gameObject.SetActive(false);
+    }
+
+    private static void InitializeProjectile(
+        Projectile projectile,
+        in ProjectileSpawnRequest request)
+    {
+        projectile.ApplyConfig(request.Config, request.Stats);
+        projectile.Activate(request.Position, request.Rotation);
     }
 }

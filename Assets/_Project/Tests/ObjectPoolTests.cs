@@ -45,6 +45,34 @@ namespace LastSeed.Tests
             Assert.That(pool.AvailableCount, Is.EqualTo(2));
         }
 
+        [Test]
+        public void Rent_WithTypedState_InitializesWithoutCapturedClosure()
+        {
+            ObjectPool<TestItem> pool = CreatePool();
+            int value = 42;
+
+            TestItem item = pool.Rent(value, InitializeWithValue);
+
+            Assert.That(item.Value, Is.EqualTo(42));
+            Assert.That(pool.ActiveCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Return_WhenRemovingMiddleItem_KeepsSwapBackIndexConsistent()
+        {
+            ObjectPool<TestItem> pool = CreatePool();
+            TestItem first = pool.Rent();
+            TestItem middle = pool.Rent();
+            TestItem last = pool.Rent();
+
+            Assert.That(pool.Return(middle), Is.True);
+            Assert.That(pool.Return(last), Is.True);
+            Assert.That(pool.Return(first), Is.True);
+
+            Assert.That(pool.ActiveCount, Is.Zero);
+            Assert.That(pool.AvailableCount, Is.EqualTo(3));
+        }
+
         private static ObjectPool<TestItem> CreatePool(Action onCreate = null)
         {
             return new ObjectPool<TestItem>(
@@ -56,9 +84,15 @@ namespace LastSeed.Tests
                 item => item.IsActive = false);
         }
 
+        private static void InitializeWithValue(TestItem item, in int value)
+        {
+            item.Value = value;
+        }
+
         private sealed class TestItem
         {
             public bool IsActive { get; set; }
+            public int Value { get; set; }
         }
     }
 }

@@ -42,29 +42,19 @@ public sealed class AcaciaThornProjectilePool
         int splitCount,
         bool canSplit)
     {
-        AcaciaThornProjectile projectile = _pool.Rent();
+        AcaciaThornProjectileSpawnRequest request = new(
+            position,
+            direction,
+            damage,
+            damageKind,
+            isCritical,
+            speed,
+            lifeTime,
+            bounces,
+            splitCount,
+            canSplit);
 
-        try
-        {
-            projectile.Activate(
-                position,
-                direction,
-                damage,
-                damageKind,
-                isCritical,
-                speed,
-                lifeTime,
-                bounces,
-                splitCount,
-                canSplit);
-
-            return projectile;
-        }
-        catch
-        {
-            _pool.Return(projectile);
-            throw;
-        }
+        return _pool.Rent(request, InitializeProjectile);
     }
 
     public void Release(AcaciaThornProjectile projectile)
@@ -87,5 +77,22 @@ public sealed class AcaciaThornProjectilePool
     private static void Deactivate(AcaciaThornProjectile projectile)
     {
         projectile.gameObject.SetActive(false);
+    }
+
+    private static void InitializeProjectile(
+        AcaciaThornProjectile projectile,
+        in AcaciaThornProjectileSpawnRequest request)
+    {
+        projectile.Activate(
+            request.Position,
+            request.Direction,
+            request.Damage,
+            request.DamageKind,
+            request.IsCritical,
+            request.Speed,
+            request.LifeTime,
+            request.Bounces,
+            request.SplitCount,
+            request.CanSplit);
     }
 }

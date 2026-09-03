@@ -110,6 +110,8 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - [x] Migrate main projectiles, Acacia Thorn projectiles, worm segments, and damage popups to the shared algorithm.
 - [x] Centralize projectile rent -> initialize -> activate -> rollback-on-failure in their owning pools.
 - [x] Keep type-specific creation and reset hooks in narrow adapters; no pooled audio or standalone VFX owners currently exist to migrate.
+- [x] Centralize typed-state rent/initialize/rollback so projectile adapters no longer duplicate transaction handling or allocate captured initialization closures.
+- [x] Track active pool indices with `Dictionary<T, int>` and swap-remove for O(1) returns while retaining a compact list for bulk return.
 
 ### 6. Worm domain
 

@@ -4,11 +4,13 @@ using System.Collections.Generic;
 public sealed class ObjectPool<T>
     where T : class
 {
+    public delegate void ItemInitializer<TState>(T item, in TState state);
+
     private readonly Func<T> _create;
     private readonly Action<T> _onReturn;
     private readonly Queue<T> _available = new();
-    private readonly List<T> _activeInRentOrder = new();
-    private readonly HashSet<T> _active = new();
+    private readonly List<T> _activeItems = new();
+    private readonly Dictionary<T, int> _activeIndices = new();
 
     public ObjectPool(Func<T> create, Action<T> onReturn)
     {
@@ -16,7 +18,7 @@ public sealed class ObjectPool<T>
         _onReturn = onReturn ?? throw new ArgumentNullException(nameof(onReturn));
     }
 
-    public int ActiveCount => _active.Count;
+    public int ActiveCount => _activeItems.Count;
     public int AvailableCount => _available.Count;
 
     public void Prewarm(int count)
@@ -38,10 +40,24 @@ public sealed class ObjectPool<T>
             ? _available.Dequeue()
             : CreateItem();
 
-        if (!_active.Add(item))
+        if (_activeIndices.ContainsKey(item))
             throw new InvalidOperationException("Pool attempted to rent an already active item.");
 
-        _activeInRentOrder.Add(item);
+        int activeIndex = _activeItems.Count;
+
+        try
+        {
+            _activeIndices.Add(item, activeIndex);
+            _activeItems.Add(item);
+        }
+        catch
+        {
+            _activeIndices.Remove(item);
+            _onReturn(item);
+            _available.Enqueue(item);
+            throw;
+        }
+
         return item;
     }
 
@@ -64,26 +80,62 @@ public sealed class ObjectPool<T>
         }
     }
 
+    public T Rent<TState>(
+        in TState state,
+        ItemInitializer<TState> initialize)
+    {
+        if (initialize == null)
+            throw new ArgumentNullException(nameof(initialize));
+
+        T item = Rent();
+
+        try
+        {
+            initialize(item, state);
+            return item;
+        }
+        catch
+        {
+            Return(item);
+            throw;
+        }
+    }
+
     public bool Return(T item)
     {
-        if (item == null || !_active.Contains(item))
+        if (item == null || !_activeIndices.TryGetValue(item, out int activeIndex))
             return false;
 
         _onReturn(item);
-        _active.Remove(item);
-        _activeInRentOrder.Remove(item);
+        RemoveActiveAtSwapBack(activeIndex);
         _available.Enqueue(item);
         return true;
     }
 
     public void ReturnAll()
     {
-        while (_activeInRentOrder.Count > 0)
+        while (_activeItems.Count > 0)
         {
-            int lastIndex = _activeInRentOrder.Count - 1;
-            T item = _activeInRentOrder[lastIndex];
+            int lastIndex = _activeItems.Count - 1;
+            T item = _activeItems[lastIndex];
             Return(item);
         }
+    }
+
+    private void RemoveActiveAtSwapBack(int activeIndex)
+    {
+        int lastIndex = _activeItems.Count - 1;
+        T removedItem = _activeItems[activeIndex];
+        T lastItem = _activeItems[lastIndex];
+
+        if (activeIndex != lastIndex)
+        {
+            _activeItems[activeIndex] = lastItem;
+            _activeIndices[lastItem] = activeIndex;
+        }
+
+        _activeItems.RemoveAt(lastIndex);
+        _activeIndices.Remove(removedItem);
     }
 
     private T CreateItem()

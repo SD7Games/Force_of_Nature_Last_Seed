@@ -1,4 +1,4 @@
-# Last Seed Survival — Architecture Refactoring Roadmap
+# Last Seed Survivor — Architecture Refactoring Roadmap
 
 ## Non-negotiable rules
 

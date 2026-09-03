@@ -169,7 +169,7 @@ PlayerSettings:
   androidMinAspectRatio: 1
   applicationIdentifier:
     Android: com.tokarevdev.lastseed
-    Standalone: com.DefaultCompany.2D-URP
+    Standalone: com.tokarevdev.lastseedsurvivor
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -730,16 +730,16 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: CoreDefenders
+  metroPackageName: LastSeedSurvivor
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Core_Defenders
+  metroApplicationDescription: Last Seed Survivor
   wsaImages: {}
-  metroTileShortName: Core_Defenders
+  metroTileShortName: Last Seed Survivor
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
@@ -811,7 +811,7 @@ PlayerSettings:
   cloudProjectId: efae9fe8-41ec-4269-acd4-d4f4c8c6f778
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Core_Defenders
+  projectName: Last_Seed_Survivor
   organizationId: unity_bbbce41447a78610638b
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

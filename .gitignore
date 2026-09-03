@@ -30,6 +30,8 @@
 /[Aa]ssets/Plugins/Editor/JetBrains*
 # Jetbrains Rider personal-layer settings
 *.DotSettings.user
+# JetBrains project metadata is local and derived from the checkout folder name.
+.idea/
 
 # Visual Studio cache directory
 .vs/

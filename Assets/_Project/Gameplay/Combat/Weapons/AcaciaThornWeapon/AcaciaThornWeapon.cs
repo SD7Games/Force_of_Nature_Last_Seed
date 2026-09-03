@@ -63,18 +63,18 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         RuntimeStatsChanged?.Invoke();
     }
 
-    public void Tick()
+    public void Tick(float deltaTime)
     {
         if (!_initialized || !_runtimeState.IsUnlocked || !_pool.IsInitialized)
             return;
 
         if (_isSalvoActive)
         {
-            TickSalvo();
+            TickSalvo(deltaTime);
             return;
         }
 
-        _cooldownTimer -= Time.deltaTime;
+        _cooldownTimer -= deltaTime;
 
         if (_cooldownTimer > 0f)
             return;
@@ -191,9 +191,9 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         FireSalvoShot();
     }
 
-    private void TickSalvo()
+    private void TickSalvo(float deltaTime)
     {
-        _salvoTimer -= Time.deltaTime;
+        _salvoTimer -= deltaTime;
 
         if (_salvoTimer > 0f)
             return;

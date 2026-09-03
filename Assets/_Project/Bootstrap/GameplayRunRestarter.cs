@@ -13,14 +13,6 @@ namespace _Project.App.Gameplay
         [SerializeField] private WormEngagementController _engagementController;
         [SerializeField] private WormReviveFlowController _reviveFlowController;
 
-        [Header("Player")]
-        [SerializeField] private PlayerMover _playerMover;
-
-        [Header("Weapons")]
-        [SerializeField] private ProjectileWeapon _projectileWeapon;
-        [SerializeField] private AcaciaThornWeapon _acaciaThornWeapon;
-        [SerializeField] private PoolRegistry _projectilePoolRegistry;
-
         [Header("Rewards/UI")]
         [SerializeField] private RewardInstaller _rewardInstaller;
         [SerializeField] private PopupRoot _popupRoot;
@@ -28,11 +20,18 @@ namespace _Project.App.Gameplay
 
         private bool _isRestarting;
         private IPlayerInputSnapshotProvider _playerInputSnapshotProvider;
+        private PlayerMovementController _playerMovementController;
+        private PlayerWeaponController _playerWeaponController;
 
         [Inject]
-        public void Construct(IPlayerInputSnapshotProvider playerInputSnapshotProvider)
+        public void Construct(
+            IPlayerInputSnapshotProvider playerInputSnapshotProvider,
+            PlayerMovementController playerMovementController,
+            PlayerWeaponController playerWeaponController)
         {
             _playerInputSnapshotProvider = playerInputSnapshotProvider;
+            _playerMovementController = playerMovementController;
+            _playerWeaponController = playerWeaponController;
         }
 
         public void RestartRun()
@@ -47,20 +46,17 @@ namespace _Project.App.Gameplay
             Time.timeScale = 1f;
 
             _playerInputSnapshotProvider.ResetState();
-            _playerMover?.ResetForNewRun();
+            _playerMovementController.ResetForNewRun();
             _engagementController?.ResetState();
             _pressureDirector?.ResetForNewRun();
             _reviveFlowController?.ResetForNewRun();
 
-            _projectilePoolRegistry?.ReleaseAllActiveProjectiles();
-            _projectileWeapon?.ClearTransientState();
-            _acaciaThornWeapon?.ClearTransientState();
+            _playerWeaponController.ClearTransientState();
             _damagePopupPresenter?.ClearActivePopups();
 
             _wormSpawner?.DespawnWorm();
 
-            _projectileWeapon?.ResetRuntimeState();
-            _acaciaThornWeapon?.ResetRuntimeState();
+            _playerWeaponController.ResetRuntimeState();
             _rewardInstaller?.ResetSession();
 
             _wormSpawner?.SpawnWorm();

@@ -8,22 +8,22 @@ namespace LastSeed.Bootstrap.Gameplay
     {
         private readonly Camera _worldCamera;
         private readonly ScreenBoundsService _screenBoundsService;
-        private readonly PlayerMover _playerMover;
+        private readonly PlayerMovementController _playerMovementController;
         private readonly PoolRegistry _projectilePoolRegistry;
-        private readonly PlayerShooter _playerShooter;
+        private readonly PlayerWeaponController _playerWeaponController;
 
         public GameSceneInitializer(
             Camera worldCamera,
             ScreenBoundsService screenBoundsService,
-            PlayerMover playerMover,
+            PlayerMovementController playerMovementController,
             PoolRegistry projectilePoolRegistry,
-            PlayerShooter playerShooter)
+            PlayerWeaponController playerWeaponController)
         {
             _worldCamera = worldCamera;
             _screenBoundsService = screenBoundsService;
-            _playerMover = playerMover;
+            _playerMovementController = playerMovementController;
             _projectilePoolRegistry = projectilePoolRegistry;
-            _playerShooter = playerShooter;
+            _playerWeaponController = playerWeaponController;
         }
 
         public void Initialize()
@@ -31,9 +31,9 @@ namespace LastSeed.Bootstrap.Gameplay
             ValidateDependencies();
 
             _screenBoundsService.Recalculate(_worldCamera);
-            _playerMover.Init(_screenBoundsService);
+            _playerMovementController.Initialize(_screenBoundsService);
             _projectilePoolRegistry.Init(_screenBoundsService);
-            _playerShooter.Init(_screenBoundsService);
+            _playerWeaponController.Initialize(_screenBoundsService);
         }
 
         private void ValidateDependencies()
@@ -41,14 +41,14 @@ namespace LastSeed.Bootstrap.Gameplay
             if (_worldCamera == null)
                 throw new InvalidOperationException("Game world camera is not configured.");
 
-            if (_playerMover == null)
-                throw new InvalidOperationException("Player mover is not configured.");
+            if (_playerMovementController == null)
+                throw new InvalidOperationException("Player movement controller is not configured.");
 
             if (_projectilePoolRegistry == null)
                 throw new InvalidOperationException("Projectile pool registry is not configured.");
 
-            if (_playerShooter == null)
-                throw new InvalidOperationException("Player shooter is not configured.");
+            if (_playerWeaponController == null)
+                throw new InvalidOperationException("Player weapon controller is not configured.");
         }
     }
 }

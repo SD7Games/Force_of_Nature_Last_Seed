@@ -56,23 +56,23 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         RuntimeStatsChanged?.Invoke();
     }
 
-    public void Tick()
+    public void Tick(float deltaTime)
     {
         if (_pool == null || _firePoint == null || _config == null) return;
 
         if (_isSalvoActive)
         {
-            TickSalvo();
+            TickSalvo(deltaTime);
             return;
         }
 
         if (_isAttackPrepared)
         {
-            TickPreparedAttack();
+            TickPreparedAttack(deltaTime);
             return;
         }
 
-        _weaponCooldownTimer -= Time.deltaTime;
+        _weaponCooldownTimer -= deltaTime;
 
         if (_weaponCooldownTimer <= 0f)
             StartAttackCycle();
@@ -213,17 +213,17 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         FireSalvoShot();
     }
 
-    private void TickPreparedAttack()
+    private void TickPreparedAttack(float deltaTime)
     {
-        _preparedAttackElapsed += Time.deltaTime;
+        _preparedAttackElapsed += deltaTime;
 
         if (_preparedAttackElapsed >= _currentShotCooldown)
             ReleasePreparedAttack(_currentShotCooldown);
     }
 
-    private void TickSalvo()
+    private void TickSalvo(float deltaTime)
     {
-        _salvoTimer -= Time.deltaTime;
+        _salvoTimer -= deltaTime;
 
         if (_salvoTimer > 0f)
             return;

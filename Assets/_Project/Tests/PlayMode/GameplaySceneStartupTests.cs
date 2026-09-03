@@ -39,8 +39,16 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(FindInScene<PlayerInputSnapshotProvider>(gameplayScene), Is.Not.Null);
             Assert.That(FindInScene<GameplayUpdateDriver>(gameplayScene), Is.Not.Null);
 
+            AssertPlayerServices(sceneContext.Container);
             AssertCombatSessionSignals(sceneContext.Container);
             LogAssert.NoUnexpectedReceived();
+        }
+
+        private static void AssertPlayerServices(DiContainer sceneContainer)
+        {
+            Assert.That(sceneContainer.Resolve<PlayerMovementController>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<PlayerWeaponController>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<ProjectileWeapon>(), Is.Not.Null);
         }
 
         [UnityTearDown]

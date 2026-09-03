@@ -94,10 +94,13 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 
 ### 4. Player and weapons
 
-- Separate player input/application logic from the player Unity view.
-- Extract weapon runtime models and command services.
-- Remove cross-domain serialized references from player and weapon behaviours.
-- Preserve ScriptableObject balance configuration.
+**Status: completed and verified by automated EditMode and PlayMode tests.**
+
+- [x] Separate player input/application logic from the player Unity view through a pure runtime movement model and controller.
+- [x] Extract player weapon initialization, ticking, cleanup, and reset commands into a constructor-injected service.
+- [x] Remove the obsolete `PlayerController` and `PlayerShooter` scene behaviours and their cross-domain serialized references.
+- [x] Pass frame time explicitly from the named gameplay loop into weapon runtime ticking.
+- [x] Preserve scene-owned movement tuning and ScriptableObject weapon balance configuration.
 
 ### 5. Unified pooling
 

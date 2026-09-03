@@ -7,19 +7,19 @@ namespace LastSeed.Bootstrap.GameplayLoop
     {
         private readonly IPlayerInputSnapshotProvider _playerInputSnapshotProvider;
         private readonly IGameplayInputLock _gameplayInputLock;
-        private readonly PlayerController _playerController;
-        private readonly PlayerShooter _playerShooter;
+        private readonly PlayerMovementController _playerMovementController;
+        private readonly PlayerWeaponController _playerWeaponController;
 
         public GameplayFrameCoordinator(
             IPlayerInputSnapshotProvider playerInputSnapshotProvider,
             IGameplayInputLock gameplayInputLock,
-            PlayerController playerController,
-            PlayerShooter playerShooter)
+            PlayerMovementController playerMovementController,
+            PlayerWeaponController playerWeaponController)
         {
             _playerInputSnapshotProvider = playerInputSnapshotProvider;
             _gameplayInputLock = gameplayInputLock;
-            _playerController = playerController;
-            _playerShooter = playerShooter;
+            _playerMovementController = playerMovementController;
+            _playerWeaponController = playerWeaponController;
         }
 
         public void Tick(float deltaTime)
@@ -28,13 +28,13 @@ namespace LastSeed.Bootstrap.GameplayLoop
 
             if (_gameplayInputLock.IsLocked)
             {
-                _playerController.StopMovement();
+                _playerMovementController.StopMovement();
                 return;
             }
 
             PlayerInputSnapshot inputSnapshot = _playerInputSnapshotProvider.CurrentSnapshot;
-            _playerController.Tick(inputSnapshot, deltaTime);
-            _playerShooter.Tick();
+            _playerMovementController.Tick(inputSnapshot, deltaTime);
+            _playerWeaponController.Tick(deltaTime);
         }
     }
 }

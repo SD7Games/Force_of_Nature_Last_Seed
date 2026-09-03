@@ -380,10 +380,6 @@ MonoBehaviour:
   _pressureDirector: {fileID: 91581458}
   _engagementController: {fileID: 659970389}
   _reviveFlowController: {fileID: 91581459}
-  _playerMover: {fileID: 501089290}
-  _projectileWeapon: {fileID: 501089295}
-  _acaciaThornWeapon: {fileID: 501089296}
-  _projectilePoolRegistry: {fileID: 550759621}
   _rewardInstaller: {fileID: 57053535}
   _popupRoot: {fileID: 1474514291}
   _damagePopupPresenter: {fileID: 1484420117}
@@ -528,9 +524,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3380e1e1f5b7f254e87052df131713af, type: 3}
   m_Name:
   m_EditorClassIdentifier: LastSeed.Bootstrap::LastSeed.Bootstrap.Installers.PlayerInstaller
-  _playerController: {fileID: 501089292}
   _playerMover: {fileID: 501089290}
-  _playerShooter: {fileID: 501089294}
+  _projectileWeapon: {fileID: 501089295}
+  _acaciaThornWeapon: {fileID: 501089296}
+  _firePoint: {fileID: 1180795039}
+  _startWeaponConfig: {fileID: 11400000, guid: 48f14af71df09994b9b8750acb77737f, type: 2}
 --- !u!114 &141515095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1080,9 +1078,7 @@ GameObject:
   m_Component:
   - component: {fileID: 501089287}
   - component: {fileID: 501089290}
-  - component: {fileID: 501089292}
   - component: {fileID: 501089293}
-  - component: {fileID: 501089294}
   - component: {fileID: 501089295}
   - component: {fileID: 501089296}
   m_Layer: 0
@@ -1124,18 +1120,6 @@ MonoBehaviour:
   _speed: 8
   _smooth: 100
   _edgePadding: 0.9
---- !u!114 &501089292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 501089286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e98fdfa460b44c04cbf94ea15ab53182, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SeedController
 --- !u!114 &501089293
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1149,23 +1133,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: LastSeed.Infrastructure::LastSeed.Infrastructure.Input.PlayerInputSnapshotProvider
   _enableTouchDrag: 1
---- !u!114 &501089294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 501089286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd8234a7bed77454786df83da87f1ff5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerShooter
-  _weaponBehaviour: {fileID: 501089295}
-  _acaciaThornWeapon: {fileID: 501089296}
-  _registry: {fileID: 550759621}
-  _firePoint: {fileID: 1180795039}
-  _startConfig: {fileID: 11400000, guid: 48f14af71df09994b9b8750acb77737f, type: 2}
 --- !u!114 &501089295
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2148,7 +2115,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8f0e0e8713f4c9ba58d0cf60a2fc2f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponAutoAttackAnimator
-  _weapon: {fileID: 501089295}
   _animator: {fileID: 1286495985}
   _attackStateName: Weapon
   _baseAnimationDuration: 1.1
@@ -2742,7 +2708,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d503ad5c88354fbca6c1987c7957056c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVisualController
-  _mover: {fileID: 501089290}
   _flipThreshold: 0.05
 --- !u!95 &2134843962
 Animator:

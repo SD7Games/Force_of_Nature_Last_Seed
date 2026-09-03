@@ -8,7 +8,7 @@ public interface IWeapon
 {
     void Init(ProjectilePool pool, Transform firePoint);
 
-    void Tick();
+    void Tick(float deltaTime);
 
     void ApplyConfig(WeaponConfig config);
 }

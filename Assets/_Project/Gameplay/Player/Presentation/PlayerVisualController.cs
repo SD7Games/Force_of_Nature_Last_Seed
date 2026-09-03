@@ -5,9 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public sealed class PlayerVisualController : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private PlayerMover _mover;
-
     [Header("Settings")]
     [SerializeField, Min(0.01f)] private float _flipThreshold = 0.05f;
 
@@ -16,6 +13,13 @@ public sealed class PlayerVisualController : MonoBehaviour
     private Vector3 _baseLocalScale;
     private MirroredChild[] _mirroredChildren = new MirroredChild[0];
     private bool _isFacingLeft;
+    private PlayerMovementController _movementController;
+
+    [Zenject.Inject]
+    public void Construct(PlayerMovementController movementController)
+    {
+        _movementController = movementController;
+    }
 
     private void Awake()
     {
@@ -24,18 +28,15 @@ public sealed class PlayerVisualController : MonoBehaviour
         _baseLocalScale = _visualRoot.localScale;
         CacheMirroredChildren();
 
-        if (_mover == null)
-            _mover = GetComponentInParent<PlayerMover>();
-
         ApplyFacing();
     }
 
     private void LateUpdate()
     {
-        if (_mover == null)
+        if (_movementController == null)
             return;
 
-        float input = _mover.MovementInput;
+        float input = _movementController.MovementInput;
 
         if (Mathf.Abs(input) > _flipThreshold)
         {

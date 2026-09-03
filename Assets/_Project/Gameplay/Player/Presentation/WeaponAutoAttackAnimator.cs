@@ -10,7 +10,6 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
     private const int BaseLayerIndex = 0;
 
     [Header("References")]
-    [SerializeField] private ProjectileWeapon _weapon;
     [SerializeField] private Animator _animator;
 
     [Header("Settings")]
@@ -28,12 +27,17 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
     private ICombatSessionState _combatSessionState;
     private SignalBus _signalBus;
     private bool _isSubscribedToSignals;
+    private ProjectileWeapon _weapon;
 
     [Inject]
-    public void Construct(ICombatSessionState combatSessionState, SignalBus signalBus)
+    public void Construct(
+        ICombatSessionState combatSessionState,
+        SignalBus signalBus,
+        ProjectileWeapon weapon)
     {
         _combatSessionState = combatSessionState;
         _signalBus = signalBus;
+        _weapon = weapon;
         SubscribeToSignals();
     }
 

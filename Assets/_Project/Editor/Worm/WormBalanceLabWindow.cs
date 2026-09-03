@@ -436,9 +436,11 @@ public sealed class WormBalanceLabWindow : EditorWindow
         if (reviveFlow != null && (force || _reviveAttemptsPerSession <= 0))
             _reviveAttemptsPerSession = reviveFlow.EditorMaxReviveAttempts;
 
-        PlayerShooter shooter = FindOpenSceneObject<PlayerShooter>();
-        if (shooter != null && (force || _mainWeaponConfig == null))
-            _mainWeaponConfig = shooter.EditorStartConfig;
+        LastSeed.Bootstrap.Installers.PlayerInstaller playerInstaller =
+            FindOpenSceneObject<LastSeed.Bootstrap.Installers.PlayerInstaller>();
+
+        if (playerInstaller != null && (force || _mainWeaponConfig == null))
+            _mainWeaponConfig = playerInstaller.EditorStartWeaponConfig;
 
         AcaciaThornWeapon acaciaThornWeapon = FindOpenSceneObject<AcaciaThornWeapon>();
         if (acaciaThornWeapon != null && (force || _acaciaThornConfig == null))

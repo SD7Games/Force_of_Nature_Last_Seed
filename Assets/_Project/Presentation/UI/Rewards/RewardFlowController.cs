@@ -9,7 +9,7 @@ public sealed class RewardFlowController : IDisposable
     private readonly RewardApplyService _applyService;
     private readonly RewardPopupView _popup;
     private readonly PopupRoot _popupRoot;
-    private readonly IRewardedAdService _rewardedAdService;
+    private readonly RewardAdOperation _rewardAdOperation;
     private readonly IRandomSource _randomSource;
     private readonly RewardAttemptState _attempts;
     private readonly RewardRequestQueue _requestQueue;
@@ -19,7 +19,6 @@ public sealed class RewardFlowController : IDisposable
     private RewardRollContext _currentRollContext;
     private RewardRarity _currentGuaranteeRarity;
     private bool _isDisposed;
-    private bool _isRewardedAdPending;
     private bool _isPopupRequestActive;
     private bool _shouldOpenNextPendingRequest;
 
@@ -28,7 +27,7 @@ public sealed class RewardFlowController : IDisposable
         RewardApplyService applyService,
         RewardPopupView popup,
         PopupRoot popupRoot,
-        IRewardedAdService rewardedAdService,
+        RewardAdOperation rewardAdOperation,
         IRandomSource randomSource,
         RewardAttemptState attempts,
         RewardRequestQueue requestQueue)
@@ -37,7 +36,8 @@ public sealed class RewardFlowController : IDisposable
         _applyService = applyService;
         _popup = popup;
         _popupRoot = popupRoot;
-        _rewardedAdService = rewardedAdService;
+        _rewardAdOperation = rewardAdOperation
+            ?? throw new ArgumentNullException(nameof(rewardAdOperation));
         _randomSource = randomSource
             ?? throw new ArgumentNullException(nameof(randomSource));
         _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
@@ -70,6 +70,7 @@ public sealed class RewardFlowController : IDisposable
             _popup.Hidden -= HandlePopupHidden;
         }
 
+        _rewardAdOperation.Cancel();
         _requestQueue.Clear();
         _isDisposed = true;
     }
@@ -97,7 +98,7 @@ public sealed class RewardFlowController : IDisposable
         _isPopupRequestActive = true;
         _currentCocoonProfile = request.CocoonProfile;
         _currentRollContext = request.RollContext;
-        _isRewardedAdPending = false;
+        _rewardAdOperation.Cancel();
 
         if (!RollCurrentChoices())
         {
@@ -123,14 +124,14 @@ public sealed class RewardFlowController : IDisposable
         _currentRollContext = default;
         _currentGuaranteeRarity = default;
         _attempts.Reset();
-        _isRewardedAdPending = false;
+        _rewardAdOperation.Cancel();
         _isPopupRequestActive = false;
         _shouldOpenNextPendingRequest = false;
     }
 
     private void HandleSelected(RewardChoiceData choice)
     {
-        if (_isRewardedAdPending)
+        if (_rewardAdOperation.IsPending)
             return;
 
         _shouldOpenNextPendingRequest = true;
@@ -139,7 +140,7 @@ public sealed class RewardFlowController : IDisposable
 
     private void HandleRerollRequested()
     {
-        if (!_attempts.HasFreeReroll || _isRewardedAdPending)
+        if (!_attempts.HasFreeReroll || _rewardAdOperation.IsPending)
             return;
 
         if (!RollCurrentChoices())
@@ -157,19 +158,12 @@ public sealed class RewardFlowController : IDisposable
         if (_attempts.HasFreeReroll || !_attempts.HasAdReroll)
             return;
 
-        if (_isRewardedAdPending)
+        if (_rewardAdOperation.IsPending)
             return;
 
-        _isRewardedAdPending = true;
         _popup?.SetAllButtonsInteractable(false);
-
-        if (_rewardedAdService == null)
-        {
-            CompleteAdRerollReward(true);
-            return;
-        }
-
-        _rewardedAdService.ShowRewardedAd(CompleteAdRerollReward);
+        if (!_rewardAdOperation.TryBegin(CompleteAdRerollReward))
+            _popup?.SetAllButtonsInteractable(true);
     }
 
     private void HandleTakeAllRequested()
@@ -180,27 +174,18 @@ public sealed class RewardFlowController : IDisposable
         if (!RewardAdRerollPolicy.CanOfferTakeAll(_currentRollContext))
             return;
 
-        if (!_attempts.HasTakeAll || _isRewardedAdPending)
+        if (!_attempts.HasTakeAll || _rewardAdOperation.IsPending)
             return;
 
-        _isRewardedAdPending = true;
         _popup?.SetAllButtonsInteractable(false);
-
-        if (_rewardedAdService == null)
-        {
-            CompleteTakeAllReward(true);
-            return;
-        }
-
-        _rewardedAdService.ShowRewardedAd(CompleteTakeAllReward);
+        if (!_rewardAdOperation.TryBegin(CompleteTakeAllReward))
+            _popup?.SetAllButtonsInteractable(true);
     }
 
     private void CompleteAdRerollReward(bool rewardGranted)
     {
         if (_isDisposed)
             return;
-
-        _isRewardedAdPending = false;
 
         if (!rewardGranted)
         {
@@ -232,8 +217,6 @@ public sealed class RewardFlowController : IDisposable
     {
         if (_isDisposed)
             return;
-
-        _isRewardedAdPending = false;
 
         if (!rewardGranted)
         {
@@ -276,7 +259,7 @@ public sealed class RewardFlowController : IDisposable
         _currentCocoonProfile = null;
         _currentRollContext = default;
         _currentGuaranteeRarity = default;
-        _isRewardedAdPending = false;
+        _rewardAdOperation.Cancel();
         _isPopupRequestActive = false;
         _shouldOpenNextPendingRequest = false;
     }
@@ -324,7 +307,7 @@ public sealed class RewardFlowController : IDisposable
         }
 
         bool canTakeAll = _attempts.HasTakeAll
-            && !_isRewardedAdPending
+            && !_rewardAdOperation.IsPending
             && RewardAdRerollPolicy.CanOfferTakeAll(_currentRollContext);
 
         bool isBound = _popup.Bind(
@@ -335,10 +318,10 @@ public sealed class RewardFlowController : IDisposable
                 _attempts.TakeAllLeft,
                 _currentGuaranteeRarity,
                 RewardAdRerollPolicy.GetDisplayedGuaranteeRarity(_currentCocoonProfile),
-                _attempts.HasFreeReroll && !_isRewardedAdPending,
+                _attempts.HasFreeReroll && !_rewardAdOperation.IsPending,
                 !_attempts.HasFreeReroll
                     && _attempts.HasAdReroll
-                    && !_isRewardedAdPending,
+                    && !_rewardAdOperation.IsPending,
                 canTakeAll),
             animateChoiceChanges);
 

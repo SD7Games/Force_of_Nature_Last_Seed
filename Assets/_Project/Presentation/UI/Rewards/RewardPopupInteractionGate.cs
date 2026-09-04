@@ -1,20 +1,15 @@
 using System;
-using System.Collections;
-using UnityEngine;
 
 public sealed class RewardPopupInteractionGate
 {
-    private readonly MonoBehaviour _owner;
     private readonly Func<bool> _canOpen;
     private readonly Action<bool> _setInteractionEnabled;
-    private Coroutine _coroutine;
+    private GateStage _stage;
 
     public RewardPopupInteractionGate(
-        MonoBehaviour owner,
         Func<bool> canOpen,
         Action<bool> setInteractionEnabled)
     {
-        _owner = owner;
         _canOpen = canOpen;
         _setInteractionEnabled = setInteractionEnabled;
     }
@@ -30,40 +25,49 @@ public sealed class RewardPopupInteractionGate
 
     public void StartWhenSafe()
     {
-        Stop();
-
-        if (_owner == null || !_owner.isActiveAndEnabled)
-            return;
-
-        _coroutine = _owner.StartCoroutine(WaitForPointerReleaseThenEnable());
+        IsOpen = false;
+        _setInteractionEnabled?.Invoke(false);
+        _stage = GateStage.WaitInitialFrame;
     }
 
     public void Stop()
     {
-        if (_coroutine == null)
-            return;
-
-        if (_owner != null)
-            _owner.StopCoroutine(_coroutine);
-
-        _coroutine = null;
+        _stage = GateStage.Inactive;
     }
 
-    private IEnumerator WaitForPointerReleaseThenEnable()
+    public void Tick()
     {
-        yield return null;
+        switch (_stage)
+        {
+            case GateStage.WaitInitialFrame:
+                _stage = GateStage.WaitPointerRelease;
+                return;
+            case GateStage.WaitPointerRelease:
+                if (!RewardPopupPointerState.IsAnyPressed())
+                    _stage = GateStage.WaitReleaseFrame;
+                return;
+            case GateStage.WaitReleaseFrame:
+                OpenIfAllowed();
+                return;
+        }
+    }
 
-        while (RewardPopupPointerState.IsAnyPressed())
-            yield return null;
-
-        yield return null;
-
-        _coroutine = null;
+    private void OpenIfAllowed()
+    {
+        _stage = GateStage.Inactive;
 
         if (_canOpen != null && !_canOpen())
-            yield break;
+            return;
 
         IsOpen = true;
         _setInteractionEnabled?.Invoke(true);
+    }
+
+    private enum GateStage
+    {
+        Inactive,
+        WaitInitialFrame,
+        WaitPointerRelease,
+        WaitReleaseFrame
     }
 }

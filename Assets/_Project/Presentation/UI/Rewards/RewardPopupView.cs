@@ -5,9 +5,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Displays reward choices and routes popup UI events.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class RewardPopupView : PopupView
 {
@@ -115,6 +112,11 @@ public sealed class RewardPopupView : PopupView
         _interactionGate?.Stop();
         _animator?.Stop();
         _actionControls?.Unsubscribe();
+    }
+
+    private void Update()
+    {
+        _interactionGate?.Tick();
     }
 
     public bool Bind(
@@ -233,7 +235,6 @@ public sealed class RewardPopupView : PopupView
             CloseInteractionGate);
 
         _interactionGate = new RewardPopupInteractionGate(
-            this,
             CanOpenInteractionGate,
             SetInteractionEnabled);
     }

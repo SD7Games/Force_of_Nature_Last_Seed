@@ -63,13 +63,12 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingYScale = 0.86f;
 
     private WormCombatBurstController _combatBurstController;
-    private WormForwardMotionController _forwardMotionController;
+    private WormFrameSimulation _frameSimulation;
     private WormRailTargetResolver _railTargetResolver;
     private WormPathProgressState _pathProgress;
     private WormSegmentChainPresenter _segmentChainPresenter;
     private WormReviveSequence _reviveSequence;
     private WormSegmentChain<WormSegment> _segmentChain;
-    private WormSectionRollbackMotionController<WormSegment> _sectionRollbackMotionController;
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
     private float _waveTime;
 
@@ -84,23 +83,21 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     [Inject]
     public void Construct(
         WormCombatBurstController combatBurstController,
-        WormForwardMotionController forwardMotionController,
+        WormFrameSimulation frameSimulation,
         WormRailTargetResolver railTargetResolver,
         WormPathProgressState pathProgress,
         WormSegmentChainPresenter segmentChainPresenter,
         WormReviveSequence reviveSequence,
         WormSegmentChain<WormSegment> segmentChain,
-        WormSectionRollbackMotionController<WormSegment> sectionRollbackMotionController,
         WormSectionRollbackState<WormSegment> sectionRollbackState)
     {
         _combatBurstController = combatBurstController;
-        _forwardMotionController = forwardMotionController;
+        _frameSimulation = frameSimulation;
         _railTargetResolver = railTargetResolver;
         _pathProgress = pathProgress;
         _segmentChainPresenter = segmentChainPresenter;
         _reviveSequence = reviveSequence;
         _segmentChain = segmentChain;
-        _sectionRollbackMotionController = sectionRollbackMotionController;
         _sectionRollbackState = sectionRollbackState;
     }
 
@@ -163,25 +160,9 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         float time,
         float unscaledTime)
     {
-        if (_segmentChain.Count == 0 || _rail == null)
-            return;
-
         _waveTime = (_sectionRollbackState.IsActive || _reviveSequence.IsActive
             ? unscaledTime
             : time) * _waveSpeed;
-
-        if (_sectionRollbackState.IsActive)
-            AdvanceSectionRollback(unscaledDeltaTime);
-        else if (_reviveSequence.IsActive)
-            AdvanceReviveAnimation(unscaledDeltaTime);
-        else
-            MoveForward(deltaTime);
-
-        UpdateSegments();
-    }
-
-    private void MoveForward(float deltaTime)
-    {
         WormCombatBurstSettings burstSettings = new(
             _enableCombatSpeedBursts,
             _combatBurstSpeed,
@@ -197,13 +178,17 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _combatBurstDisableRailPointIndex,
             _combatBurstDisablePathProgress,
             burstSettings);
-        WormForwardMotionResult result = _forwardMotionController.Advance(
-            _pathProgress.HeadDistance,
-            deltaTime,
+        WormFrameContext context = new(
             _rail,
-            settings);
+            settings,
+            BuildSegmentLayout(),
+            _speed,
+            _sectionRollbackForwardSpeedMultiplier,
+            _rollbackSpeed,
+            deltaTime,
+            unscaledDeltaTime);
 
-        if (_pathProgress.Apply(result))
+        if (_frameSimulation.Tick(context))
             PathCompleted?.Invoke();
     }
 
@@ -231,7 +216,12 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
 
     private void UpdateSegments()
     {
-        WormSegmentChainLayout layout = new(
+        _frameSimulation.Render(_rail, BuildSegmentLayout());
+    }
+
+    private WormSegmentChainLayout BuildSegmentLayout()
+    {
+        return new WormSegmentChainLayout(
             _pathProgress.HeadDistance,
             _segmentSpacing,
             _tailVisualSpacingMultiplier,
@@ -243,12 +233,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _reviveSequence.VisualYOffset,
             _sectionRollbackState.IsActive,
             _reviveSequence.IsActive);
-
-        _segmentChainPresenter.Render(
-            _segmentChain.Segments,
-            _rail,
-            _sectionRollbackState.AnchoredDistances,
-            layout);
     }
 
     public int RemoveDestroyedSectionSegments(List<WormSegment> destroyed, out int firstRemovedIndex)
@@ -311,41 +295,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _segmentChain.Segments,
             onComplete);
         return true;
-    }
-
-    private void AdvanceSectionRollback(float deltaTime)
-    {
-        if (_rail == null)
-            return;
-
-        WormSectionRollbackMotionResult result = _sectionRollbackMotionController.Advance(
-            _pathProgress.HeadDistance,
-            _segmentChain.Segments,
-            _rail.TotalLength,
-            _speed,
-            _sectionRollbackForwardSpeedMultiplier,
-            _rollbackSpeed,
-            deltaTime);
-        _pathProgress.SetHeadDistance(result.HeadDistance);
-
-        if (!result.Completed)
-            return;
-
-        if (_pathProgress.TryComplete(_pathProgress.HeadDistance >= _rail.TotalLength))
-            PathCompleted?.Invoke();
-
-        _sectionRollbackState.Complete();
-    }
-
-    private void AdvanceReviveAnimation(float deltaTime)
-    {
-        WormReviveAnimationFrame frame = _reviveSequence.Advance(deltaTime);
-        _pathProgress.SetHeadDistance(frame.HeadDistance);
-
-        if (!frame.Completed)
-            return;
-
-        _reviveSequence.CompleteAfterFinalRender(UpdateSegments);
     }
 
     private WormReviveAnimationSettings BuildReviveAnimationSettings()

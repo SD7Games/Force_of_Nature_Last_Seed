@@ -83,6 +83,7 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(sceneContainer.Resolve<WormCocoonShakeClock>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormSpawnLifecycle>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormForwardMotionController>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormFrameSimulation>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormFaceBurstPresenter>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormPressureDirector>(), Is.Not.Null);
         }

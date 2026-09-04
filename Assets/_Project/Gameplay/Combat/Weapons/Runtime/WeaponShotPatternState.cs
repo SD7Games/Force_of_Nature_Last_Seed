@@ -12,32 +12,31 @@ public sealed class WeaponShotPatternState
 
     private readonly List<ShotModifierData> _modifiers = new();
     private int _maxParallelProjectiles = DefaultMaxParallelProjectiles;
-    private int _maxSalvoExtraShots = DefaultMaxSalvoExtraShots;
+    private SalvoProgressionState _salvo = new(DefaultMaxSalvoExtraShots, MaxSalvoExtraShots);
 
     public int ParallelProjectileCount { get; private set; } = 1;
     public float ParallelSpacing { get; private set; } = 0.5f;
-    public int SalvoExtraShots { get; private set; }
+    public int SalvoExtraShots => _salvo.ExtraShots;
     public float SalvoInterval { get; private set; } = 0.2f;
     public IReadOnlyList<ShotModifierData> Modifiers => _modifiers;
 
     public bool CanAddParallelProjectiles => ParallelProjectileCount < _maxParallelProjectiles;
-    public bool CanAddSalvoShots => SalvoExtraShots < _maxSalvoExtraShots;
+    public bool CanAddSalvoShots => _salvo.CanAdd;
 
     public void Reset()
     {
         _modifiers.Clear();
         ParallelProjectileCount = 1;
         ParallelSpacing = 0.5f;
-        SalvoExtraShots = 0;
+        _salvo.Reset();
         SalvoInterval = 0.2f;
     }
 
     public void SetLimits(int maxParallelProjectiles, int maxSalvoExtraShots)
     {
         _maxParallelProjectiles = Mathf.Clamp(maxParallelProjectiles, 1, MaxParallelProjectiles);
-        _maxSalvoExtraShots = Mathf.Clamp(maxSalvoExtraShots, 0, MaxSalvoExtraShots);
+        _salvo.SetLimit(maxSalvoExtraShots);
         ParallelProjectileCount = Mathf.Min(ParallelProjectileCount, _maxParallelProjectiles);
-        SalvoExtraShots = Mathf.Min(SalvoExtraShots, _maxSalvoExtraShots);
     }
 
     public bool CanApplyParallelProjectiles(int bonus, int limitAfterApply)
@@ -62,16 +61,12 @@ public sealed class WeaponShotPatternState
         if (extraShots <= 0)
             return false;
 
-        int limit = Mathf.Clamp(
-            Mathf.Max(_maxSalvoExtraShots, limitAfterApply),
-            0,
-            MaxSalvoExtraShots);
-        return SalvoExtraShots + extraShots <= limit;
+        return _salvo.CanApply(extraShots, limitAfterApply);
     }
 
     public bool CanApplySalvoShots(int extraShots)
     {
-        return extraShots > 0 && SalvoExtraShots + extraShots <= _maxSalvoExtraShots;
+        return _salvo.CanApply(extraShots);
     }
 
     public int AddParallelProjectiles(int bonus, float spacing)
@@ -87,8 +82,7 @@ public sealed class WeaponShotPatternState
 
     public int AddSalvoShots(int extraShots, float interval)
     {
-        int accepted = Mathf.Min(Mathf.Max(0, extraShots), _maxSalvoExtraShots - SalvoExtraShots);
-        SalvoExtraShots += Mathf.Max(0, accepted);
+        int accepted = _salvo.Add(extraShots);
 
         if (accepted > 0)
             SalvoInterval = Mathf.Max(0.01f, interval);
@@ -106,10 +100,7 @@ public sealed class WeaponShotPatternState
 
     public void ExpandSalvoLimit(int limit)
     {
-        _maxSalvoExtraShots = Mathf.Clamp(
-            Mathf.Max(_maxSalvoExtraShots, limit),
-            0,
-            MaxSalvoExtraShots);
+        _salvo.ExpandLimit(limit);
     }
 
     public bool AddModifier(ShotModifierData modifier)
@@ -138,10 +129,9 @@ public sealed class WeaponShotPatternState
         WeaponShotPatternState clone = new()
         {
             _maxParallelProjectiles = _maxParallelProjectiles,
-            _maxSalvoExtraShots = _maxSalvoExtraShots,
+            _salvo = _salvo.Clone(),
             ParallelProjectileCount = ParallelProjectileCount,
             ParallelSpacing = ParallelSpacing,
-            SalvoExtraShots = SalvoExtraShots,
             SalvoInterval = SalvoInterval
         };
 

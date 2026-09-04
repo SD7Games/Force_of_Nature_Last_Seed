@@ -16,7 +16,7 @@ public sealed class AcaciaThornRuntimeState
     public const float MaxCriticalDamageMultiplier = 100f;
 
     private float _maxDamageMultiplier = MaxDamageMultiplier;
-    private int _maxSalvoExtraShots = DefaultMaxSalvoExtraShots;
+    private SalvoProgressionState _salvo = new(DefaultMaxSalvoExtraShots, MaxSalvoExtraShots);
     private float _maxCriticalChance = MaxCriticalChance;
     private float _maxCriticalDamageMultiplier = MaxCriticalDamageMultiplier;
 
@@ -24,7 +24,7 @@ public sealed class AcaciaThornRuntimeState
     public int BaseDamage { get; private set; } = 1;
     public float DamageMultiplier { get; private set; } = 1f;
     public float FireRateBonus { get; private set; }
-    public int SalvoExtraShots { get; private set; }
+    public int SalvoExtraShots => _salvo.ExtraShots;
     public float ProjectileSpeedBonus { get; private set; }
     public float CriticalChance { get; private set; }
     public float CriticalDamageMultiplier { get; private set; } = 2f;
@@ -39,7 +39,7 @@ public sealed class AcaciaThornRuntimeState
         BaseDamage = Mathf.Max(1, baseDamage);
         DamageMultiplier = 1f;
         FireRateBonus = 0f;
-        SalvoExtraShots = 0;
+        _salvo.Reset();
         ProjectileSpeedBonus = 0f;
         CriticalChance = 0f;
         CriticalDamageMultiplier = 2f;
@@ -64,10 +64,7 @@ public sealed class AcaciaThornRuntimeState
             0f,
             DefaultMaxFireRateBonus);
 
-        _maxSalvoExtraShots = Mathf.Clamp(
-            maxSalvoExtraShots,
-            0,
-            MaxSalvoExtraShots);
+        _salvo.SetLimit(maxSalvoExtraShots);
 
         MaxProjectileSpeedBonus = Mathf.Clamp(
             maxProjectileSpeedBonus,
@@ -91,7 +88,6 @@ public sealed class AcaciaThornRuntimeState
 
         DamageMultiplier = Mathf.Min(DamageMultiplier, _maxDamageMultiplier);
         FireRateBonus = Mathf.Min(FireRateBonus, MaxFireRateBonus);
-        SalvoExtraShots = Mathf.Min(SalvoExtraShots, _maxSalvoExtraShots);
         ProjectileSpeedBonus = Mathf.Min(ProjectileSpeedBonus, MaxProjectileSpeedBonus);
         CriticalChance = Mathf.Min(CriticalChance, _maxCriticalChance);
         CriticalDamageMultiplier = Mathf.Min(CriticalDamageMultiplier, _maxCriticalDamageMultiplier);
@@ -115,22 +111,14 @@ public sealed class AcaciaThornRuntimeState
 
     public bool CanApplySalvoShots(int extraShots)
     {
-        return CanApplySalvoShots(extraShots, _maxSalvoExtraShots);
+        return IsUnlocked && _salvo.CanApply(extraShots);
     }
 
     public bool CanApplySalvoShots(
         int extraShots,
         int maxSalvoExtraShotsAfterApply)
     {
-        if (!IsUnlocked || extraShots <= 0)
-            return false;
-
-        int targetLimit = Mathf.Clamp(
-            Mathf.Max(_maxSalvoExtraShots, maxSalvoExtraShotsAfterApply),
-            0,
-            MaxSalvoExtraShots);
-
-        return SalvoExtraShots + extraShots <= targetLimit;
+        return IsUnlocked && _salvo.CanApply(extraShots, maxSalvoExtraShotsAfterApply);
     }
 
     public bool CanApplyProjectileSpeedBonus(float bonus)
@@ -193,20 +181,12 @@ public sealed class AcaciaThornRuntimeState
 
     public int AddSalvoShots(int extraShots)
     {
-        int accepted = Mathf.Min(
-            Mathf.Max(0, extraShots),
-            _maxSalvoExtraShots - SalvoExtraShots);
-
-        SalvoExtraShots += Mathf.Max(0, accepted);
-        return accepted;
+        return _salvo.Add(extraShots);
     }
 
     public void ExpandSalvoExtraShotLimit(int maxSalvoExtraShots)
     {
-        _maxSalvoExtraShots = Mathf.Clamp(
-            Mathf.Max(_maxSalvoExtraShots, maxSalvoExtraShots),
-            0,
-            MaxSalvoExtraShots);
+        _salvo.ExpandLimit(maxSalvoExtraShots);
     }
 
     public float AddProjectileSpeedBonus(float bonus)
@@ -259,14 +239,13 @@ public sealed class AcaciaThornRuntimeState
         return new AcaciaThornRuntimeState
         {
             _maxDamageMultiplier = _maxDamageMultiplier,
-            _maxSalvoExtraShots = _maxSalvoExtraShots,
+            _salvo = _salvo.Clone(),
             _maxCriticalChance = _maxCriticalChance,
             _maxCriticalDamageMultiplier = _maxCriticalDamageMultiplier,
             IsUnlocked = IsUnlocked,
             BaseDamage = BaseDamage,
             DamageMultiplier = DamageMultiplier,
             FireRateBonus = FireRateBonus,
-            SalvoExtraShots = SalvoExtraShots,
             ProjectileSpeedBonus = ProjectileSpeedBonus,
             CriticalChance = CriticalChance,
             CriticalDamageMultiplier = CriticalDamageMultiplier,

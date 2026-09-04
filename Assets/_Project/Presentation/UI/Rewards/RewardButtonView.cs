@@ -33,13 +33,8 @@ public sealed class RewardButtonView : MonoBehaviour
     [SerializeField] private string _weaponUnlockValueFallback = "NEW";
 
     private RewardChoiceData _data;
-    private RectTransform _rectTransform;
-    private RectTransform _iconRectTransform;
-    private Vector2 _baseAnchoredPosition;
-    private Vector3 _baseScale;
-    private Vector3 _baseIconScale;
-    private bool _hasCachedTransformState;
     private RewardButtonContentPresenter _contentPresenter;
+    private RewardButtonAnimator _animator;
 
     private event Action<RewardChoiceData> _onClick;
 
@@ -47,16 +42,14 @@ public sealed class RewardButtonView : MonoBehaviour
     {
         get
         {
-            if (_rectTransform == null)
-                _rectTransform = transform as RectTransform;
-
-            return _rectTransform;
+            EnsureControllers();
+            return _animator.Root;
         }
     }
 
     private void Awake()
     {
-        CacheTransformState();
+        EnsureControllers();
     }
 
     public void Bind(
@@ -65,19 +58,13 @@ public sealed class RewardButtonView : MonoBehaviour
         Action<RewardChoiceData> onClick,
         bool interactable = true)
     {
-        CacheTransformState();
+        EnsureControllers();
 
         _data = data;
         _onClick = onClick;
 
-        EnsureContentPresenter();
         _contentPresenter.Apply(data, presentation);
-
-        if (_targetIcon != null)
-        {
-            _iconRectTransform = _targetIcon.rectTransform;
-            _baseIconScale = _iconRectTransform.localScale;
-        }
+        _animator.CaptureIconScale();
 
         if (_button == null)
             return;
@@ -100,69 +87,26 @@ public sealed class RewardButtonView : MonoBehaviour
 
     public void KillAnimations()
     {
-        if (RectTransform != null)
-            RectTransform.DOKill();
-
-        if (_canvasGroup != null)
-            _canvasGroup.DOKill();
-
-        if (_iconRectTransform != null)
-            _iconRectTransform.DOKill();
+        EnsureControllers();
+        _animator.Kill();
     }
 
     public void ResetAnimatedState()
     {
-        CacheTransformState();
-        KillAnimations();
-
-        if (RectTransform != null)
-        {
-            RectTransform.anchoredPosition = _baseAnchoredPosition;
-            RectTransform.localScale = _baseScale;
-        }
-
-        if (_iconRectTransform != null)
-            _iconRectTransform.localScale = _baseIconScale;
-
-        SetCanvasAlpha(1f);
+        EnsureControllers();
+        _animator.Reset();
     }
 
     public void PrepareEnter(float yOffset, float startScaleMultiplier)
     {
-        CacheTransformState();
-        KillAnimations();
-
-        if (RectTransform != null)
-        {
-            RectTransform.anchoredPosition = _baseAnchoredPosition + new Vector2(0f, yOffset);
-            RectTransform.localScale = _baseScale * startScaleMultiplier;
-        }
-
-        if (_iconRectTransform != null)
-            _iconRectTransform.localScale = _baseIconScale * 0.86f;
-
-        SetCanvasAlpha(0f);
+        EnsureControllers();
+        _animator.PrepareEnter(yOffset, startScaleMultiplier);
     }
 
     public Tween CreateEnterTween(float duration, Ease moveEase, Ease scaleEase)
     {
-        CacheTransformState();
-
-        Sequence sequence = DOTween.Sequence();
-
-        if (RectTransform != null)
-        {
-            sequence.Join(RectTransform.DOAnchorPos(_baseAnchoredPosition, duration).SetEase(moveEase));
-            sequence.Join(RectTransform.DOScale(_baseScale, duration).SetEase(scaleEase));
-        }
-
-        if (_canvasGroup != null)
-            sequence.Join(_canvasGroup.DOFade(1f, duration * 0.72f).SetEase(Ease.OutSine));
-
-        if (_iconRectTransform != null)
-            sequence.Join(_iconRectTransform.DOScale(_baseIconScale, duration * 0.78f).SetEase(Ease.OutBack));
-
-        return sequence;
+        EnsureControllers();
+        return _animator.CreateEnter(duration, moveEase, scaleEase);
     }
 
     public Tween CreateRefreshTween(
@@ -175,62 +119,15 @@ public sealed class RewardButtonView : MonoBehaviour
         Ease outEase,
         Ease inEase)
     {
-        CacheTransformState();
-        KillAnimations();
+        EnsureControllers();
         SetInteractable(false);
-
-        Sequence sequence = DOTween.Sequence();
-
-        if (delay > 0f)
-            sequence.AppendInterval(delay);
-
-        if (RectTransform != null)
-        {
-            sequence.Append(
-                RectTransform.DOShakeAnchorPos(
-                    outDuration,
-                    new Vector2(0f, 10f),
-                    8,
-                    45f,
-                    false,
-                    true));
-            sequence.Join(RectTransform.DOScale(_baseScale * 0.96f, outDuration).SetEase(outEase));
-        }
-        else
-        {
-            sequence.AppendInterval(outDuration);
-        }
-
-        if (_canvasGroup != null)
-            sequence.Join(_canvasGroup.DOFade(0f, outDuration).SetEase(Ease.InSine));
-
-        sequence.AppendCallback(() =>
-        {
-            Bind(data, presentation, onClick, false);
-            SetCanvasAlpha(0f);
-
-            if (RectTransform != null)
-            {
-                RectTransform.anchoredPosition = _baseAnchoredPosition;
-                RectTransform.localScale = _baseScale * 0.96f;
-            }
-
-            if (_iconRectTransform != null)
-                _iconRectTransform.localScale = _baseIconScale * 0.62f;
-        });
-
-        if (RectTransform != null)
-            sequence.Append(RectTransform.DOScale(_baseScale, inDuration).SetEase(inEase));
-        else
-            sequence.AppendInterval(inDuration);
-
-        if (_canvasGroup != null)
-            sequence.Join(_canvasGroup.DOFade(1f, inDuration * 0.84f).SetEase(Ease.OutSine));
-
-        if (_iconRectTransform != null)
-            sequence.Join(_iconRectTransform.DOScale(_baseIconScale, inDuration).SetEase(Ease.OutBack));
-
-        return sequence;
+        return _animator.CreateRefresh(
+            () => Bind(data, presentation, onClick, false),
+            delay,
+            outDuration,
+            inDuration,
+            outEase,
+            inEase);
     }
 
     public Tween CreateSelectedDismissTween(
@@ -243,49 +140,17 @@ public sealed class RewardButtonView : MonoBehaviour
         Ease focusEase,
         Ease exitEase)
     {
-        CacheTransformState();
-        KillAnimations();
+        EnsureControllers();
         SetInteractable(false);
-
-        Sequence sequence = DOTween.Sequence();
-
-        float clampedGrowDuration = Mathf.Max(0f, growDuration);
-        float clampedFocusDuration = Mathf.Max(0f, focusDuration);
-
-        if (RectTransform != null && clampedGrowDuration > 0f)
-        {
-            sequence.Append(RectTransform.DOScale(_baseScale * focusScaleMultiplier, clampedGrowDuration).SetEase(focusEase));
-
-            if (_iconRectTransform != null)
-                sequence.Join(_iconRectTransform.DOScale(_baseIconScale * focusScaleMultiplier, clampedGrowDuration).SetEase(focusEase));
-        }
-        else
-        {
-            sequence.AppendInterval(clampedGrowDuration);
-        }
-
-        float holdDuration = Mathf.Max(0f, clampedFocusDuration - clampedGrowDuration);
-
-        if (holdDuration > 0f)
-            sequence.AppendInterval(holdDuration);
-
-        if (RectTransform != null)
-        {
-            sequence.Append(RectTransform.DOAnchorPos(_baseAnchoredPosition + new Vector2(0f, exitYOffset), exitDuration).SetEase(exitEase));
-            sequence.Join(RectTransform.DOScale(_baseScale * exitScaleMultiplier, exitDuration).SetEase(exitEase));
-        }
-        else
-        {
-            sequence.AppendInterval(exitDuration);
-        }
-
-        if (_canvasGroup != null)
-            sequence.Join(_canvasGroup.DOFade(0f, exitDuration).SetEase(Ease.InSine));
-
-        if (_iconRectTransform != null)
-            sequence.Join(_iconRectTransform.DOScale(_baseIconScale * exitScaleMultiplier, exitDuration).SetEase(exitEase));
-
-        return sequence;
+        return _animator.CreateSelectedDismiss(
+            focusDuration,
+            growDuration,
+            exitDuration,
+            exitYOffset,
+            focusScaleMultiplier,
+            exitScaleMultiplier,
+            focusEase,
+            exitEase);
     }
 
     public Tween CreateUnselectedDismissTween(
@@ -294,32 +159,16 @@ public sealed class RewardButtonView : MonoBehaviour
         float exitScaleMultiplier,
         Ease exitEase)
     {
-        CacheTransformState();
-        KillAnimations();
+        EnsureControllers();
         SetInteractable(false);
-
-        Sequence sequence = DOTween.Sequence();
-
-        if (RectTransform != null)
-        {
-            sequence.Join(RectTransform.DOAnchorPos(_baseAnchoredPosition + new Vector2(0f, exitYOffset), duration).SetEase(exitEase));
-            sequence.Join(RectTransform.DOScale(_baseScale * exitScaleMultiplier, duration).SetEase(exitEase));
-        }
-        else
-        {
-            sequence.AppendInterval(duration);
-        }
-
-        if (_canvasGroup != null)
-            sequence.Join(_canvasGroup.DOFade(0f, duration).SetEase(Ease.InSine));
-
-        if (_iconRectTransform != null)
-            sequence.Join(_iconRectTransform.DOScale(_baseIconScale * exitScaleMultiplier, duration).SetEase(exitEase));
-
-        return sequence;
+        return _animator.CreateUnselectedDismiss(
+            duration,
+            exitYOffset,
+            exitScaleMultiplier,
+            exitEase);
     }
 
-    private void EnsureContentPresenter()
+    private void EnsureControllers()
     {
         if (_contentPresenter != null)
             return;
@@ -343,36 +192,10 @@ public sealed class RewardButtonView : MonoBehaviour
             _legendaryVisual,
             _weaponUnlockVisual,
             style);
-    }
-
-    private void CacheTransformState()
-    {
-        if (_hasCachedTransformState)
-            return;
-
-        if (RectTransform != null)
-        {
-            _baseAnchoredPosition = RectTransform.anchoredPosition;
-            _baseScale = RectTransform.localScale;
-        }
-
-        if (_targetIcon != null)
-        {
-            _iconRectTransform = _targetIcon.rectTransform;
-            _baseIconScale = _iconRectTransform.localScale;
-        }
-        else
-        {
-            _baseIconScale = Vector3.one;
-        }
-
-        _hasCachedTransformState = true;
-    }
-
-    private void SetCanvasAlpha(float alpha)
-    {
-        if (_canvasGroup != null)
-            _canvasGroup.alpha = alpha;
+        _animator = new RewardButtonAnimator(
+            transform as RectTransform,
+            _canvasGroup,
+            _targetIcon != null ? _targetIcon.rectTransform : null);
     }
 
     private void OnClick()

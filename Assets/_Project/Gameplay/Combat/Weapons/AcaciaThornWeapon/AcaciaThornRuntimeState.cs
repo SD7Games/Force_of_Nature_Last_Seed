@@ -19,8 +19,9 @@ public sealed class AcaciaThornRuntimeState
     private SalvoProgressionState _salvo = new(DefaultMaxSalvoExtraShots, MaxSalvoExtraShots);
     private CappedBonusState _fireRateBonus = new(DefaultMaxFireRateBonus);
     private CappedBonusState _projectileSpeedBonus = new(DefaultMaxProjectileSpeedBonus);
-    private float _maxCriticalChance = MaxCriticalChance;
-    private float _maxCriticalDamageMultiplier = MaxCriticalDamageMultiplier;
+    private CriticalHitProgressionState _criticalHit = new(
+        MaxCriticalChance,
+        MaxCriticalDamageMultiplier);
 
     public bool IsUnlocked { get; private set; }
     public int BaseDamage { get; private set; } = 1;
@@ -28,8 +29,8 @@ public sealed class AcaciaThornRuntimeState
     public float FireRateBonus => _fireRateBonus.Value;
     public int SalvoExtraShots => _salvo.ExtraShots;
     public float ProjectileSpeedBonus => _projectileSpeedBonus.Value;
-    public float CriticalChance { get; private set; }
-    public float CriticalDamageMultiplier { get; private set; } = 2f;
+    public float CriticalChance => _criticalHit.Chance;
+    public float CriticalDamageMultiplier => _criticalHit.DamageMultiplier;
     public float MaxFireRateBonus => _fireRateBonus.Limit;
     public float MaxProjectileSpeedBonus => _projectileSpeedBonus.Limit;
 
@@ -43,8 +44,7 @@ public sealed class AcaciaThornRuntimeState
         _fireRateBonus.Reset();
         _salvo.Reset();
         _projectileSpeedBonus.Reset();
-        CriticalChance = 0f;
-        CriticalDamageMultiplier = 2f;
+        _criticalHit.Reset();
     }
 
     public void SetProgressionLimits(
@@ -73,24 +73,15 @@ public sealed class AcaciaThornRuntimeState
             0f,
             DefaultMaxProjectileSpeedBonus));
 
-        _maxCriticalChance = Mathf.Clamp(
-            maxCriticalChance,
-            0f,
-            MaxCriticalChance);
-
-        _maxCriticalDamageMultiplier = Mathf.Clamp(
-            maxCriticalDamageMultiplier,
-            1f,
-            MaxCriticalDamageMultiplier);
-
-        CriticalDamageMultiplier = Mathf.Clamp(
-            Mathf.Max(1f, criticalDamageMultiplier),
-            1f,
-            _maxCriticalDamageMultiplier);
+        _criticalHit.SetLimits(
+            Mathf.Clamp(maxCriticalChance, 0f, MaxCriticalChance),
+            Mathf.Clamp(
+                maxCriticalDamageMultiplier,
+                1f,
+                MaxCriticalDamageMultiplier));
+        _criticalHit.SetDamageMultiplier(criticalDamageMultiplier);
 
         DamageMultiplier = Mathf.Min(DamageMultiplier, _maxDamageMultiplier);
-        CriticalChance = Mathf.Min(CriticalChance, _maxCriticalChance);
-        CriticalDamageMultiplier = Mathf.Min(CriticalDamageMultiplier, _maxCriticalDamageMultiplier);
     }
 
     public bool CanApplyDamageMultiplier(float multiplier)
@@ -125,18 +116,14 @@ public sealed class AcaciaThornRuntimeState
 
     public bool CanApplyCriticalChance(float chanceBonus)
     {
-        if (!IsUnlocked || chanceBonus <= 0f)
-            return false;
-
-        return CriticalChance + chanceBonus <= _maxCriticalChance + FloatEpsilon;
+        return IsUnlocked && _criticalHit.CanApplyChance(chanceBonus);
     }
 
     public bool CanApplyCriticalDamageBonus(float damageBonus)
     {
-        if (!IsUnlocked || CriticalChance <= 0f || damageBonus <= 0f)
-            return false;
-
-        return CriticalDamageMultiplier + damageBonus <= _maxCriticalDamageMultiplier + FloatEpsilon;
+        return IsUnlocked
+            && CriticalChance > 0f
+            && _criticalHit.CanApplyDamage(damageBonus);
     }
 
     public void Unlock(int baseDamage)
@@ -185,26 +172,12 @@ public sealed class AcaciaThornRuntimeState
 
     public float AddCriticalChance(float chanceBonus)
     {
-        float accepted = Mathf.Min(
-            Mathf.Max(0f, chanceBonus),
-            _maxCriticalChance - CriticalChance);
-
-        CriticalChance = Mathf.Clamp(
-            CriticalChance + Mathf.Max(0f, accepted),
-            0f,
-            _maxCriticalChance);
-
-        return accepted;
+        return _criticalHit.AddChance(chanceBonus);
     }
 
     public float AddCriticalDamageBonus(float damageBonus)
     {
-        float accepted = Mathf.Min(
-            Mathf.Max(0f, damageBonus),
-            _maxCriticalDamageMultiplier - CriticalDamageMultiplier);
-
-        CriticalDamageMultiplier += Mathf.Max(0f, accepted);
-        return accepted;
+        return _criticalHit.AddDamage(damageBonus);
     }
 
     public static int ClampDamage(double rawDamage)
@@ -220,13 +193,10 @@ public sealed class AcaciaThornRuntimeState
             _salvo = _salvo.Clone(),
             _fireRateBonus = _fireRateBonus.Clone(),
             _projectileSpeedBonus = _projectileSpeedBonus.Clone(),
-            _maxCriticalChance = _maxCriticalChance,
-            _maxCriticalDamageMultiplier = _maxCriticalDamageMultiplier,
+            _criticalHit = _criticalHit.Clone(),
             IsUnlocked = IsUnlocked,
             BaseDamage = BaseDamage,
             DamageMultiplier = DamageMultiplier,
-            CriticalChance = CriticalChance,
-            CriticalDamageMultiplier = CriticalDamageMultiplier,
         };
     }
 }

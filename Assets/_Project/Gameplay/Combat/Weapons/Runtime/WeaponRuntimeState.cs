@@ -26,16 +26,17 @@ public sealed class WeaponRuntimeState
     private WeaponShotPatternState _shotPattern = new();
     private CappedBonusState _fireRateBonus = new(DefaultMaxFireRateBonus);
     private CappedBonusState _projectileSpeedBonus = new(DefaultMaxProjectileSpeedBonus);
+    private CriticalHitProgressionState _criticalHit = new(
+        MaxCriticalChance,
+        MaxCriticalDamageMultiplier);
 
     private float _maxDamageMultiplier = MaxDamageMultiplier;
-    private float _maxCriticalDamageMultiplier = MaxCriticalDamageMultiplier;
     private int _maxPenetrationBonus = MaxPenetrationBonus;
-    private float _maxCriticalChance = MaxCriticalChance;
 
     public float DamageMultiplier { get; private set; } = 1f;
     public float FireRateBonus => _fireRateBonus.Value;
-    public float CriticalChance { get; private set; }
-    public float CriticalDamageMultiplier { get; private set; } = 2f;
+    public float CriticalChance => _criticalHit.Chance;
+    public float CriticalDamageMultiplier => _criticalHit.DamageMultiplier;
     public int PenetrationBonus { get; private set; }
     public int ParallelProjectileCount => _shotPattern.ParallelProjectileCount;
     public float ParallelSpacing => _shotPattern.ParallelSpacing;
@@ -49,8 +50,8 @@ public sealed class WeaponRuntimeState
 
     public bool CanAddDamageMultiplier => DamageMultiplier < _maxDamageMultiplier;
     public bool CanAddFireRateBonus => _fireRateBonus.CanAdd;
-    public bool CanAddCriticalChance => CriticalChance < _maxCriticalChance;
-    public bool CanAddCriticalDamage => CriticalDamageMultiplier < _maxCriticalDamageMultiplier;
+    public bool CanAddCriticalChance => _criticalHit.CanAddChance;
+    public bool CanAddCriticalDamage => _criticalHit.CanAddDamage;
     public bool CanAddPenetration => PenetrationBonus < _maxPenetrationBonus;
     public bool CanAddParallelProjectiles => _shotPattern.CanAddParallelProjectiles;
     public bool CanAddSalvoShots => _shotPattern.CanAddSalvoShots;
@@ -61,8 +62,7 @@ public sealed class WeaponRuntimeState
         _shotPattern.Reset();
         DamageMultiplier = 1f;
         _fireRateBonus.Reset();
-        CriticalChance = 0f;
-        CriticalDamageMultiplier = 2f;
+        _criticalHit.Reset();
         PenetrationBonus = 0;
         _projectileSpeedBonus.Reset();
     }
@@ -87,18 +87,12 @@ public sealed class WeaponRuntimeState
 
     public bool CanApplyCriticalChance(float chanceBonus)
     {
-        if (chanceBonus <= 0f)
-            return false;
-
-        return CriticalChance + chanceBonus <= _maxCriticalChance + FloatEpsilon;
+        return _criticalHit.CanApplyChance(chanceBonus);
     }
 
     public bool CanApplyCriticalDamageBonus(float damageBonus)
     {
-        if (damageBonus <= 0f)
-            return false;
-
-        return CriticalDamageMultiplier + damageBonus <= _maxCriticalDamageMultiplier + FloatEpsilon;
+        return _criticalHit.CanApplyDamage(damageBonus);
     }
 
     public bool CanApplyPenetrationBonus(int bonus)
@@ -161,15 +155,12 @@ public sealed class WeaponRuntimeState
             1f,
             MaxDamageMultiplier);
 
-        _maxCriticalChance = UnityEngine.Mathf.Clamp(
-            maxCriticalChance,
-            0f,
-            MaxCriticalChance);
-
-        _maxCriticalDamageMultiplier = UnityEngine.Mathf.Clamp(
-            maxCriticalDamageMultiplier,
-            1f,
-            MaxCriticalDamageMultiplier);
+        _criticalHit.SetLimits(
+            UnityEngine.Mathf.Clamp(maxCriticalChance, 0f, MaxCriticalChance),
+            UnityEngine.Mathf.Clamp(
+                maxCriticalDamageMultiplier,
+                1f,
+                MaxCriticalDamageMultiplier));
 
         _maxPenetrationBonus = UnityEngine.Mathf.Clamp(
             maxPenetrationBonus,
@@ -179,11 +170,6 @@ public sealed class WeaponRuntimeState
         _shotPattern.SetLimits(maxParallelProjectiles, maxSalvoExtraShots);
 
         DamageMultiplier = UnityEngine.Mathf.Min(DamageMultiplier, _maxDamageMultiplier);
-        CriticalChance = UnityEngine.Mathf.Min(CriticalChance, _maxCriticalChance);
-        CriticalDamageMultiplier = UnityEngine.Mathf.Min(
-            CriticalDamageMultiplier,
-            _maxCriticalDamageMultiplier);
-
         PenetrationBonus = UnityEngine.Mathf.Min(PenetrationBonus, _maxPenetrationBonus);
     }
 
@@ -209,31 +195,12 @@ public sealed class WeaponRuntimeState
 
     public float AddCriticalChance(float chanceBonus, float minimumCriticalDamageMultiplier)
     {
-        float accepted = UnityEngine.Mathf.Min(
-            UnityEngine.Mathf.Max(0f, chanceBonus),
-            _maxCriticalChance - CriticalChance);
-
-        CriticalChance = UnityEngine.Mathf.Clamp(
-            CriticalChance + UnityEngine.Mathf.Max(0f, accepted),
-            0f,
-            _maxCriticalChance);
-
-        CriticalDamageMultiplier = UnityEngine.Mathf.Clamp(
-            UnityEngine.Mathf.Max(CriticalDamageMultiplier, minimumCriticalDamageMultiplier),
-            1f,
-            _maxCriticalDamageMultiplier);
-
-        return accepted;
+        return _criticalHit.AddChance(chanceBonus, minimumCriticalDamageMultiplier);
     }
 
     public float AddCriticalDamageBonus(float damageBonus)
     {
-        float accepted = UnityEngine.Mathf.Min(
-            UnityEngine.Mathf.Max(0f, damageBonus),
-            _maxCriticalDamageMultiplier - CriticalDamageMultiplier);
-
-        CriticalDamageMultiplier += UnityEngine.Mathf.Max(0f, accepted);
-        return accepted;
+        return _criticalHit.AddDamage(damageBonus);
     }
 
     public int AddPenetration(int bonus)
@@ -286,15 +253,12 @@ public sealed class WeaponRuntimeState
         WeaponRuntimeState clone = new()
         {
             _maxDamageMultiplier = _maxDamageMultiplier,
-            _maxCriticalDamageMultiplier = _maxCriticalDamageMultiplier,
             _maxPenetrationBonus = _maxPenetrationBonus,
-            _maxCriticalChance = _maxCriticalChance,
+            _criticalHit = _criticalHit.Clone(),
             _shotPattern = _shotPattern.Clone(),
             _fireRateBonus = _fireRateBonus.Clone(),
             _projectileSpeedBonus = _projectileSpeedBonus.Clone(),
             DamageMultiplier = DamageMultiplier,
-            CriticalChance = CriticalChance,
-            CriticalDamageMultiplier = CriticalDamageMultiplier,
             PenetrationBonus = PenetrationBonus,
         };
 

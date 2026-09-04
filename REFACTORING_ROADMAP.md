@@ -1,5 +1,8 @@
 # Last Seed Survivor — Architecture Refactoring Roadmap
 
+The completed history below is retained for traceability. The project-wide audit and
+next prioritized execution plan are maintained in `NEXT_ARCHITECTURE_ROADMAP.md`.
+
 ## Non-negotiable rules
 
 - Every iteration must compile and preserve a playable runtime path.

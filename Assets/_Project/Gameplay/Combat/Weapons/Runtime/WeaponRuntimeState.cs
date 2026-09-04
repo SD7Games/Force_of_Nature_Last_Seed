@@ -29,11 +29,11 @@ public sealed class WeaponRuntimeState
     private CriticalHitProgressionState _criticalHit = new(
         MaxCriticalChance,
         MaxCriticalDamageMultiplier);
+    private DamageMultiplierProgressionState _damageMultiplier = new(MaxDamageMultiplier);
 
-    private float _maxDamageMultiplier = MaxDamageMultiplier;
     private int _maxPenetrationBonus = MaxPenetrationBonus;
 
-    public float DamageMultiplier { get; private set; } = 1f;
+    public float DamageMultiplier => _damageMultiplier.Value;
     public float FireRateBonus => _fireRateBonus.Value;
     public float CriticalChance => _criticalHit.Chance;
     public float CriticalDamageMultiplier => _criticalHit.DamageMultiplier;
@@ -48,7 +48,7 @@ public sealed class WeaponRuntimeState
     public System.Collections.Generic.IReadOnlyList<ShotModifierData> ShotModifiers =>
         _shotPattern.Modifiers;
 
-    public bool CanAddDamageMultiplier => DamageMultiplier < _maxDamageMultiplier;
+    public bool CanAddDamageMultiplier => _damageMultiplier.CanAdd;
     public bool CanAddFireRateBonus => _fireRateBonus.CanAdd;
     public bool CanAddCriticalChance => _criticalHit.CanAddChance;
     public bool CanAddCriticalDamage => _criticalHit.CanAddDamage;
@@ -60,7 +60,7 @@ public sealed class WeaponRuntimeState
     public void ResetProgression()
     {
         _shotPattern.Reset();
-        DamageMultiplier = 1f;
+        _damageMultiplier.Reset();
         _fireRateBonus.Reset();
         _criticalHit.Reset();
         PenetrationBonus = 0;
@@ -69,10 +69,7 @@ public sealed class WeaponRuntimeState
 
     public bool CanApplyDamageMultiplier(float multiplier)
     {
-        if (multiplier <= 1f)
-            return false;
-
-        return DamageMultiplier * multiplier <= _maxDamageMultiplier + FloatEpsilon;
+        return _damageMultiplier.CanApply(multiplier);
     }
 
     public bool CanApplyFireRateBonus(float bonus)
@@ -131,15 +128,7 @@ public sealed class WeaponRuntimeState
 
     public float ApplyDamageMultiplier(float multiplier)
     {
-        if (multiplier <= 1f)
-            return 0f;
-
-        float previousMultiplier = DamageMultiplier;
-        DamageMultiplier = UnityEngine.Mathf.Min(
-            DamageMultiplier * multiplier,
-            _maxDamageMultiplier);
-
-        return DamageMultiplier - previousMultiplier;
+        return _damageMultiplier.Apply(multiplier);
     }
 
     public void SetProgressionLimits(
@@ -150,10 +139,10 @@ public sealed class WeaponRuntimeState
         int maxParallelProjectiles,
         int maxSalvoExtraShots)
     {
-        _maxDamageMultiplier = UnityEngine.Mathf.Clamp(
+        _damageMultiplier.SetLimit(UnityEngine.Mathf.Clamp(
             maxDamageMultiplier,
             1f,
-            MaxDamageMultiplier);
+            MaxDamageMultiplier));
 
         _criticalHit.SetLimits(
             UnityEngine.Mathf.Clamp(maxCriticalChance, 0f, MaxCriticalChance),
@@ -169,7 +158,6 @@ public sealed class WeaponRuntimeState
 
         _shotPattern.SetLimits(maxParallelProjectiles, maxSalvoExtraShots);
 
-        DamageMultiplier = UnityEngine.Mathf.Min(DamageMultiplier, _maxDamageMultiplier);
         PenetrationBonus = UnityEngine.Mathf.Min(PenetrationBonus, _maxPenetrationBonus);
     }
 
@@ -252,13 +240,12 @@ public sealed class WeaponRuntimeState
     {
         WeaponRuntimeState clone = new()
         {
-            _maxDamageMultiplier = _maxDamageMultiplier,
+            _damageMultiplier = _damageMultiplier.Clone(),
             _maxPenetrationBonus = _maxPenetrationBonus,
             _criticalHit = _criticalHit.Clone(),
             _shotPattern = _shotPattern.Clone(),
             _fireRateBonus = _fireRateBonus.Clone(),
             _projectileSpeedBonus = _projectileSpeedBonus.Clone(),
-            DamageMultiplier = DamageMultiplier,
             PenetrationBonus = PenetrationBonus,
         };
 

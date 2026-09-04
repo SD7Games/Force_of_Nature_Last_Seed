@@ -48,5 +48,15 @@ namespace LastSeed.Bootstrap.Application
                 enabled = false;
             }
         }
+
+        private void Update()
+        {
+            _initialSceneBootstrapper?.Tick();
+        }
+
+        private void OnDestroy()
+        {
+            _initialSceneBootstrapper?.Cancel();
+        }
     }
 }

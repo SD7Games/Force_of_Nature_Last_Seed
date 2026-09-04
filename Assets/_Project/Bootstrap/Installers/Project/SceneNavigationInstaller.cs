@@ -8,6 +8,7 @@ namespace LastSeed.Bootstrap.Installers
         public override void InstallBindings()
         {
             Container.Bind<UnitySceneLoader>().AsSingle();
+            Container.Bind<SceneLoadReadinessMonitor>().AsSingle();
 
             Container
                 .Bind<ISceneNavigationService>()

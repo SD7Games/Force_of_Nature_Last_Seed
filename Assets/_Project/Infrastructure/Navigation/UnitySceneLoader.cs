@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -49,15 +48,5 @@ namespace LastSeed.Infrastructure.Navigation
                 loadOperation.progress >= ReadyForActivationProgress;
         }
 
-        public async Awaitable WaitUntilReadyToActivateAsync(
-            AsyncOperation loadOperation,
-            CancellationToken cancellationToken)
-        {
-            if (loadOperation == null)
-                throw new ArgumentNullException(nameof(loadOperation));
-
-            while (!IsReadyToActivate(loadOperation))
-                await Awaitable.NextFrameAsync(cancellationToken);
-        }
     }
 }

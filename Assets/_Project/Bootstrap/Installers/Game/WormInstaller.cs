@@ -9,6 +9,7 @@ namespace LastSeed.Bootstrap.Installers
         [SerializeField] private WormSpawner _wormSpawner;
         [SerializeField] private WormController _wormController;
         [SerializeField] private WormCombatController _wormCombatController;
+        [SerializeField] private WormSectionHpPresenter _sectionHpPresenter;
 
         [Header("Segment Pool")]
         [SerializeField] private WormSegment _headPrefab;
@@ -35,6 +36,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<WormSpawner>().FromInstance(_wormSpawner).AsSingle();
             Container.Bind<WormController>().FromInstance(_wormController).AsSingle();
             Container.Bind<WormCombatController>().FromInstance(_wormCombatController).AsSingle();
+            Container.Bind<WormSectionHpPresenter>().FromInstance(_sectionHpPresenter).AsSingle();
             Container.BindInstance(new WormSpawnSettings(
                 _sectionCount,
                 _poolPadding,
@@ -47,6 +49,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.BindInterfacesAndSelfTo<WormCocoonShakeClock>().AsSingle();
             Container.Bind<WormSegmentPool>().AsSingle();
             Container.Bind<WormFactory>().AsSingle();
+            Container.Bind<WormSpawnLifecycle>().AsSingle();
             Container.Bind<IWormPathProgressProvider>().FromInstance(_wormController).AsSingle();
             Container.Bind<IWormHpScalingPolicy>().FromInstance(_hpScalingConfig).AsSingle();
             Container.Bind<IWeaponPowerProvider>().To<WeaponPowerProvider>().AsSingle();

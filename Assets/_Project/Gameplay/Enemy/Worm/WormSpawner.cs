@@ -7,24 +7,11 @@ using Zenject;
 [DisallowMultipleComponent]
 public sealed class WormSpawner : MonoBehaviour
 {
-    [Header("Controllers")]
-    [SerializeField] private WormController _wormController;
-
-    [SerializeField] private WormCombatController _wormCombat;
-    [SerializeField] private WormSectionHpPresenter _hpPresenter;
-
     [Header("Rewards")]
     [SerializeField] private RewardDatabase _rewardDatabase;
 
-    private WormSegmentPool _segmentPool;
-    private WormFactory _wormFactory;
-    private WormSpawnSettings _spawnSettings;
+    private WormSpawnLifecycle _spawnLifecycle;
     private WormAdaptiveHpController _adaptiveHpController;
-    private readonly List<WormSection> _sections = new();
-    private readonly List<WormSegment> _spawnedSegments = new();
-
-    private bool _isSpawned;
-    private WormFaceBurstPresenter _faceBurstPresenter;
     private SignalBus _signalBus;
     private bool _isSubscribedToSignals;
 
@@ -32,17 +19,11 @@ public sealed class WormSpawner : MonoBehaviour
     public void Construct(
         SignalBus signalBus,
         WormAdaptiveHpController adaptiveHpController,
-        WormSegmentPool segmentPool,
-        WormFactory wormFactory,
-        WormSpawnSettings spawnSettings,
-        WormFaceBurstPresenter faceBurstPresenter)
+        WormSpawnLifecycle spawnLifecycle)
     {
         _signalBus = signalBus;
         _adaptiveHpController = adaptiveHpController;
-        _segmentPool = segmentPool;
-        _wormFactory = wormFactory;
-        _spawnSettings = spawnSettings;
-        _faceBurstPresenter = faceBurstPresenter;
+        _spawnLifecycle = spawnLifecycle;
         SubscribeToSignals();
     }
 
@@ -50,67 +31,26 @@ public sealed class WormSpawner : MonoBehaviour
     {
         SubscribeToSignals();
 
-        if (_isSpawned)
-            _faceBurstPresenter?.Bind(GetSpawnedHead()?.FaceVisual);
+        _spawnLifecycle?.RebindFacePresentation();
     }
 
     private void OnDisable()
     {
         UnsubscribeFromSignals();
 
-        _faceBurstPresenter?.Unbind();
+        _spawnLifecycle?.UnbindFacePresentation();
     }
 
     private IEnumerator Start()
     {
-        yield return _segmentPool.PrewarmRoutine(
-            _spawnSettings.BodyPoolCapacity,
-            _spawnSettings.PrewarmBatchSize);
+        yield return _spawnLifecycle.PrewarmRoutine();
 
         SpawnWorm();
     }
 
     public void SpawnWorm()
     {
-        if (_isSpawned)
-            return;
-
-        List<WormPatternEntry> pattern =
-            WormPatternBuilder.BuildPattern(_spawnSettings.SectionCount);
-
-        List<WormSegment> segments =
-            _wormFactory.CreateSegments(
-                pattern,
-                out WormSegment head,
-                out WormSegment tail);
-
-        if (head == null || tail == null)
-        {
-            Debug.LogError("Worm spawn failed: head or tail missing", this);
-            return;
-        }
-
-        _spawnedSegments.Clear();
-        _spawnedSegments.AddRange(segments);
-
-        List<WormSection> sections =
-            WormSectionBuilder.BuildSections(
-                segments,
-                GetCocoonProfiles());
-
-        _adaptiveHpController.InitializeSections(sections, Time.time);
-
-        _sections.Clear();
-        _sections.AddRange(sections);
-
-        _wormFactory.AttachDamageReceivers(segments, _wormCombat);
-
-        _wormController.Init(segments);
-        _faceBurstPresenter.Bind(head.FaceVisual);
-        _wormCombat.Init(head, tail, sections);
-        _hpPresenter.BindSections(sections);
-
-        _isSpawned = true;
+        _spawnLifecycle.Spawn(GetCocoonProfiles(), Time.time);
     }
 
     public void RestartWorm()
@@ -121,35 +61,7 @@ public sealed class WormSpawner : MonoBehaviour
 
     public void DespawnWorm()
     {
-        _faceBurstPresenter?.Unbind();
-
-        _hpPresenter?.Clear();
-        _wormCombat?.Clear();
-        _wormController?.ClearWorm();
-
-        for (int i = 0; i < _spawnedSegments.Count; i++)
-        {
-            if (_segmentPool != null)
-                _segmentPool.Release(_spawnedSegments[i]);
-        }
-
-        _spawnedSegments.Clear();
-        _sections.Clear();
-        _adaptiveHpController?.Reset(Time.time);
-        _isSpawned = false;
-    }
-
-    private WormSegment GetSpawnedHead()
-    {
-        for (int i = 0; i < _spawnedSegments.Count; i++)
-        {
-            WormSegment segment = _spawnedSegments[i];
-
-            if (segment != null && segment.Type == WormSegmentType.Head)
-                return segment;
-        }
-
-        return null;
+        _spawnLifecycle.Despawn(Time.time);
     }
 
     public void SetRuntimePressureMultiplier(float multiplier)

@@ -238,9 +238,9 @@ public sealed class RewardPopupView : PopupView
             SetInteractionEnabled);
     }
 
-    private RewardPopupAnimator.Settings BuildAnimationSettings()
+    private RewardPopupAnimationSettings BuildAnimationSettings()
     {
-        return new RewardPopupAnimator.Settings(
+        return new RewardPopupAnimationSettings(
             _rootFadeDuration,
             _topEnterOffset,
             _topEnterDuration,

@@ -10,7 +10,7 @@ public sealed class RewardPopupAnimator
     private readonly RewardPopupChoiceBinder _choiceBinder;
     private readonly RewardPopupActionControls _actionControls;
     private readonly Settings _settings;
-    private readonly AudioSettings _audioSettings;
+    private readonly RewardPopupAudioPlayer _audioPlayer;
     private readonly Action _onTransitionStarted;
 
     private RewardPopupRectTransformState[] _topGroupStates;
@@ -25,7 +25,7 @@ public sealed class RewardPopupAnimator
         RewardPopupChoiceBinder choiceBinder,
         RewardPopupActionControls actionControls,
         Settings settings,
-        AudioSettings audioSettings,
+        RewardPopupAudioPlayer audioPlayer,
         Action onTransitionStarted)
     {
         _canvasGroup = canvasGroup;
@@ -33,7 +33,7 @@ public sealed class RewardPopupAnimator
         _choiceBinder = choiceBinder;
         _actionControls = actionControls;
         _settings = settings;
-        _audioSettings = audioSettings;
+        _audioPlayer = audioPlayer;
         _onTransitionStarted = onTransitionStarted;
     }
 
@@ -57,7 +57,7 @@ public sealed class RewardPopupAnimator
 
         _showSequence?.Kill(false);
         _showSequence = DOTween.Sequence().SetUpdate(true);
-        _showSequence.InsertCallback(0f, () => _audioSettings.Play(_audioSettings.ShowWhooshClip));
+        _showSequence.InsertCallback(0f, _audioPlayer.PlayShowWhoosh);
 
         if (_canvasGroup != null)
             _showSequence.Insert(0f, _canvasGroup.DOFade(1f, _settings.RootFadeDuration).SetEase(Ease.OutSine));
@@ -66,8 +66,8 @@ public sealed class RewardPopupAnimator
         InsertRewardEnterTweens(_showSequence, 0.1f);
         _actionControls.InsertEnterTweens(_showSequence, 0.3f, _settings.ActionEnterDuration);
 
-        _showSequence.InsertCallback(0.28f, () => _audioSettings.Play(_audioSettings.ShowSettleClip));
-        _showSequence.InsertCallback(0.14f, () => _audioSettings.Play(_audioSettings.CardRevealClip));
+        _showSequence.InsertCallback(0.28f, _audioPlayer.PlayShowSettle);
+        _showSequence.InsertCallback(0.14f, _audioPlayer.PlayCardReveal);
         _showSequence.OnComplete(() => CompleteTransition(onComplete));
     }
 
@@ -82,7 +82,7 @@ public sealed class RewardPopupAnimator
 
         _refreshSequence?.Kill(false);
         _refreshSequence = DOTween.Sequence().SetUpdate(true);
-        _refreshSequence.InsertCallback(0f, () => _audioSettings.Play(_audioSettings.RefreshClip));
+        _refreshSequence.InsertCallback(0f, _audioPlayer.PlayRefresh);
 
         int choiceCount = choices != null ? choices.Count : 0;
         float lastDelay = 0f;
@@ -120,7 +120,7 @@ public sealed class RewardPopupAnimator
 
         _refreshSequence.InsertCallback(
             lastDelay + _settings.RefreshOutDuration + 0.02f,
-            () => _audioSettings.Play(_audioSettings.CardRevealClip));
+            _audioPlayer.PlayCardReveal);
         _refreshSequence.AppendCallback(() => applyRefreshedState?.Invoke(state));
         _refreshSequence.OnComplete(() => CompleteTransition(onComplete));
     }
@@ -493,37 +493,4 @@ public sealed class RewardPopupAnimator
         public Ease UnselectedExitEase { get; }
     }
 
-    public readonly struct AudioSettings
-    {
-        public AudioSettings(
-            AudioSource source,
-            AudioClip showWhooshClip,
-            AudioClip showSettleClip,
-            AudioClip refreshClip,
-            AudioClip cardRevealClip,
-            float volume)
-        {
-            Source = source;
-            ShowWhooshClip = showWhooshClip;
-            ShowSettleClip = showSettleClip;
-            RefreshClip = refreshClip;
-            CardRevealClip = cardRevealClip;
-            Volume = volume;
-        }
-
-        public AudioSource Source { get; }
-        public AudioClip ShowWhooshClip { get; }
-        public AudioClip ShowSettleClip { get; }
-        public AudioClip RefreshClip { get; }
-        public AudioClip CardRevealClip { get; }
-        public float Volume { get; }
-
-        public void Play(AudioClip clip)
-        {
-            if (Source == null || clip == null)
-                return;
-
-            Source.PlayOneShot(clip, Volume);
-        }
-    }
 }

@@ -223,7 +223,7 @@ public sealed class RewardPopupView : PopupView
             _choiceBinder,
             _actionControls,
             BuildAnimationSettings(),
-            new RewardPopupAnimator.AudioSettings(
+            new RewardPopupAudioPlayer(
                 _animationAudioSource,
                 _showWhooshClip,
                 _showSettleClip,

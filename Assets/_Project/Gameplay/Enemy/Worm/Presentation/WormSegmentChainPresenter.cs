@@ -19,7 +19,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     public void Render(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         RailPath rail,
         IReadOnlyDictionary<WormSegment, float> rollbackAnchoredDistances,
         in WormSegmentChainLayout layout)
@@ -70,7 +70,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private void RenderDuringRollback(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         RailPath rail,
         IReadOnlyDictionary<WormSegment, float> rollbackAnchoredDistances,
         in WormSegmentChainLayout layout)
@@ -131,7 +131,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private void HidePreviousActiveRange(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         int nextStartIndex,
         int nextEndIndex)
     {
@@ -164,7 +164,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static void UpdateTailVisualChain(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         RailPath rail,
         int index,
         WormSegment segment,
@@ -191,7 +191,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static Vector3 ResolveTailLeaderPosition(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         int index,
         WormSegment tail)
     {
@@ -216,7 +216,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static void UpdateHeadFollowChain(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         RailPath rail,
         int index,
         WormSegment segment,
@@ -264,7 +264,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private void UpdateSegmentRotation(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         int index,
         WormSegment segment,
         Vector3 position)
@@ -291,7 +291,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static float GetSegmentDistance(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         IReadOnlyDictionary<WormSegment, float> rollbackAnchoredDistances,
         int index,
         WormSegment segment,
@@ -311,7 +311,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static bool ShouldShowHeadFollowChain(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         int index,
         WormSegment segment)
     {
@@ -325,7 +325,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static bool ShouldAttachTailToHeadFollowChain(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         int index,
         WormSegment segment)
     {
@@ -338,7 +338,7 @@ public sealed class WormSegmentChainPresenter
     }
 
     private static float GetHeadFollowChainDistanceOffset(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         in WormSegmentChainLayout layout)
     {
         WormSegment head = segments.Count > 0 ? segments[0] : null;

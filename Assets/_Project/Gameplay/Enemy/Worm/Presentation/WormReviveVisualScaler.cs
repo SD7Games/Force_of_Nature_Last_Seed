@@ -5,7 +5,7 @@ public sealed class WormReviveVisualScaler
 {
     private readonly List<Vector3> _baseScales = new();
 
-    public void Capture(List<WormSegment> segments)
+    public void Capture(IReadOnlyList<WormSegment> segments)
     {
         _baseScales.Clear();
 
@@ -21,7 +21,7 @@ public sealed class WormReviveVisualScaler
     }
 
     public void Apply(
-        List<WormSegment> segments,
+        IReadOnlyList<WormSegment> segments,
         float xMultiplier,
         float yMultiplier)
     {
@@ -42,7 +42,7 @@ public sealed class WormReviveVisualScaler
         }
     }
 
-    public void RestoreAndClear(List<WormSegment> segments)
+    public void RestoreAndClear(IReadOnlyList<WormSegment> segments)
     {
         int count = Mathf.Min(segments.Count, _baseScales.Count);
 

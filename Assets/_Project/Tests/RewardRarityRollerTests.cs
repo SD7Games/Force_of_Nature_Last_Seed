@@ -16,7 +16,8 @@ namespace LastSeed.Tests
                 count: 2,
                 RewardRarity.Legendary,
                 guaranteedSlotCount: 2,
-                pools);
+                pools,
+                new TestRandomSource());
 
             Assert.That(result, Is.EqualTo(new[]
             {
@@ -49,9 +50,28 @@ namespace LastSeed.Tests
         [Test]
         public void RollFromWeights_WithoutAvailableWeight_ReturnsCommon()
         {
-            RewardRarity rarity = RewardRarityRoller.RollFromWeights(0f, 0f, 0f);
+            RewardRarity rarity = RewardRarityRoller.RollFromWeights(
+                0f,
+                0f,
+                0f,
+                new TestRandomSource());
 
             Assert.That(rarity, Is.EqualTo(RewardRarity.Common));
+        }
+
+        [Test]
+        public void RollFromWeights_UsesInjectedDeterministicValue()
+        {
+            TestRandomSource randomSource = new(values: new[] { 0.75f });
+
+            RewardRarity rarity = RewardRarityRoller.RollFromWeights(
+                commonWeight: 1f,
+                rareWeight: 1f,
+                legendaryWeight: 0f,
+                randomSource);
+
+            Assert.That(rarity, Is.EqualTo(RewardRarity.Rare));
+            Assert.That(randomSource.Calls, Is.EqualTo(1));
         }
     }
 }

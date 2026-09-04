@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 public static class RewardWeightedPicker
 {
@@ -11,6 +10,7 @@ public static class RewardWeightedPicker
         RewardPickMode mode,
         out RewardModifierEntry selected,
         RewardRollContext rollContext,
+        IRandomSource randomSource,
         RewardWeaponDpsBias weaponDpsBias = default,
         bool requireAssistDpsReward = false)
     {
@@ -26,6 +26,7 @@ public static class RewardWeightedPicker
             mode,
             out selected,
             rollContext,
+            randomSource,
             weaponDpsBias,
             requireAssistDpsReward);
     }
@@ -38,6 +39,7 @@ public static class RewardWeightedPicker
         out RewardModifierEntry selected,
         bool allowLegendary,
         RewardRollContext rollContext,
+        IRandomSource randomSource,
         RewardWeaponDpsBias weaponDpsBias = default)
     {
         selected = null;
@@ -57,7 +59,7 @@ public static class RewardWeightedPicker
         if (totalWeight <= 0f)
             return false;
 
-        float roll = Random.value * totalWeight;
+        float roll = randomSource.NextUnitFloat() * totalWeight;
         float currentWeight = 0f;
 
         foreach (KeyValuePair<RewardRarity, List<RewardModifierEntry>> rarityPool in pools)
@@ -108,6 +110,7 @@ public static class RewardWeightedPicker
         RewardPickMode mode,
         out RewardModifierEntry selected,
         RewardRollContext rollContext,
+        IRandomSource randomSource,
         RewardWeaponDpsBias weaponDpsBias,
         bool requireAssistDpsReward)
     {
@@ -149,7 +152,7 @@ public static class RewardWeightedPicker
         if (totalWeight <= 0f)
             return false;
 
-        float roll = Random.value * totalWeight;
+        float roll = randomSource.NextUnitFloat() * totalWeight;
         float currentWeight = 0f;
 
         for (int i = 0; i < pool.Count; i++)

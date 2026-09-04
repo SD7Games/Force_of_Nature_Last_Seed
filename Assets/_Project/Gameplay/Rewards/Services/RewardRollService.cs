@@ -6,6 +6,7 @@ public sealed class RewardRollService
     private const int MaxChoices = 3;
 
     private readonly RewardDatabase _database;
+    private readonly IRandomSource _randomSource;
     private readonly List<RewardRaritySlot> _defaultSlots = new()
     {
         new RewardRaritySlot(RewardRarity.Common),
@@ -13,9 +14,11 @@ public sealed class RewardRollService
         new RewardRaritySlot(RewardRarity.Common)
     };
 
-    public RewardRollService(RewardDatabase database)
+    public RewardRollService(RewardDatabase database, IRandomSource randomSource)
     {
         _database = database;
+        _randomSource = randomSource
+            ?? throw new System.ArgumentNullException(nameof(randomSource));
     }
 
     public List<RewardChoiceData> Roll3(
@@ -45,7 +48,8 @@ public sealed class RewardRollService
             count,
             guaranteedRarity,
             guaranteedSlotCount,
-            pools);
+            pools,
+            _randomSource);
         bool usePremiumRules = cocoonProfile != null
             && cocoonProfile.GuaranteesLegendaryReward;
 
@@ -54,14 +58,16 @@ public sealed class RewardRollService
             slotRarities,
             guaranteedSlotCount,
             pools,
-            usePremiumRules);
+            usePremiumRules,
+            _randomSource);
         FillChoices(
             result,
             pools,
             slotRarities,
             usePremiumRules,
             context,
-            rollContext);
+            rollContext,
+            _randomSource);
 
         return result;
     }
@@ -84,7 +90,7 @@ public sealed class RewardRollService
                 : RewardPoolInspector.GetHighestAvailableRarity(pools);
         }
 
-        return RollAvailableRarity(GetSlots(cocoonProfile), pools);
+        return RollAvailableRarity(GetSlots(cocoonProfile), pools, _randomSource);
     }
 
     private static void FillChoices(
@@ -93,7 +99,8 @@ public sealed class RewardRollService
         RewardRarity[] slotRarities,
         bool usePremiumRules,
         RewardRuntimeContext context,
-        RewardRollContext rollContext)
+        RewardRollContext rollContext,
+        IRandomSource randomSource)
     {
         RewardWeaponDpsBias weaponDpsBias =
             RewardWeaponDpsBiasCalculator.Calculate(context);
@@ -116,6 +123,7 @@ public sealed class RewardRollService
                     usePremiumRules,
                     allowLegendaryFallback,
                     rollContext,
+                    randomSource,
                     weaponDpsBias,
                     out RewardModifierEntry selected))
             {
@@ -185,7 +193,8 @@ public sealed class RewardRollService
         int count,
         RewardRarity? guaranteedRarity,
         int guaranteedSlotCount,
-        Dictionary<RewardRarity, List<RewardModifierEntry>> pools)
+        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
+        IRandomSource randomSource)
     {
         return guaranteedRarity.HasValue
             ? RewardRarityRoller.BuildGuaranteedSlotRarities(
@@ -193,8 +202,9 @@ public sealed class RewardRollService
                 count,
                 guaranteedRarity.Value,
                 guaranteedSlotCount,
-                pools)
-            : RewardRarityRoller.BuildSlotRarities(slots, count);
+                pools,
+                randomSource)
+            : RewardRarityRoller.BuildSlotRarities(slots, count, randomSource);
     }
 
     private static void ApplyPremiumRarityRules(
@@ -202,7 +212,8 @@ public sealed class RewardRollService
         RewardRarity[] slotRarities,
         int guaranteedSlotCount,
         Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
-        bool usePremiumRules)
+        bool usePremiumRules,
+        IRandomSource randomSource)
     {
         if (!usePremiumRules)
             return;
@@ -211,12 +222,14 @@ public sealed class RewardRollService
             slotRarities,
             guaranteedSlotCount,
             cocoonProfile.SecondaryLegendaryChance,
-            pools);
+            pools,
+            randomSource);
     }
 
     private static RewardRarity RollAvailableRarity(
         IReadOnlyList<RewardRaritySlot> slots,
-        Dictionary<RewardRarity, List<RewardModifierEntry>> pools)
+        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
+        IRandomSource randomSource)
     {
         float commonWeight = 0f;
         float rareWeight = 0f;
@@ -247,7 +260,11 @@ public sealed class RewardRollService
 
         float totalWeight = commonWeight + rareWeight + legendaryWeight;
         return totalWeight > 0f
-            ? RewardRarityRoller.RollFromWeights(commonWeight, rareWeight, legendaryWeight)
+            ? RewardRarityRoller.RollFromWeights(
+                commonWeight,
+                rareWeight,
+                legendaryWeight,
+                randomSource)
             : RewardPoolInspector.GetHighestAvailableRarity(pools);
     }
 }

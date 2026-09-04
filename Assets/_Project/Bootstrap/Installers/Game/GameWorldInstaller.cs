@@ -11,6 +11,7 @@ namespace LastSeed.Bootstrap.Installers
         public override void InstallBindings()
         {
             Container.Bind<Camera>().FromInstance(_worldCamera).AsSingle();
+            Container.Bind<IRandomSource>().To<UnityRandomSource>().AsSingle();
 
             Container
                 .BindInterfacesAndSelfTo<ScreenBoundsService>()

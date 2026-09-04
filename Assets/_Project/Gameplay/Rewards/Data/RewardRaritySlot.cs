@@ -31,12 +31,15 @@ public sealed class RewardRaritySlot
         _alternateChance = Mathf.Clamp01(alternateChance);
     }
 
-    public RewardRarity RollRarity()
+    public RewardRarity RollRarity(IRandomSource randomSource)
     {
+        if (randomSource == null)
+            throw new ArgumentNullException(nameof(randomSource));
+
         if (_alternateChance <= 0f)
             return _rarity;
 
-        return UnityEngine.Random.value < _alternateChance
+        return randomSource.NextUnitFloat() < _alternateChance
             ? _alternateRarity
             : _rarity;
     }

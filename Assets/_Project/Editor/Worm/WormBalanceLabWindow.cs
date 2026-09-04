@@ -915,7 +915,8 @@ internal static class WormBalanceSimulator
             () => BuildMainWeaponDamage(settings.MainWeaponConfig, mainState),
             settings.MainWeaponConfig,
             settings.AcaciaThornConfig);
-        RewardRollService rewardRollService = new(settings.RewardDatabase);
+        IRandomSource randomSource = new UnityRandomSource();
+        RewardRollService rewardRollService = new(settings.RewardDatabase, randomSource);
         WormSectionHpResolver hpResolver = new(settings.HpConfig);
         WormBalanceSectionState[] sections = BuildSections(settings);
         WormBalanceAdSessionState adSession = WormBalanceAdSessionState.Create(settings, scenario);
@@ -1093,7 +1094,8 @@ internal static class WormBalanceSimulator
                 settings,
                 mainState,
                 acaciaState,
-                adSession);
+                adSession,
+                randomSource);
 
             if (rewardSelection.Rewards == null || rewardSelection.Rewards.Count == 0)
             {
@@ -1412,7 +1414,8 @@ internal static class WormBalanceSimulator
         WormBalanceSimulationSettings settings,
         WeaponRuntimeState mainState,
         AcaciaThornRuntimeState acaciaState,
-        WormBalanceAdSessionState adSession)
+        WormBalanceAdSessionState adSession,
+        IRandomSource randomSource)
     {
         WormBalanceRewardOffer offer = RollAndEvaluateOffer(
             rewardRollService,
@@ -1454,7 +1457,8 @@ internal static class WormBalanceSimulator
                 RewardAdRerollPolicy.RollGuaranteedRarity(
                     rewardContext,
                     cocoonProfile,
-                    rollContext),
+                    rollContext,
+                    randomSource),
                 1,
                 isPaidAssistRoll: true);
         }

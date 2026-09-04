@@ -22,7 +22,8 @@ namespace LastSeed.Tests
                 new HashSet<int>(),
                 RewardPickMode.Any,
                 out RewardModifierEntry selected,
-                default);
+                default,
+                new TestRandomSource());
 
             Assert.That(taken, Is.True);
             Assert.That(selected, Is.SameAs(entry));
@@ -39,7 +40,8 @@ namespace LastSeed.Tests
                 new HashSet<int>(),
                 RewardPickMode.Any,
                 out RewardModifierEntry selected,
-                default);
+                default,
+                new TestRandomSource());
 
             Assert.That(taken, Is.False);
             Assert.That(selected, Is.Null);

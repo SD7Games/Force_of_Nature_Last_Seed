@@ -5,14 +5,15 @@ public static class RewardRarityRoller
 {
     public static RewardRarity[] BuildSlotRarities(
         IReadOnlyList<RewardRaritySlot> slots,
-        int count)
+        int count,
+        IRandomSource randomSource)
     {
         var result = new RewardRarity[count];
 
         for (int i = 0; i < count; i++)
         {
             result[i] = slots[i] != null
-                ? slots[i].RollRarity()
+                ? slots[i].RollRarity(randomSource)
                 : RewardRarity.Common;
         }
 
@@ -24,7 +25,8 @@ public static class RewardRarityRoller
         int count,
         RewardRarity guaranteedRarity,
         int guaranteedSlotCount,
-        Dictionary<RewardRarity, List<RewardModifierEntry>> pools)
+        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
+        IRandomSource randomSource)
     {
         var result = new RewardRarity[count];
 
@@ -53,7 +55,8 @@ public static class RewardRarityRoller
             result[i] = RollFromWeights(
                 commonWeight,
                 rareWeight,
-                legendaryWeight);
+                legendaryWeight,
+                randomSource);
         }
 
         return result;
@@ -63,7 +66,8 @@ public static class RewardRarityRoller
         RewardRarity[] slotRarities,
         int guaranteedSlotCount,
         float secondaryLegendaryChance,
-        Dictionary<RewardRarity, List<RewardModifierEntry>> pools)
+        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
+        IRandomSource randomSource)
     {
         if (slotRarities == null ||
             slotRarities.Length == 0 ||
@@ -78,7 +82,7 @@ public static class RewardRarityRoller
         for (int i = startIndex; i < slotRarities.Length; i++)
         {
             if (slotRarities[i] != RewardRarity.Legendary &&
-                Random.value < secondaryLegendaryChance)
+                randomSource.NextUnitFloat() < secondaryLegendaryChance)
             {
                 slotRarities[i] = RewardRarity.Legendary;
             }
@@ -113,14 +117,15 @@ public static class RewardRarityRoller
     public static RewardRarity RollFromWeights(
         float commonWeight,
         float rareWeight,
-        float legendaryWeight)
+        float legendaryWeight,
+        IRandomSource randomSource)
     {
         float totalWeight = commonWeight + rareWeight + legendaryWeight;
 
         if (totalWeight <= 0f)
             return RewardRarity.Common;
 
-        float roll = Random.value * totalWeight;
+        float roll = randomSource.NextUnitFloat() * totalWeight;
 
         if (roll < commonWeight)
             return RewardRarity.Common;

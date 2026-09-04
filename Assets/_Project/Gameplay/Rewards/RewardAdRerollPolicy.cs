@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public static class RewardAdRerollPolicy
@@ -18,12 +19,16 @@ public static class RewardAdRerollPolicy
     public static RewardRarity RollGuaranteedRarity(
         RewardRuntimeContext context,
         CocoonRewardProfile cocoonProfile,
-        RewardRollContext rollContext)
+        RewardRollContext rollContext,
+        IRandomSource randomSource)
     {
+        if (randomSource == null)
+            throw new ArgumentNullException(nameof(randomSource));
+
         if (IsLegendaryCocoon(cocoonProfile))
             return RewardRarity.Legendary;
 
-        return Random.value < GetLegendaryChance(context, rollContext)
+        return randomSource.NextUnitFloat() < GetLegendaryChance(context, rollContext)
             ? RewardRarity.Legendary
             : RewardRarity.Rare;
     }

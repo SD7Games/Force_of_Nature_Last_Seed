@@ -28,12 +28,14 @@ public sealed class RewardInstaller : MonoBehaviour
     private RewardFlowController _rewardFlow;
     private bool _hasRevivedThisRun;
     private SignalBus _signalBus;
+    private IRandomSource _randomSource;
     private bool _isSubscribedToSignals;
 
     [Inject]
-    public void Construct(SignalBus signalBus)
+    public void Construct(SignalBus signalBus, IRandomSource randomSource)
     {
         _signalBus = signalBus;
+        _randomSource = randomSource;
         SubscribeToSignals();
     }
 
@@ -50,7 +52,7 @@ public sealed class RewardInstaller : MonoBehaviour
 
     private void Awake()
     {
-        var roll = new RewardRollService(_database);
+        var roll = new RewardRollService(_database, _randomSource);
         var apply = new RewardApplyService(_weapon, _acaciaThornWeapon);
 
         _rewardFlow = new RewardFlowController(
@@ -59,6 +61,7 @@ public sealed class RewardInstaller : MonoBehaviour
             _popup,
             _popupRoot,
             _rewardedAdService,
+            _randomSource,
             _freeRerollAttemptsPerSession,
             _adRerollAttemptsPerSession,
             _takeAllAttemptsPerSession);

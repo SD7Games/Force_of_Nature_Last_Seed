@@ -10,6 +10,7 @@ public sealed class RewardFlowController : IDisposable
     private readonly RewardPopupView _popup;
     private readonly PopupRoot _popupRoot;
     private readonly RewardedAdService _rewardedAdService;
+    private readonly IRandomSource _randomSource;
     private readonly int _maxFreeRerollAttempts;
     private readonly int _maxAdRerollAttempts;
     private readonly int _maxTakeAllAttempts;
@@ -34,6 +35,7 @@ public sealed class RewardFlowController : IDisposable
         RewardPopupView popup,
         PopupRoot popupRoot,
         RewardedAdService rewardedAdService,
+        IRandomSource randomSource,
         int maxFreeRerollAttempts,
         int maxAdRerollAttempts,
         int maxTakeAllAttempts)
@@ -43,6 +45,8 @@ public sealed class RewardFlowController : IDisposable
         _popup = popup;
         _popupRoot = popupRoot;
         _rewardedAdService = rewardedAdService;
+        _randomSource = randomSource
+            ?? throw new ArgumentNullException(nameof(randomSource));
         _maxFreeRerollAttempts = UnityEngine.Mathf.Max(0, maxFreeRerollAttempts);
         _maxAdRerollAttempts = UnityEngine.Mathf.Max(0, maxAdRerollAttempts);
         _maxTakeAllAttempts = UnityEngine.Mathf.Max(0, maxTakeAllAttempts);
@@ -222,7 +226,8 @@ public sealed class RewardFlowController : IDisposable
         RewardRarity adGuaranteeRarity = RewardAdRerollPolicy.RollGuaranteedRarity(
             _applyService?.RuntimeContext,
             _currentCocoonProfile,
-            _currentRollContext);
+            _currentRollContext,
+            _randomSource);
 
         if (!RollCurrentChoices(
                 adGuaranteeRarity,

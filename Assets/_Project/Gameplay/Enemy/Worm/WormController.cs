@@ -16,7 +16,7 @@ using Zenject;
 /// a group of segments is destroyed. In this case the worm head moves
 /// backwards until the remaining segments reconnect.
 /// </summary>
-public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
+public sealed partial class WormController : MonoBehaviour, IWormPathProgressProvider
 {
     [Header("Rail")]
     [SerializeField] private RailPath _rail;
@@ -114,24 +114,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _sectionRollbackState = sectionRollbackState;
     }
 
-#if UNITY_EDITOR
-    public RailPath EditorRail => _rail;
-    public float EditorSpeed => _speed;
-    public float EditorSegmentSpacing => _segmentSpacing;
-    public float EditorRollbackSpeed => _rollbackSpeed;
-    public float EditorSectionRollbackForwardSpeedMultiplier => _sectionRollbackForwardSpeedMultiplier;
-    public float EditorReviveRollbackProgressNormalized
-    {
-        get
-        {
-            if (_rail == null || _rail.TotalLength <= 0f)
-                return 0f;
-
-            return Mathf.Clamp01(GetReviveRollbackTargetDistance() / _rail.TotalLength);
-        }
-    }
-#endif
-
     public float HeadPathProgressNormalized
     {
         get
@@ -152,38 +134,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
             return _rail.GetControlPointProgressNormalized(_headDistance);
         }
-    }
-
-    private void OnValidate()
-    {
-        if (_catchUpRailPointIndex < 0)
-            _catchUpRailPointIndex = 0;
-
-        if (_combatBurstDisableRailPointIndex < -1)
-            _combatBurstDisableRailPointIndex = -1;
-
-        if (_rail != null && _rail.PointCount > 0)
-        {
-            _catchUpRailPointIndex = Mathf.Min(_catchUpRailPointIndex, _rail.PointCount - 1);
-            if (_reviveRollbackRailPointIndex >= 0)
-            {
-                _reviveRollbackRailPointIndex = Mathf.Min(
-                    _reviveRollbackRailPointIndex,
-                    _rail.PointCount - 1);
-            }
-
-            if (_combatBurstDisableRailPointIndex >= 0)
-            {
-                _combatBurstDisableRailPointIndex = Mathf.Min(
-                    _combatBurstDisableRailPointIndex,
-                    _rail.PointCount - 1);
-            }
-        }
-
-        _combatBurstDisablePathProgress = Mathf.Clamp01(_combatBurstDisablePathProgress);
-        _combatBurstSlowdownDuration = Mathf.Max(0.01f, _combatBurstSlowdownDuration);
-        _sectionRollbackForwardSpeedMultiplier = Mathf.Max(0f, _sectionRollbackForwardSpeedMultiplier);
-        ClearTargetDistanceCaches();
     }
 
     private void OnDestroy()

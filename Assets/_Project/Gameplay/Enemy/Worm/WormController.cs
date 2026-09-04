@@ -75,11 +75,10 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingXScale = 1.1f;
     [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingYScale = 0.86f;
 
-    private float _headDistance;
-    private bool _hasReachedPathEnd;
     private WormCombatBurstController _combatBurstController;
     private WormForwardMotionController _forwardMotionController;
     private WormRailTargetResolver _railTargetResolver;
+    private WormPathProgressState _pathProgress;
     private WormSegmentChainPresenter _segmentChainPresenter;
     private WormReviveSequence _reviveSequence;
     private WormSegmentChain<WormSegment> _segmentChain;
@@ -89,7 +88,8 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     public event Action PathCompleted;
 
     public bool HasWorm => _segmentChain != null && _segmentChain.Count > 0;
-    public bool IsCatchingUpToCombatStart { get; private set; }
+    public bool IsCatchingUpToCombatStart =>
+        _pathProgress != null && _pathProgress.IsCatchingUp;
     public bool IsCombatBurstActive =>
         _combatBurstController != null && _combatBurstController.IsActive;
 
@@ -98,6 +98,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         WormCombatBurstController combatBurstController,
         WormForwardMotionController forwardMotionController,
         WormRailTargetResolver railTargetResolver,
+        WormPathProgressState pathProgress,
         WormSegmentChainPresenter segmentChainPresenter,
         WormReviveSequence reviveSequence,
         WormSegmentChain<WormSegment> segmentChain,
@@ -107,6 +108,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         _combatBurstController = combatBurstController;
         _forwardMotionController = forwardMotionController;
         _railTargetResolver = railTargetResolver;
+        _pathProgress = pathProgress;
         _segmentChainPresenter = segmentChainPresenter;
         _reviveSequence = reviveSequence;
         _segmentChain = segmentChain;
@@ -121,7 +123,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             if (_rail == null || _rail.TotalLength <= 0f)
                 return 0f;
 
-            return Mathf.Clamp01(_headDistance / _rail.TotalLength);
+            return Mathf.Clamp01(_pathProgress.HeadDistance / _rail.TotalLength);
         }
     }
 
@@ -132,7 +134,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             if (_rail == null || _rail.PointCount <= 1)
                 return HeadPathProgressNormalized;
 
-            return _rail.GetControlPointProgressNormalized(_headDistance);
+            return _rail.GetControlPointProgressNormalized(_pathProgress.HeadDistance);
         }
     }
 
@@ -150,14 +152,12 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         _reviveSequence.Cancel();
         _segmentChain.ReplaceWith(segments);
 
-        _headDistance = 0f;
         _segmentChainPresenter.Reset();
 
         _sectionRollbackState.Complete();
-        _hasReachedPathEnd = false;
         _combatBurstController.Reset(_speed);
         ClearTargetDistanceCaches();
-        IsCatchingUpToCombatStart = TryGetCatchUpTargetDistance(out _);
+        _pathProgress.Reset(TryGetCatchUpTargetDistance(out _));
 
         UpdateSegments();
     }
@@ -166,12 +166,10 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     {
         _reviveSequence.Cancel();
         _segmentChain.Clear();
-        _headDistance = 0f;
         _segmentChainPresenter.Reset();
         _sectionRollbackState.Complete();
-        _hasReachedPathEnd = false;
         _combatBurstController.Reset(_speed);
-        IsCatchingUpToCombatStart = false;
+        _pathProgress.Reset();
         ClearTargetDistanceCaches();
     }
 
@@ -208,24 +206,13 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _combatBurstDisablePathProgress,
             burstSettings);
         WormForwardMotionResult result = _forwardMotionController.Advance(
-            _headDistance,
+            _pathProgress.HeadDistance,
             deltaTime,
             _rail,
             settings);
 
-        _headDistance = result.HeadDistance;
-        IsCatchingUpToCombatStart = result.IsCatchingUp;
-
-        NotifyPathCompletedIfNeeded(result.CompletedPath);
-    }
-
-    private void NotifyPathCompletedIfNeeded(bool completedPath)
-    {
-        if (completedPath && !_hasReachedPathEnd)
-        {
-            _hasReachedPathEnd = true;
+        if (_pathProgress.Apply(result))
             PathCompleted?.Invoke();
-        }
     }
 
     private bool TryGetCatchUpTargetDistance(out float targetDistance)
@@ -258,7 +245,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     private void UpdateSegments()
     {
         WormSegmentChainLayout layout = new(
-            _headDistance,
+            _pathProgress.HeadDistance,
             _segmentSpacing,
             _tailVisualSpacingMultiplier,
             _headBridgeSpacingMultiplier,
@@ -319,7 +306,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _segmentChain.Segments,
             splitIndex,
             destroyedCount,
-            _headDistance,
+            _pathProgress.HeadDistance,
             _segmentSpacing);
         _segmentChainPresenter.Reset();
     }
@@ -334,11 +321,11 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         _reviveSequence.Cancel();
 
         ClearSectionRollbackState();
-        _hasReachedPathEnd = false;
+        _pathProgress.ReopenPath();
 
-        if (_headDistance <= target)
+        if (_pathProgress.HeadDistance <= target)
         {
-            _headDistance = target;
+            _pathProgress.SetHeadDistance(target);
             UpdateSegments();
             onComplete?.Invoke();
             return true;
@@ -346,7 +333,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
 
         _segmentChainPresenter.Reset();
         _reviveSequence.Begin(
-            _headDistance,
+            _pathProgress.HeadDistance,
             target,
             BuildReviveAnimationSettings(),
             _segmentChain.Segments,
@@ -360,26 +347,28 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             return;
 
         WormSectionRollbackMotionResult result = _sectionRollbackMotionController.Advance(
-            _headDistance,
+            _pathProgress.HeadDistance,
             _segmentChain.Segments,
             _rail.TotalLength,
             _speed,
             _sectionRollbackForwardSpeedMultiplier,
             _rollbackSpeed,
             deltaTime);
-        _headDistance = result.HeadDistance;
+        _pathProgress.SetHeadDistance(result.HeadDistance);
 
         if (!result.Completed)
             return;
 
-        NotifyPathCompletedIfNeeded(_headDistance >= _rail.TotalLength);
+        if (_pathProgress.TryComplete(_pathProgress.HeadDistance >= _rail.TotalLength))
+            PathCompleted?.Invoke();
+
         _sectionRollbackState.Complete();
     }
 
     private void AdvanceReviveAnimation(float deltaTime)
     {
         WormReviveAnimationFrame frame = _reviveSequence.Advance(deltaTime);
-        _headDistance = frame.HeadDistance;
+        _pathProgress.SetHeadDistance(frame.HeadDistance);
 
         if (!frame.Completed)
             return;

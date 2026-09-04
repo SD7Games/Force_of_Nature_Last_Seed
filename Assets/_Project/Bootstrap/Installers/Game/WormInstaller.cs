@@ -55,6 +55,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<IWeaponPowerProvider>().To<WeaponPowerProvider>().AsSingle();
             Container.Bind<WormCombatBurstController>().AsSingle();
             Container.Bind<WormForwardMotionController>().AsSingle();
+            Container.Bind<WormPathProgressState>().AsSingle();
             Container.BindInterfacesAndSelfTo<WormCombatBurstSignalPublisher>()
                 .AsSingle()
                 .NonLazy();

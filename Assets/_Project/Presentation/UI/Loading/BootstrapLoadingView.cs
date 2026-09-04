@@ -49,16 +49,18 @@ public sealed class BootstrapLoadingView : MonoBehaviour
     [SerializeField, Min(0f)] private float _angryOpenEndTime = 2.85f;
 
     private Sequence _sequence;
+    private AwaitableCompletionSource _completionSource;
     private int _lastStatusPhraseIndex = -1;
 
     public bool IsComplete { get; private set; }
 
-    public void Play()
+    public Awaitable PlayAsync()
     {
-        KillSequence();
+        CancelAnimation();
         ApplyInitialState();
 
         IsComplete = false;
+        _completionSource = new AwaitableCompletionSource();
         _sequence = DOTween.Sequence()
             .SetTarget(this)
             .SetUpdate(true);
@@ -73,11 +75,12 @@ public sealed class BootstrapLoadingView : MonoBehaviour
 
         _sequence.InsertCallback(_loadingDuration, DoNothing);
         _sequence.OnComplete(Complete);
+        return _completionSource.Awaitable;
     }
 
     private void OnDestroy()
     {
-        KillSequence();
+        CancelAnimation();
     }
 
 #if UNITY_EDITOR
@@ -227,18 +230,24 @@ public sealed class BootstrapLoadingView : MonoBehaviour
         }
     }
 
-    private void KillSequence()
+    private void CancelAnimation()
     {
-        if (_sequence == null)
-            return;
-
-        _sequence.Kill();
+        _sequence?.Kill();
         _sequence = null;
+
+        AwaitableCompletionSource completionSource = _completionSource;
+        _completionSource = null;
+        completionSource?.TrySetCanceled();
     }
 
     private void Complete()
     {
         IsComplete = true;
+        _sequence = null;
+
+        AwaitableCompletionSource completionSource = _completionSource;
+        _completionSource = null;
+        completionSource?.TrySetResult();
     }
 
     private static void SetImagesFill(Image[] images, float fillAmount)

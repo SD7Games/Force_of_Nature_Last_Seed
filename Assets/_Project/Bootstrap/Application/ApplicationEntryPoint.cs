@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using UnityEngine;
 using Zenject;
 
@@ -10,7 +10,6 @@ namespace LastSeed.Bootstrap.Application
         [SerializeField] private BootstrapLoadingView _loadingView;
 
         private InitialSceneBootstrapper _initialSceneBootstrapper;
-        private Coroutine _initialSceneLoadRoutine;
         private bool _hasStarted;
 
         [Inject]
@@ -19,7 +18,7 @@ namespace LastSeed.Bootstrap.Application
             _initialSceneBootstrapper = initialSceneBootstrapper;
         }
 
-        private void Start()
+        private async void Start()
         {
             if (_hasStarted)
                 return;
@@ -34,18 +33,20 @@ namespace LastSeed.Bootstrap.Application
             }
 
             _hasStarted = true;
-            _initialSceneLoadRoutine = StartCoroutine(LoadInitialLobbyRoutine());
-        }
-
-        private void OnDestroy()
-        {
-            _initialSceneLoadRoutine = null;
-        }
-
-        private IEnumerator LoadInitialLobbyRoutine()
-        {
-            yield return _initialSceneBootstrapper.LoadInitialLobby(_loadingView);
-            _initialSceneLoadRoutine = null;
+            try
+            {
+                await _initialSceneBootstrapper.LoadInitialLobbyAsync(
+                    _loadingView,
+                    destroyCancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+                enabled = false;
+            }
         }
     }
 }

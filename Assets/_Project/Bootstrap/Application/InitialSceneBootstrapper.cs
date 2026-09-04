@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Threading;
 using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 
@@ -13,22 +13,22 @@ namespace LastSeed.Bootstrap.Application
             _sceneLoader = sceneLoader;
         }
 
-        public IEnumerator LoadInitialLobby(BootstrapLoadingView loadingView)
+        public async Awaitable LoadInitialLobbyAsync(
+            BootstrapLoadingView loadingView,
+            CancellationToken cancellationToken)
         {
             AsyncOperation loadOperation = _sceneLoader.LoadLobbyAsync(
                 allowSceneActivation: false);
 
             if (loadOperation == null)
-                yield break;
+                return;
 
             if (loadingView != null)
-                loadingView.Play();
+                await loadingView.PlayAsync();
 
-            while (loadingView != null && !loadingView.IsComplete)
-                yield return null;
-
-            while (!_sceneLoader.IsReadyToActivate(loadOperation))
-                yield return null;
+            await _sceneLoader.WaitUntilReadyToActivateAsync(
+                loadOperation,
+                cancellationToken);
 
             _sceneLoader.Activate(loadOperation);
         }

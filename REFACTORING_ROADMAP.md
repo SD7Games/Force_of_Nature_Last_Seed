@@ -132,6 +132,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Segment renderer discovery, relative sorting, and head/tail visual-chain pose operations are isolated in `WormSegmentVisualRig`; the pooled `WormSegment` keeps only entity lifecycle, damage binding, and cocoon state.
 - Worm creation is an explicit `WormSpawnLifecycle` pipeline (`views -> section models -> gameplay/presentation bind -> commit`) with reverse cleanup and pool return on failure; `WormSpawner` is now only the Unity timing and reactive-event adapter.
 - Reward slot rarity generation, guaranteed-slot weighting, and secondary legendary promotion are isolated in `RewardRarityRoller`, preserving the existing RNG call order while reducing `RewardRollService` responsibilities.
+- Weapon DPS imbalance estimation and its immutable weighting policy are isolated in `RewardWeaponDpsBiasCalculator`/`RewardWeaponDpsBias`; reward selection consumes the result without owning weapon-power formulas.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

@@ -14,7 +14,6 @@ namespace _Project.App.Gameplay
         [SerializeField] private WormReviveFlowController _reviveFlowController;
 
         [Header("Rewards/UI")]
-        [SerializeField] private RewardInstaller _rewardInstaller;
         [SerializeField] private PopupRoot _popupRoot;
         [SerializeField] private WormDamagePopupPresenter _damagePopupPresenter;
 
@@ -22,16 +21,19 @@ namespace _Project.App.Gameplay
         private IPlayerInputSnapshotProvider _playerInputSnapshotProvider;
         private PlayerMovementController _playerMovementController;
         private PlayerWeaponController _playerWeaponController;
+        private RewardSessionController _rewardSessionController;
 
         [Inject]
         public void Construct(
             IPlayerInputSnapshotProvider playerInputSnapshotProvider,
             PlayerMovementController playerMovementController,
-            PlayerWeaponController playerWeaponController)
+            PlayerWeaponController playerWeaponController,
+            RewardSessionController rewardSessionController)
         {
             _playerInputSnapshotProvider = playerInputSnapshotProvider;
             _playerMovementController = playerMovementController;
             _playerWeaponController = playerWeaponController;
+            _rewardSessionController = rewardSessionController;
         }
 
         public void RestartRun()
@@ -57,7 +59,7 @@ namespace _Project.App.Gameplay
             _wormSpawner?.DespawnWorm();
 
             _playerWeaponController.ResetRuntimeState();
-            _rewardInstaller?.ResetSession();
+            _rewardSessionController.ResetSession();
 
             _wormSpawner?.SpawnWorm();
 

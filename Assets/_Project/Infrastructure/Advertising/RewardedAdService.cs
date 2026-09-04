@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public abstract class RewardedAdService : MonoBehaviour
+public abstract class RewardedAdService : MonoBehaviour, IRewardedAdService
 {
     public abstract bool IsReady { get; }
 

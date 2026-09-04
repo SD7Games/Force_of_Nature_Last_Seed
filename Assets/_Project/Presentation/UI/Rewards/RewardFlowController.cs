@@ -9,7 +9,7 @@ public sealed class RewardFlowController : IDisposable
     private readonly RewardApplyService _applyService;
     private readonly RewardPopupView _popup;
     private readonly PopupRoot _popupRoot;
-    private readonly RewardedAdService _rewardedAdService;
+    private readonly IRewardedAdService _rewardedAdService;
     private readonly IRandomSource _randomSource;
     private readonly int _maxFreeRerollAttempts;
     private readonly int _maxAdRerollAttempts;
@@ -34,11 +34,9 @@ public sealed class RewardFlowController : IDisposable
         RewardApplyService applyService,
         RewardPopupView popup,
         PopupRoot popupRoot,
-        RewardedAdService rewardedAdService,
+        IRewardedAdService rewardedAdService,
         IRandomSource randomSource,
-        int maxFreeRerollAttempts,
-        int maxAdRerollAttempts,
-        int maxTakeAllAttempts)
+        RewardFlowSettings settings)
     {
         _rollService = rollService;
         _applyService = applyService;
@@ -47,9 +45,12 @@ public sealed class RewardFlowController : IDisposable
         _rewardedAdService = rewardedAdService;
         _randomSource = randomSource
             ?? throw new ArgumentNullException(nameof(randomSource));
-        _maxFreeRerollAttempts = UnityEngine.Mathf.Max(0, maxFreeRerollAttempts);
-        _maxAdRerollAttempts = UnityEngine.Mathf.Max(0, maxAdRerollAttempts);
-        _maxTakeAllAttempts = UnityEngine.Mathf.Max(0, maxTakeAllAttempts);
+        if (settings == null)
+            throw new ArgumentNullException(nameof(settings));
+
+        _maxFreeRerollAttempts = settings.FreeRerollAttemptsPerSession;
+        _maxAdRerollAttempts = settings.AdRerollAttemptsPerSession;
+        _maxTakeAllAttempts = settings.TakeAllAttemptsPerSession;
         _freeRerollAttemptsLeft = _maxFreeRerollAttempts;
         _adRerollAttemptsLeft = _maxAdRerollAttempts;
         _takeAllAttemptsLeft = _maxTakeAllAttempts;

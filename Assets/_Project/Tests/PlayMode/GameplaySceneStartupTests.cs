@@ -39,6 +39,9 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(FindInScene<PlayerInputSnapshotProvider>(gameplayScene), Is.Not.Null);
             Assert.That(FindInScene<GameplayUpdateDriver>(gameplayScene), Is.Not.Null);
             Assert.That(sceneContext.Container.Resolve<IRandomSource>(), Is.Not.Null);
+            Assert.That(sceneContext.Container.Resolve<IRewardedAdService>(), Is.Not.Null);
+            Assert.That(sceneContext.Container.Resolve<RewardFlowController>(), Is.Not.Null);
+            Assert.That(sceneContext.Container.Resolve<RewardSessionController>(), Is.Not.Null);
 
             AssertPlayerServices(sceneContext.Container);
             AssertWormServices(sceneContext.Container);

@@ -151,8 +151,6 @@ MonoBehaviour:
   _database: {fileID: 11400000, guid: bafb328ff8286024f9f6854a598d8d25, type: 2}
   _popup: {fileID: 656578156}
   _popupRoot: {fileID: 1474514291}
-  _weapon: {fileID: 501089295}
-  _acaciaThornWeapon: {fileID: 501089296}
   _rewardedAdService: {fileID: 91581460}
   _freeRerollAttemptsPerSession: 2
   _adRerollAttemptsPerSession: 1
@@ -365,7 +363,6 @@ MonoBehaviour:
   _pressureDirector: {fileID: 91581458}
   _engagementController: {fileID: 659970389}
   _reviveFlowController: {fileID: 91581459}
-  _rewardInstaller: {fileID: 57053535}
   _popupRoot: {fileID: 1474514291}
   _damagePopupPresenter: {fileID: 1484420117}
 --- !u!1 &141515087
@@ -428,6 +425,7 @@ MonoBehaviour:
   - {fileID: 141515091}
   - {fileID: 141515096}
   - {fileID: 141515095}
+  - {fileID: 57053535}
   _installerPrefabs: []
   _findSiblingMonoInstallers: 0
   _autoRun: 1

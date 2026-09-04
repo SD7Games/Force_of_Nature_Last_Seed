@@ -1,48 +1,25 @@
-using System.Collections.Generic;
-using LastSeed.Gameplay.Signals;
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Zenject;
 
 [DisallowMultipleComponent]
-public sealed class RewardInstaller : MonoBehaviour
+public sealed class RewardInstaller : MonoInstaller
 {
     [Header("Refs")]
     [SerializeField] private RewardDatabase _database;
-
     [SerializeField] private RewardPopupView _popup;
     [SerializeField] private PopupRoot _popupRoot;
-    [SerializeField] private ProjectileWeapon _weapon;
-    [SerializeField] private AcaciaThornWeapon _acaciaThornWeapon;
     [FormerlySerializedAs("_takeAllRewardedAdService")]
     [SerializeField] private RewardedAdService _rewardedAdService;
 
     [Header("Session Attempts")]
     [FormerlySerializedAs("_freeRerollAttemptsPerPopup")]
-    [SerializeField][Min(0)] private int _freeRerollAttemptsPerSession = 2;
+    [SerializeField, Min(0)] private int _freeRerollAttemptsPerSession = 2;
     [FormerlySerializedAs("_adRerollAttemptsPerPopup")]
-    [SerializeField][Min(0)] private int _adRerollAttemptsPerSession = 1;
+    [SerializeField, Min(0)] private int _adRerollAttemptsPerSession = 1;
     [FormerlySerializedAs("_takeAllAttemptsPerPopup")]
-    [SerializeField][Min(0)] private int _takeAllAttemptsPerSession = 1;
-
-    private RewardFlowController _rewardFlow;
-    private bool _hasRevivedThisRun;
-    private SignalBus _signalBus;
-    private IRandomSource _randomSource;
-    private bool _isSubscribedToSignals;
-
-    [Inject]
-    public void Construct(SignalBus signalBus, IRandomSource randomSource)
-    {
-        _signalBus = signalBus;
-        _randomSource = randomSource;
-        SubscribeToSignals();
-    }
-
-    public IReadOnlyList<CocoonRewardProfile> CocoonProfiles =>
-        _database != null
-            ? _database.CocoonProfiles
-            : CocoonRewardProfile.Defaults;
+    [SerializeField, Min(0)] private int _takeAllAttemptsPerSession = 1;
 
 #if UNITY_EDITOR
     public int EditorFreeRerollAttemptsPerSession => _freeRerollAttemptsPerSession;
@@ -50,98 +27,51 @@ public sealed class RewardInstaller : MonoBehaviour
     public int EditorTakeAllAttemptsPerSession => _takeAllAttemptsPerSession;
 #endif
 
-    private void Awake()
+    public override void InstallBindings()
     {
-        var roll = new RewardRollService(_database, _randomSource);
-        var apply = new RewardApplyService(_weapon, _acaciaThornWeapon);
+        ValidateRequiredReferences();
 
-        _rewardFlow = new RewardFlowController(
-            roll,
-            apply,
-            _popup,
-            _popupRoot,
-            _rewardedAdService,
-            _randomSource,
+        Container.BindInstance(_database).AsSingle();
+        Container.BindInstance(_popup).AsSingle();
+        Container.BindInstance(_popupRoot).AsSingle();
+        BindRewardedAdService();
+        Container.BindInstance(new RewardFlowSettings(
             _freeRerollAttemptsPerSession,
             _adRerollAttemptsPerSession,
-            _takeAllAttemptsPerSession);
+            _takeAllAttemptsPerSession));
+        Container.Bind<RewardRollService>().AsSingle();
+        Container.Bind<RewardApplyService>().AsSingle();
+        Container.BindInterfacesAndSelfTo<RewardFlowController>().AsSingle();
+        Container.BindInterfacesAndSelfTo<RewardSessionController>()
+            .AsSingle()
+            .NonLazy();
     }
 
-    private void OnEnable()
+    private void BindRewardedAdService()
     {
-        SubscribeToSignals();
-    }
-
-    private void OnDisable()
-    {
-        UnsubscribeFromSignals();
-    }
-
-    private void OnDestroy()
-    {
-        _rewardFlow?.Dispose();
-    }
-
-    public bool OpenReward()
-    {
-        return OpenReward(null);
-    }
-
-    public bool OpenReward(CocoonRewardProfile cocoonProfile)
-    {
-        return OpenReward(cocoonProfile, 0f, 0f);
-    }
-
-    public bool OpenReward(
-        CocoonRewardProfile cocoonProfile,
-        float headPathProgressNormalized,
-        float wormDestructionProgressNormalized)
-    {
-        return _rewardFlow != null &&
-            _rewardFlow.Open(
-                cocoonProfile,
-                new RewardRollContext(
-                    headPathProgressNormalized,
-                    wormDestructionProgressNormalized,
-                    _hasRevivedThisRun));
-    }
-
-    public void ResetSession()
-    {
-        _hasRevivedThisRun = false;
-        _rewardFlow?.ResetSession();
-    }
-
-    private void HandleReviveGranted(WormReviveGrantedSignal signal)
-    {
-        _hasRevivedThisRun = true;
-    }
-
-    private void HandleRewardRequested(WormRewardRequestedSignal signal)
-    {
-        OpenReward(
-            signal.RewardProfile,
-            signal.HeadPathProgressNormalized,
-            signal.WormDestructionProgressNormalized);
-    }
-
-    private void SubscribeToSignals()
-    {
-        if (_signalBus == null || _isSubscribedToSignals || !isActiveAndEnabled)
+        if (_rewardedAdService != null)
+        {
+            Container.Bind<IRewardedAdService>()
+                .FromInstance(_rewardedAdService)
+                .AsSingle();
             return;
+        }
 
-        _signalBus.Subscribe<WormReviveGrantedSignal>(HandleReviveGranted);
-        _signalBus.Subscribe<WormRewardRequestedSignal>(HandleRewardRequested);
-        _isSubscribedToSignals = true;
+        Container.Bind<IRewardedAdService>()
+            .To<DisabledRewardedAdService>()
+            .AsSingle();
     }
 
-    private void UnsubscribeFromSignals()
+    private void ValidateRequiredReferences()
     {
-        if (_signalBus == null || !_isSubscribedToSignals)
-            return;
+        if (_database == null)
+            throw new InvalidOperationException("Reward database is not configured.");
 
-        _signalBus.Unsubscribe<WormReviveGrantedSignal>(HandleReviveGranted);
-        _signalBus.Unsubscribe<WormRewardRequestedSignal>(HandleRewardRequested);
-        _isSubscribedToSignals = false;
+        if (_popup == null)
+            throw new InvalidOperationException("Reward popup is not configured.");
+
+        if (_popupRoot == null)
+            throw new InvalidOperationException("Reward popup root is not configured.");
+
     }
 }

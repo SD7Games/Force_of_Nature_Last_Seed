@@ -71,6 +71,7 @@ namespace LastSeed.Bootstrap.Installers
                 .AsSingle()
                 .NonLazy();
             Container.Bind<WormSectionRollbackState<WormSegment>>().AsSingle();
+            Container.Bind<WormSectionRollbackMotionController<WormSegment>>().AsSingle();
             Container.BindInstance(new WormAdaptiveHpSettings(
                 _levelNumber,
                 _upgradeRebalanceInterval,

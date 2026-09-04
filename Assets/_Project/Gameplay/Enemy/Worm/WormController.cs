@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -77,7 +76,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingYScale = 0.86f;
 
     private float _headDistance;
-    private Coroutine _rollbackRoutine;
     private bool _hasReachedPathEnd;
     private float _reviveVisualYOffset;
     private Action _reviveCompletion;
@@ -88,6 +86,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private WormReviveAnimationController _reviveAnimationController;
     private WormReviveVisualScaler _reviveVisualScaler;
     private WormSegmentChain<WormSegment> _segmentChain;
+    private WormSectionRollbackMotionController<WormSegment> _sectionRollbackMotionController;
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
 
     public event Action PathCompleted;
@@ -106,6 +105,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         WormReviveAnimationController reviveAnimationController,
         WormReviveVisualScaler reviveVisualScaler,
         WormSegmentChain<WormSegment> segmentChain,
+        WormSectionRollbackMotionController<WormSegment> sectionRollbackMotionController,
         WormSectionRollbackState<WormSegment> sectionRollbackState)
     {
         _combatBurstController = combatBurstController;
@@ -115,6 +115,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _reviveAnimationController = reviveAnimationController;
         _reviveVisualScaler = reviveVisualScaler;
         _segmentChain = segmentChain;
+        _sectionRollbackMotionController = sectionRollbackMotionController;
         _sectionRollbackState = sectionRollbackState;
     }
 
@@ -223,12 +224,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     public void ClearWorm()
     {
-        if (_rollbackRoutine != null)
-        {
-            StopCoroutine(_rollbackRoutine);
-            _rollbackRoutine = null;
-        }
-
         _reviveAnimationController.Cancel();
         _reviveCompletion = null;
         CleanupReviveThrowbackVisuals();
@@ -248,9 +243,11 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (_segmentChain.Count == 0 || _rail == null)
             return;
 
-        if (_reviveAnimationController.IsActive)
+        if (_sectionRollbackState.IsActive)
+            AdvanceSectionRollback(Time.unscaledDeltaTime);
+        else if (_reviveAnimationController.IsActive)
             AdvanceReviveAnimation(Time.unscaledDeltaTime);
-        else if (!_sectionRollbackState.IsActive)
+        else
             MoveForward(Time.deltaTime);
 
         UpdateSegments();
@@ -381,18 +378,13 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (_reviveAnimationController.IsActive)
             return;
 
-        bool shouldStartRoutine = _sectionRollbackState.BeginOrExtend(
+        _sectionRollbackState.BeginOrExtend(
             _segmentChain.Segments,
             splitIndex,
             destroyedCount,
             _headDistance,
             _segmentSpacing);
         _segmentChainPresenter.Reset();
-
-        if (!shouldStartRoutine || _rollbackRoutine != null)
-            return;
-
-        _rollbackRoutine = StartCoroutine(SectionRollbackRoutine());
     }
 
     public bool RollbackToReviveStart(Action onComplete)
@@ -405,12 +397,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _reviveAnimationController.Cancel();
         _reviveCompletion = null;
         CleanupReviveThrowbackVisuals();
-
-        if (_rollbackRoutine != null)
-        {
-            StopCoroutine(_rollbackRoutine);
-            _rollbackRoutine = null;
-        }
 
         ClearSectionRollbackState();
         _reviveVisualYOffset = 0f;
@@ -434,55 +420,26 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         return true;
     }
 
-    /// <summary>
-    /// Performs smooth rollback of the worm head until
-    /// the destroyed gap is closed.
-    /// Additional destroyed sections can extend the target distance
-    /// without restarting the animation.
-    /// Uses unscaled time so the chain can visually reconnect while
-    /// the reward popup keeps gameplay paused through Time.timeScale.
-    /// </summary>
-    private IEnumerator SectionRollbackRoutine()
+    private void AdvanceSectionRollback(float deltaTime)
     {
-        while (_headDistance > _sectionRollbackState.TargetDistance)
-        {
-            float deltaTime = Time.unscaledDeltaTime;
-            AdvanceSectionRollbackTail(deltaTime);
-            float target = _sectionRollbackState.TargetDistance;
-
-            if (_headDistance <= target)
-                break;
-
-            _headDistance = Mathf.MoveTowards(
-                _headDistance,
-                target,
-                _rollbackSpeed * deltaTime
-            );
-
-            UpdateSegments();
-            yield return null;
-        }
-
-        _headDistance = Mathf.Min(_headDistance, _sectionRollbackState.TargetDistance);
-        UpdateSegments();
-        NotifyPathCompletedIfNeeded(
-            _rail != null && _headDistance >= _rail.TotalLength);
-
-        _sectionRollbackState.Complete();
-        _rollbackRoutine = null;
-    }
-
-    private void AdvanceSectionRollbackTail(float deltaTime)
-    {
-        if (deltaTime <= 0f || _rail == null)
+        if (_rail == null)
             return;
 
-        _sectionRollbackState.AdvanceAnchoredTail(
+        WormSectionRollbackMotionResult result = _sectionRollbackMotionController.Advance(
+            _headDistance,
             _segmentChain.Segments,
             _rail.TotalLength,
             _speed,
             _sectionRollbackForwardSpeedMultiplier,
+            _rollbackSpeed,
             deltaTime);
+        _headDistance = result.HeadDistance;
+
+        if (!result.Completed)
+            return;
+
+        NotifyPathCompletedIfNeeded(_headDistance >= _rail.TotalLength);
+        _sectionRollbackState.Complete();
     }
 
     private void AdvanceReviveAnimation(float deltaTime)

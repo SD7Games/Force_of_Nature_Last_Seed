@@ -66,6 +66,9 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(
                 sceneContainer.Resolve<WormSectionRollbackState<WormSegment>>(),
                 Is.Not.Null);
+            Assert.That(
+                sceneContainer.Resolve<WormSectionRollbackMotionController<WormSegment>>(),
+                Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormSpawnSettings>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormSegmentPool>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormFactory>(), Is.Not.Null);

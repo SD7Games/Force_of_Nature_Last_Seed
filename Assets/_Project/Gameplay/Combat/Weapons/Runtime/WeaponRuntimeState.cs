@@ -15,7 +15,7 @@ public sealed class WeaponRuntimeState
     public const int MaxSalvoShots = 6;
     public const int DefaultMaxSalvoExtraShots = DefaultMaxSalvoShots - 1;
     public const int MaxSalvoExtraShots = MaxSalvoShots - 1;
-    public const int MaxProjectileDamage = 9999999;
+    public const int MaxProjectileDamage = WeaponDamageClamp.MaximumDamage;
     public const float DefaultMaxFireRateBonus = 3f;
     public const float DefaultMaxProjectileSpeedBonus = 2f;
     public const float MaxDamageMultiplier = 100000f;
@@ -294,13 +294,7 @@ public sealed class WeaponRuntimeState
 
     public static int ClampDamage(double rawDamage)
     {
-        if (double.IsNaN(rawDamage) || rawDamage <= 1d)
-            return 1;
-
-        if (rawDamage >= MaxProjectileDamage)
-            return MaxProjectileDamage;
-
-        return UnityEngine.Mathf.Max(1, (int)Math.Round(rawDamage));
+        return WeaponDamageClamp.Clamp(rawDamage);
     }
 
     public WeaponRuntimeState Clone()

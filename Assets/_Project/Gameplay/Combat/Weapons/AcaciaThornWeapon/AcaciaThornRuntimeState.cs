@@ -225,13 +225,7 @@ public sealed class AcaciaThornRuntimeState
 
     public static int ClampDamage(double rawDamage)
     {
-        if (double.IsNaN(rawDamage) || rawDamage <= 1d)
-            return 1;
-
-        if (rawDamage >= WeaponRuntimeState.MaxProjectileDamage)
-            return WeaponRuntimeState.MaxProjectileDamage;
-
-        return Mathf.Max(1, (int)Math.Round(rawDamage));
+        return WeaponDamageClamp.Clamp(rawDamage);
     }
 
     public AcaciaThornRuntimeState Clone()

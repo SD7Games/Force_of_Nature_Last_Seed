@@ -39,6 +39,7 @@ public sealed class RewardButtonView : MonoBehaviour
     private Vector3 _baseScale;
     private Vector3 _baseIconScale;
     private bool _hasCachedTransformState;
+    private RewardButtonContentPresenter _contentPresenter;
 
     private event Action<RewardChoiceData> _onClick;
 
@@ -69,13 +70,14 @@ public sealed class RewardButtonView : MonoBehaviour
         _data = data;
         _onClick = onClick;
 
-        ApplyTextColors(presentation.Kind);
-        SetText(_title, data.Title);
-        SetOptionalText(_description, data.Description);
-        SetValueText(data.ValueText, presentation.Kind);
-        ApplyTargetIcon(presentation.IconProfile);
+        EnsureContentPresenter();
+        _contentPresenter.Apply(data, presentation);
 
-        ApplyCardVisual(data.Rarity, presentation.Kind);
+        if (_targetIcon != null)
+        {
+            _iconRectTransform = _targetIcon.rectTransform;
+            _baseIconScale = _iconRectTransform.localScale;
+        }
 
         if (_button == null)
             return;
@@ -317,88 +319,30 @@ public sealed class RewardButtonView : MonoBehaviour
         return sequence;
     }
 
-    private void ApplyCardVisual(
-        RewardRarity rarity,
-        RewardPresentationKind presentationKind)
+    private void EnsureContentPresenter()
     {
-        bool isWeaponUnlock = presentationKind == RewardPresentationKind.WeaponUnlock;
-
-        SetVisualActive(_commonVisual, !isWeaponUnlock && rarity == RewardRarity.Common);
-        SetVisualActive(_rareVisual, !isWeaponUnlock && rarity == RewardRarity.Rare);
-        SetVisualActive(_legendaryVisual, !isWeaponUnlock && rarity == RewardRarity.Legendary);
-        SetVisualActive(_weaponUnlockVisual, isWeaponUnlock);
-    }
-
-    private void ApplyTextColors(RewardPresentationKind presentationKind)
-    {
-        bool isWeaponUnlock = presentationKind == RewardPresentationKind.WeaponUnlock;
-
-        SetColor(_title, isWeaponUnlock ? _weaponUnlockTitleColor : _titleColor);
-        SetColor(_description, isWeaponUnlock ? _weaponUnlockDescriptionColor : _descriptionColor);
-        SetColor(_value, isWeaponUnlock ? _weaponUnlockValueColor : _valueColor);
-    }
-
-    private static void SetText(TMP_Text text, string value)
-    {
-        if (text != null)
-            text.text = value ?? string.Empty;
-    }
-
-    private static void SetOptionalText(TMP_Text text, string value)
-    {
-        if (text == null)
+        if (_contentPresenter != null)
             return;
 
-        bool hasValue = !string.IsNullOrWhiteSpace(value);
-        text.gameObject.SetActive(hasValue);
-        text.text = hasValue ? value : string.Empty;
-    }
-
-    private void SetValueText(string value, RewardPresentationKind presentationKind)
-    {
-        if (_value == null)
-            return;
-
-        if (presentationKind == RewardPresentationKind.WeaponUnlock)
-        {
-            _value.text = string.IsNullOrWhiteSpace(value)
-                ? _weaponUnlockValueFallback
-                : value;
-            return;
-        }
-
-        _value.text = RewardTextFormatter.HighlightNumbers(value, _numberColor);
-    }
-
-    private void ApplyTargetIcon(RewardIconProfile iconProfile)
-    {
-        if (_targetIcon == null)
-            return;
-
-        if (iconProfile == null || iconProfile.Sprite == null)
-        {
-            _targetIcon.enabled = false;
-            return;
-        }
-
-        iconProfile.ApplyTo(_targetIcon);
-
-        if (_iconRectTransform == null)
-            _iconRectTransform = _targetIcon.rectTransform;
-
-        _baseIconScale = _iconRectTransform.localScale;
-    }
-
-    private static void SetColor(TMP_Text text, Color32 color)
-    {
-        if (text != null)
-            text.color = color;
-    }
-
-    private static void SetVisualActive(Image image, bool active)
-    {
-        if (image != null)
-            image.gameObject.SetActive(active);
+        RewardButtonContentStyle style = new(
+            _numberColor,
+            _titleColor,
+            _descriptionColor,
+            _valueColor,
+            _weaponUnlockTitleColor,
+            _weaponUnlockDescriptionColor,
+            _weaponUnlockValueColor,
+            _weaponUnlockValueFallback);
+        _contentPresenter = new RewardButtonContentPresenter(
+            _targetIcon,
+            _title,
+            _description,
+            _value,
+            _commonVisual,
+            _rareVisual,
+            _legendaryVisual,
+            _weaponUnlockVisual,
+            style);
     }
 
     private void CacheTransformState()

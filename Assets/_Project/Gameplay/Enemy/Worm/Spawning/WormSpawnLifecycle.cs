@@ -1,6 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using UnityEngine;
 
 public sealed class WormSpawnLifecycle
 {
@@ -41,11 +42,12 @@ public sealed class WormSpawnLifecycle
 
     public bool IsSpawned { get; private set; }
 
-    public IEnumerator PrewarmRoutine()
+    public Awaitable PrewarmAsync(CancellationToken cancellationToken)
     {
-        return _segmentPool.PrewarmRoutine(
+        return _segmentPool.PrewarmAsync(
             _settings.BodyPoolCapacity,
-            _settings.PrewarmBatchSize);
+            _settings.PrewarmBatchSize,
+            cancellationToken);
     }
 
     public void Spawn(

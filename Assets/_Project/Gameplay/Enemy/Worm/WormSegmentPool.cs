@@ -1,11 +1,6 @@
-using System.Collections;
+using System.Threading;
 using UnityEngine;
 
-/// <summary>
-/// Lightweight object pool for worm segments.
-/// Maintains separate queues for head, body and tail segments
-/// to avoid runtime allocations during worm generation.
-/// </summary>
 public sealed class WormSegmentPool
 {
     private readonly Transform _parent;
@@ -36,10 +31,6 @@ public sealed class WormSegmentPool
         _tailPool = CreatePool(_tailPrefab);
     }
 
-    /// <summary>
-    /// Instantiates a predefined number of pooled objects ahead of time
-    /// to avoid runtime allocations during gameplay.
-    /// </summary>
     public void Prewarm(int bodyCapacity)
     {
         _headPool?.Prewarm(1);
@@ -47,20 +38,19 @@ public sealed class WormSegmentPool
         _bodyPool?.Prewarm(bodyCapacity);
     }
 
-    public IEnumerator PrewarmRoutine(int bodyCapacity, int batchSize)
+    public async Awaitable PrewarmAsync(
+        int bodyCapacity,
+        int batchSize,
+        CancellationToken cancellationToken)
     {
         int safeBatchSize = Mathf.Max(1, batchSize);
         _prewarmCreatedThisFrame = 0;
 
-        yield return PrewarmRoutine(_headPool, 1, safeBatchSize);
-        yield return PrewarmRoutine(_tailPool, 1, safeBatchSize);
-        yield return PrewarmRoutine(_bodyPool, bodyCapacity, safeBatchSize);
+        await PrewarmPoolAsync(_headPool, 1, safeBatchSize, cancellationToken);
+        await PrewarmPoolAsync(_tailPool, 1, safeBatchSize, cancellationToken);
+        await PrewarmPoolAsync(_bodyPool, bodyCapacity, safeBatchSize, cancellationToken);
     }
 
-    /// <summary>
-    /// Retrieves a segment instance from the pool or instantiates a new one
-    /// if the pool is exhausted.
-    /// </summary>
     public WormSegment Get(WormSegmentType type)
     {
         ObjectPool<WormSegment> pool = GetPool(type);
@@ -82,15 +72,16 @@ public sealed class WormSegmentPool
         GetPool(segment.Type)?.Return(segment);
     }
 
-    private IEnumerator PrewarmRoutine(
+    private async Awaitable PrewarmPoolAsync(
         ObjectPool<WormSegment> pool,
         int count,
-        int batchSize)
+        int batchSize,
+        CancellationToken cancellationToken)
     {
         if (pool == null)
         {
             Debug.LogWarning("WormSegment prefab missing in pool");
-            yield break;
+            return;
         }
 
         for (int i = 0; i < count; i++)
@@ -102,7 +93,7 @@ public sealed class WormSegmentPool
             if (_prewarmCreatedThisFrame >= batchSize)
             {
                 _prewarmCreatedThisFrame = 0;
-                yield return null;
+                await Awaitable.NextFrameAsync(cancellationToken);
             }
         }
     }

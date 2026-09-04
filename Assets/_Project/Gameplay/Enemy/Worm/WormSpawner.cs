@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using LastSeed.Gameplay.Signals;
 using UnityEngine;
@@ -41,11 +41,21 @@ public sealed class WormSpawner : MonoBehaviour
         _spawnLifecycle?.UnbindFacePresentation();
     }
 
-    private IEnumerator Start()
+    private async void Start()
     {
-        yield return _spawnLifecycle.PrewarmRoutine();
-
-        SpawnWorm();
+        try
+        {
+            await _spawnLifecycle.PrewarmAsync(destroyCancellationToken);
+            SpawnWorm();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception, this);
+            enabled = false;
+        }
     }
 
     public void SpawnWorm()

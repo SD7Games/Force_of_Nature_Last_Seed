@@ -161,7 +161,12 @@ public sealed class BootstrapLoadingView : MonoBehaviour
             _loadingStatusChangeIntervalMin,
             _loadingStatusChangeIntervalMax);
 
-        while (time < _loadingDuration)
+        int maximumCallbackCount = Mathf.CeilToInt(
+            _loadingDuration / _loadingStatusChangeIntervalMin);
+
+        for (int callbackIndex = 0;
+             callbackIndex < maximumCallbackCount && time < _loadingDuration;
+             callbackIndex++)
         {
             _sequence.InsertCallback(time, SetRandomLoadingStatus);
             time += Random.Range(

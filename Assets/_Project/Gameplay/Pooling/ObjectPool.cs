@@ -114,7 +114,9 @@ public sealed class ObjectPool<T>
 
     public void ReturnAll()
     {
-        while (_activeItems.Count > 0)
+        int returnCount = _activeItems.Count;
+
+        for (int index = 0; index < returnCount; index++)
         {
             int lastIndex = _activeItems.Count - 1;
             T item = _activeItems[lastIndex];

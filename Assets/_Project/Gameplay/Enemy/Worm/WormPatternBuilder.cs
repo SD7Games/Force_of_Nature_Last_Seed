@@ -11,10 +11,6 @@ public readonly struct WormPatternEntry
     }
 }
 
-/// <summary>
-/// Generates only structural layout (Head → Body → Tail).
-/// No gameplay logic (cocoons/rewards) here.
-/// </summary>
 public static class WormPatternBuilder
 {
     public static int GetBodySegmentCount(int sectionCount)
@@ -33,7 +29,9 @@ public static class WormPatternBuilder
 
         int remainingBodySegments = bodySegmentCount;
 
-        while (remainingBodySegments > 0)
+        for (int groupIndex = 0;
+             groupIndex < bodySegmentCount && remainingBodySegments > 0;
+             groupIndex++)
         {
             int bodyCount = Random.Range(4, 6);
 

@@ -266,8 +266,16 @@ public sealed class RewardFlowController : IDisposable
 
     private void TryOpenNextPendingRequest()
     {
-        while (!_isDisposed && !_isPopupRequestActive && _requestQueue.TryDequeue(out RewardOpenRequest request))
+        int pendingRequestCount = _requestQueue.Count;
+
+        for (int index = 0; index < pendingRequestCount; index++)
         {
+            if (_isDisposed || _isPopupRequestActive ||
+                !_requestQueue.TryDequeue(out RewardOpenRequest request))
+            {
+                return;
+            }
+
             if (StartOpenRequest(request))
                 return;
         }

@@ -102,7 +102,7 @@ public static class WormHpFormatter
         int digitCount = 0;
         int remaining = value;
 
-        while (remaining > 0)
+        for (int digitIndex = 0; digitIndex < 10 && remaining > 0; digitIndex++)
         {
             digitCount++;
             remaining /= 10;
@@ -114,7 +114,7 @@ public static class WormHpFormatter
         int writeIndex = length + digitCount - 1;
         remaining = value;
 
-        while (remaining > 0)
+        for (int digitIndex = 0; digitIndex < digitCount; digitIndex++)
         {
             buffer[writeIndex] = (char)('0' + (remaining % 10));
             writeIndex--;

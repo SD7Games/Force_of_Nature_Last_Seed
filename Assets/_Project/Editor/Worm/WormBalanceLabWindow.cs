@@ -1290,8 +1290,19 @@ internal static class WormBalanceSimulator
         ref float maxPlayerXError)
     {
         float remaining = Mathf.Max(0f, duration);
+        int maximumStepCount = 1;
 
-        while (remaining > 0f)
+        if (settings.UseRuntimePressure && settings.PressureConfig != null)
+        {
+            float minimumStep = Mathf.Max(
+                0.0001f,
+                settings.PressureConfig.SampleInterval);
+            maximumStepCount = Mathf.CeilToInt(remaining / minimumStep) + 1;
+        }
+
+        for (int stepIndex = 0;
+             stepIndex < maximumStepCount && remaining > 0f;
+             stepIndex++)
         {
             float step = remaining;
 
@@ -1428,10 +1439,17 @@ internal static class WormBalanceSimulator
 
         float currentDps = GetCurrentEstimatedDps(settings, mainState, acaciaState);
 
-        while (adSession != null
-            && ShouldRerollOffer(offer, currentDps, settings.FreeRerollMinDpsGainRatio)
-            && adSession.TryUseFreeReroll())
+        for (int attemptIndex = 0;
+             attemptIndex < settings.FreeRerollAttemptsPerSession;
+             attemptIndex++)
         {
+            if (adSession == null
+                || !ShouldRerollOffer(offer, currentDps, settings.FreeRerollMinDpsGainRatio)
+                || !adSession.TryUseFreeReroll())
+            {
+                break;
+            }
+
             offer = RollAndEvaluateOffer(
                 rewardRollService,
                 rewardContext,
@@ -1442,10 +1460,17 @@ internal static class WormBalanceSimulator
                 acaciaState);
         }
 
-        while (adSession != null
-            && ShouldRerollOffer(offer, currentDps, settings.AdRerollMinDpsGainRatio)
-            && adSession.TryUseAdReroll())
+        for (int attemptIndex = 0;
+             attemptIndex < settings.AdRerollAttemptsPerSession;
+             attemptIndex++)
         {
+            if (adSession == null
+                || !ShouldRerollOffer(offer, currentDps, settings.AdRerollMinDpsGainRatio)
+                || !adSession.TryUseAdReroll())
+            {
+                break;
+            }
+
             offer = RollAndEvaluateOffer(
                 rewardRollService,
                 rewardContext,

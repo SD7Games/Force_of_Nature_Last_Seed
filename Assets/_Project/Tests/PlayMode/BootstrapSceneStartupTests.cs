@@ -24,11 +24,9 @@ namespace LastSeed.Tests.PlayMode
 
             float deadline = Time.realtimeSinceStartup + LobbyLoadTimeoutSeconds;
 
-            while (SceneManager.GetActiveScene().name != GameSceneNames.Lobby
-                && Time.realtimeSinceStartup < deadline)
-            {
-                yield return null;
-            }
+            yield return new WaitUntil(() =>
+                SceneManager.GetActiveScene().name == GameSceneNames.Lobby
+                || Time.realtimeSinceStartup >= deadline);
 
             Assert.That(
                 SceneManager.GetActiveScene().name,

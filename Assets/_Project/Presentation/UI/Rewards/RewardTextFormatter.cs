@@ -54,32 +54,27 @@ public static class RewardTextFormatter
 
     private static void AddNumberRanges(string text, string colorHex)
     {
-        int i = 0;
-
-        while (i < text.Length)
+        for (int index = 0; index < text.Length; index++)
         {
-            if (!IsNumberStart(text, i))
-            {
-                i++;
+            if (!IsNumberStart(text, index))
                 continue;
-            }
 
-            int start = i;
+            int start = index;
             bool hasDigit = false;
 
-            if (text[i] == '+' || text[i] == '-' || text[i] == 'x' || text[i] == 'X')
-                i++;
+            if (text[index] == '+' || text[index] == '-' || text[index] == 'x' || text[index] == 'X')
+                index++;
 
-            while (i < text.Length && IsNumberBody(text[i]))
+            for (; index < text.Length && IsNumberBody(text[index]); index++)
             {
-                if (char.IsDigit(text[i]))
+                if (char.IsDigit(text[index]))
                     hasDigit = true;
-
-                i++;
             }
 
             if (hasDigit)
-                TryAddRange(start, i - start, colorHex);
+                TryAddRange(start, index - start, colorHex);
+
+            index--;
         }
     }
 

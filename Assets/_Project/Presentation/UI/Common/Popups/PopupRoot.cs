@@ -233,7 +233,9 @@ public sealed class PopupRoot : MonoBehaviour
 
     private bool TryShowNextQueuedPopup()
     {
-        while (_queuedPopups.Count > 0)
+        int queuedCount = _queuedPopups.Count;
+
+        for (int index = 0; index < queuedCount; index++)
         {
             PopupView popup = _queuedPopups[0];
             _queuedPopups.RemoveAt(0);

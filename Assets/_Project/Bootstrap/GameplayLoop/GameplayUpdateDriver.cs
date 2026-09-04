@@ -16,7 +16,11 @@ namespace LastSeed.Bootstrap.GameplayLoop
 
         private void Update()
         {
-            _gameplayFrameCoordinator.Tick(Time.deltaTime);
+            _gameplayFrameCoordinator.Tick(
+                Time.deltaTime,
+                Time.unscaledDeltaTime,
+                Time.time,
+                Time.unscaledTime);
         }
     }
 }

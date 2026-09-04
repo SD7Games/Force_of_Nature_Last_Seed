@@ -71,6 +71,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
     private WormSegmentChain<WormSegment> _segmentChain;
     private WormSectionRollbackMotionController<WormSegment> _sectionRollbackMotionController;
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
+    private float _waveTime;
 
     public event Action PathCompleted;
 
@@ -156,17 +157,25 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         ClearTargetDistanceCaches();
     }
 
-    private void Update()
+    public void Tick(
+        float deltaTime,
+        float unscaledDeltaTime,
+        float time,
+        float unscaledTime)
     {
         if (_segmentChain.Count == 0 || _rail == null)
             return;
 
+        _waveTime = (_sectionRollbackState.IsActive || _reviveSequence.IsActive
+            ? unscaledTime
+            : time) * _waveSpeed;
+
         if (_sectionRollbackState.IsActive)
-            AdvanceSectionRollback(Time.unscaledDeltaTime);
+            AdvanceSectionRollback(unscaledDeltaTime);
         else if (_reviveSequence.IsActive)
-            AdvanceReviveAnimation(Time.unscaledDeltaTime);
+            AdvanceReviveAnimation(unscaledDeltaTime);
         else
-            MoveForward(Time.deltaTime);
+            MoveForward(deltaTime);
 
         UpdateSegments();
     }
@@ -230,7 +239,7 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _activeDistancePadding,
             _waveAmplitude,
             _waveFrequency,
-            GetWaveTime(),
+            _waveTime,
             _reviveSequence.VisualYOffset,
             _sectionRollbackState.IsActive,
             _reviveSequence.IsActive);
@@ -240,13 +249,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             _rail,
             _sectionRollbackState.AnchoredDistances,
             layout);
-    }
-
-    private float GetWaveTime()
-    {
-        return (_sectionRollbackState.IsActive || _reviveSequence.IsActive
-            ? Time.unscaledTime
-            : Time.time) * _waveSpeed;
     }
 
     public int RemoveDestroyedSectionSegments(List<WormSegment> destroyed, out int firstRemovedIndex)

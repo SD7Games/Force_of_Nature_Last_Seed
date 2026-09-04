@@ -542,6 +542,7 @@ MonoBehaviour:
   _wormController: {fileID: 91581456}
   _wormCombatController: {fileID: 91581457}
   _sectionHpPresenter: {fileID: 1262977638}
+  _wormPressureDirector: {fileID: 91581458}
   _headPrefab: {fileID: 1300043371089455902, guid: e5872cdbd7e9762429fe5cfec195a428, type: 3}
   _bodyPrefab: {fileID: 5005386936780954391, guid: d793d0b4e9b2e00478b0d9799bab95d2, type: 3}
   _tailPrefab: {fileID: 3075482384031948703, guid: 433d2a5fe533f854d92179c62851b028, type: 3}

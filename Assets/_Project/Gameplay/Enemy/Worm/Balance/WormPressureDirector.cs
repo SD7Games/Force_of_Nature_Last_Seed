@@ -38,15 +38,13 @@ public sealed class WormPressureDirector : MonoBehaviour
         UnsubscribeFromSignals();
     }
 
-    private void Update()
+    public void Tick(float deltaTime)
     {
         if (!_isTracking || _config == null || !_config.Enabled)
             return;
 
         if (_wormController == null || !_wormController.HasWorm)
             return;
-
-        float deltaTime = Time.deltaTime;
 
         if (deltaTime <= 0f)
             return;

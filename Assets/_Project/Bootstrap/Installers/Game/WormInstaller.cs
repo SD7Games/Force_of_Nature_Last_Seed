@@ -10,6 +10,7 @@ namespace LastSeed.Bootstrap.Installers
         [SerializeField] private WormController _wormController;
         [SerializeField] private WormCombatController _wormCombatController;
         [SerializeField] private WormSectionHpPresenter _sectionHpPresenter;
+        [SerializeField] private WormPressureDirector _wormPressureDirector;
 
         [Header("Segment Pool")]
         [SerializeField] private WormSegment _headPrefab;
@@ -37,6 +38,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<WormController>().FromInstance(_wormController).AsSingle();
             Container.Bind<WormCombatController>().FromInstance(_wormCombatController).AsSingle();
             Container.Bind<WormSectionHpPresenter>().FromInstance(_sectionHpPresenter).AsSingle();
+            Container.Bind<WormPressureDirector>().FromInstance(_wormPressureDirector).AsSingle();
             Container.BindInstance(new WormSpawnSettings(
                 _sectionCount,
                 _poolPadding,

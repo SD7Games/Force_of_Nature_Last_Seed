@@ -10,19 +10,22 @@ namespace LastSeed.Bootstrap.GameplayLoop
         private readonly PlayerMovementController _playerMovementController;
         private readonly PlayerWeaponController _playerWeaponController;
         private readonly WormController _wormController;
+        private readonly WormPressureDirector _wormPressureDirector;
 
         public GameplayFrameCoordinator(
             IPlayerInputSnapshotProvider playerInputSnapshotProvider,
             IGameplayInputLock gameplayInputLock,
             PlayerMovementController playerMovementController,
             PlayerWeaponController playerWeaponController,
-            WormController wormController)
+            WormController wormController,
+            WormPressureDirector wormPressureDirector)
         {
             _playerInputSnapshotProvider = playerInputSnapshotProvider;
             _gameplayInputLock = gameplayInputLock;
             _playerMovementController = playerMovementController;
             _playerWeaponController = playerWeaponController;
             _wormController = wormController;
+            _wormPressureDirector = wormPressureDirector;
         }
 
         public void Tick(
@@ -34,6 +37,7 @@ namespace LastSeed.Bootstrap.GameplayLoop
             RunInputCaptureStage();
             RunPlayerStage(deltaTime);
             RunWormStage(deltaTime, unscaledDeltaTime, time, unscaledTime);
+            RunDifficultyStage(deltaTime);
         }
 
         private void RunInputCaptureStage()
@@ -61,6 +65,11 @@ namespace LastSeed.Bootstrap.GameplayLoop
             float unscaledTime)
         {
             _wormController.Tick(deltaTime, unscaledDeltaTime, time, unscaledTime);
+        }
+
+        private void RunDifficultyStage(float deltaTime)
+        {
+            _wormPressureDirector.Tick(deltaTime);
         }
     }
 }

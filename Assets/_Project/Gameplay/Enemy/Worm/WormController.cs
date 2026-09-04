@@ -78,15 +78,14 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private float _headDistance;
     private Coroutine _rollbackRoutine;
-    private Coroutine _reviveThrowbackRoutine;
-    private bool _isReviveRollback;
     private bool _hasReachedPathEnd;
     private float _reviveVisualYOffset;
+    private Action _reviveCompletion;
     private WormCombatBurstController _combatBurstController;
     private WormForwardMotionController _forwardMotionController;
     private WormRailTargetResolver _railTargetResolver;
     private WormSegmentChainPresenter _segmentChainPresenter;
-    private WormReviveMotionCalculator _reviveMotionCalculator;
+    private WormReviveAnimationController _reviveAnimationController;
     private WormReviveVisualScaler _reviveVisualScaler;
     private WormSegmentChain<WormSegment> _segmentChain;
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
@@ -104,7 +103,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         WormForwardMotionController forwardMotionController,
         WormRailTargetResolver railTargetResolver,
         WormSegmentChainPresenter segmentChainPresenter,
-        WormReviveMotionCalculator reviveMotionCalculator,
+        WormReviveAnimationController reviveAnimationController,
         WormReviveVisualScaler reviveVisualScaler,
         WormSegmentChain<WormSegment> segmentChain,
         WormSectionRollbackState<WormSegment> sectionRollbackState)
@@ -113,7 +112,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _forwardMotionController = forwardMotionController;
         _railTargetResolver = railTargetResolver;
         _segmentChainPresenter = segmentChainPresenter;
-        _reviveMotionCalculator = reviveMotionCalculator;
+        _reviveAnimationController = reviveAnimationController;
         _reviveVisualScaler = reviveVisualScaler;
         _segmentChain = segmentChain;
         _sectionRollbackState = sectionRollbackState;
@@ -193,6 +192,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private void OnDestroy()
     {
+        _reviveAnimationController?.Cancel();
+        _reviveCompletion = null;
         CleanupReviveThrowbackVisuals();
     }
 
@@ -202,12 +203,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     /// </summary>
     public void Init(List<WormSegment> segments)
     {
-        if (_reviveThrowbackRoutine != null)
-        {
-            StopCoroutine(_reviveThrowbackRoutine);
-            _reviveThrowbackRoutine = null;
-        }
-
+        _reviveAnimationController.Cancel();
+        _reviveCompletion = null;
         CleanupReviveThrowbackVisuals();
         _segmentChain.ReplaceWith(segments);
 
@@ -215,7 +212,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _segmentChainPresenter.Reset();
 
         _sectionRollbackState.Complete();
-        _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
         _hasReachedPathEnd = false;
         _combatBurstController.Reset(_speed);
@@ -233,18 +229,13 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             _rollbackRoutine = null;
         }
 
-        if (_reviveThrowbackRoutine != null)
-        {
-            StopCoroutine(_reviveThrowbackRoutine);
-            _reviveThrowbackRoutine = null;
-        }
-
+        _reviveAnimationController.Cancel();
+        _reviveCompletion = null;
         CleanupReviveThrowbackVisuals();
         _segmentChain.Clear();
         _headDistance = 0f;
         _segmentChainPresenter.Reset();
         _sectionRollbackState.Complete();
-        _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
         _hasReachedPathEnd = false;
         _combatBurstController.Reset(_speed);
@@ -257,7 +248,9 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (_segmentChain.Count == 0 || _rail == null)
             return;
 
-        if (!_sectionRollbackState.IsActive && !_isReviveRollback)
+        if (_reviveAnimationController.IsActive)
+            AdvanceReviveAnimation(Time.unscaledDeltaTime);
+        else if (!_sectionRollbackState.IsActive)
             MoveForward(Time.deltaTime);
 
         UpdateSegments();
@@ -341,7 +334,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             GetWaveTime(),
             _reviveVisualYOffset,
             _sectionRollbackState.IsActive,
-            _isReviveRollback);
+            _reviveAnimationController.IsActive);
 
         _segmentChainPresenter.Render(
             _segmentChain.Segments,
@@ -352,7 +345,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private float GetWaveTime()
     {
-        return (_sectionRollbackState.IsActive || _isReviveRollback
+        return (_sectionRollbackState.IsActive || _reviveAnimationController.IsActive
             ? Time.unscaledTime
             : Time.time) * _waveSpeed;
     }
@@ -385,7 +378,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         if (splitIndex < 0)
             return;
 
-        if (_isReviveRollback)
+        if (_reviveAnimationController.IsActive)
             return;
 
         bool shouldStartRoutine = _sectionRollbackState.BeginOrExtend(
@@ -409,12 +402,9 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
         float target = GetReviveRollbackTargetDistance();
 
-        if (_reviveThrowbackRoutine != null)
-        {
-            StopCoroutine(_reviveThrowbackRoutine);
-            _reviveThrowbackRoutine = null;
-            CleanupReviveThrowbackVisuals();
-        }
+        _reviveAnimationController.Cancel();
+        _reviveCompletion = null;
+        CleanupReviveThrowbackVisuals();
 
         if (_rollbackRoutine != null)
         {
@@ -423,7 +413,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         }
 
         ClearSectionRollbackState();
-        _isReviveRollback = false;
         _reviveVisualYOffset = 0f;
         _hasReachedPathEnd = false;
 
@@ -435,7 +424,13 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             return true;
         }
 
-        _reviveThrowbackRoutine = StartCoroutine(ReviveThrowbackRoutine(target, onComplete));
+        _segmentChainPresenter.Reset();
+        _reviveVisualScaler.Capture(_segmentChain.Segments);
+        _reviveCompletion = onComplete;
+        _reviveAnimationController.Begin(
+            _headDistance,
+            target,
+            BuildReviveAnimationSettings());
         return true;
     }
 
@@ -490,135 +485,39 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             deltaTime);
     }
 
-    private IEnumerator ReviveThrowbackRoutine(float target, Action onComplete)
+    private void AdvanceReviveAnimation(float deltaTime)
     {
-        _isReviveRollback = true;
-        _segmentChainPresenter.Reset();
-        _reviveVisualYOffset = 0f;
-
-        float start = _headDistance;
-
-        _reviveVisualScaler.Capture(_segmentChain.Segments);
-
-        yield return PlayReviveSquashPhase();
-        yield return PlayReviveThrowPhase(start, target);
-        yield return PlayReviveLandingPhase(target);
-
-        _headDistance = target;
-        _reviveVisualYOffset = 0f;
-        UpdateSegments();
-
-        CleanupReviveThrowbackVisuals();
-        _isReviveRollback = false;
-        _reviveThrowbackRoutine = null;
-        onComplete?.Invoke();
-    }
-
-    private IEnumerator PlayReviveSquashPhase()
-    {
-        float duration = Mathf.Max(0.01f, _reviveSquashDuration);
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float eased = _reviveMotionCalculator.EaseOutCubic(t);
-
-            _reviveVisualScaler.Apply(
-                _segmentChain.Segments,
-                Mathf.LerpUnclamped(1f, _reviveSquashXScale, eased),
-                Mathf.LerpUnclamped(1f, _reviveSquashYScale, eased));
-
-            UpdateSegments();
-            yield return null;
-        }
-
+        WormReviveAnimationFrame frame = _reviveAnimationController.Advance(deltaTime);
+        _headDistance = frame.HeadDistance;
+        _reviveVisualYOffset = frame.VisualYOffset;
         _reviveVisualScaler.Apply(
             _segmentChain.Segments,
-            _reviveSquashXScale,
-            _reviveSquashYScale);
-    }
+            frame.Scale.X,
+            frame.Scale.Y);
 
-    private IEnumerator PlayReviveThrowPhase(float start, float target)
-    {
-        float rollbackDistance = Mathf.Max(0f, start - target);
-        float cruiseSpeed = _reviveMotionCalculator.CalculateCruiseSpeed(
-            rollbackDistance,
-            _reviveThrowDuration,
-            _reviveDecelerationPathFraction,
-            _speed);
+        if (!frame.Completed)
+            return;
 
-        if (rollbackDistance <= 0.001f)
-        {
-            _headDistance = target;
-            _reviveVisualYOffset = 0f;
-            UpdateSegments();
-            yield break;
-        }
-
-        while (_headDistance > target)
-        {
-            float remainingDistance = Mathf.Max(0f, _headDistance - target);
-            float speed = _reviveMotionCalculator.CalculateThrowSpeed(
-                remainingDistance,
-                rollbackDistance,
-                cruiseSpeed,
-                _reviveDecelerationPathFraction,
-                _speed);
-
-            _headDistance = Mathf.Max(
-                target,
-                _headDistance - (speed * Time.unscaledDeltaTime));
-
-            remainingDistance = Mathf.Max(0f, _headDistance - target);
-            float distanceProgress = 1f - Mathf.Clamp01(remainingDistance / rollbackDistance);
-
-            _reviveVisualYOffset = Mathf.Sin(distanceProgress * Mathf.PI) * _reviveArcHeight;
-
-            WormScale2 travelScale = _reviveMotionCalculator.CalculateTravelScale(
-                distanceProgress,
-                _reviveSquashXScale,
-                _reviveSquashYScale);
-            _reviveVisualScaler.Apply(_segmentChain.Segments, travelScale.X, travelScale.Y);
-            UpdateSegments();
-
-            yield return null;
-        }
-
-        _headDistance = target;
-        _reviveVisualYOffset = 0f;
-        _reviveVisualScaler.Apply(_segmentChain.Segments, 1f, 1f);
         UpdateSegments();
+        CleanupReviveThrowbackVisuals();
+        Action completion = _reviveCompletion;
+        _reviveCompletion = null;
+        completion?.Invoke();
     }
 
-    private IEnumerator PlayReviveLandingPhase(float target)
+    private WormReviveAnimationSettings BuildReviveAnimationSettings()
     {
-        float duration = Mathf.Max(0.01f, _reviveLandingDuration);
-        float elapsed = 0f;
-
-        _headDistance = target;
-        _reviveVisualYOffset = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float eased = _reviveMotionCalculator.EaseOutBack(t);
-
-            _reviveVisualYOffset = Mathf.Sin(t * Mathf.PI) * (_reviveArcHeight * 0.12f);
-
-            _reviveVisualScaler.Apply(
-                _segmentChain.Segments,
-                Mathf.LerpUnclamped(_reviveLandingXScale, 1f, eased),
-                Mathf.LerpUnclamped(_reviveLandingYScale, 1f, eased));
-
-            UpdateSegments();
-
-            yield return null;
-        }
-
-        _reviveVisualScaler.Apply(_segmentChain.Segments, 1f, 1f);
+        return new WormReviveAnimationSettings(
+            _speed,
+            _reviveSquashDuration,
+            _reviveThrowDuration,
+            _reviveLandingDuration,
+            _reviveDecelerationPathFraction,
+            _reviveArcHeight,
+            _reviveSquashXScale,
+            _reviveSquashYScale,
+            _reviveLandingXScale,
+            _reviveLandingYScale);
     }
 
     private void CleanupReviveThrowbackVisuals()

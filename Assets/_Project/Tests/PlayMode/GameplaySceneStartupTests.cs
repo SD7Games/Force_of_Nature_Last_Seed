@@ -60,6 +60,7 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(sceneContainer.Resolve<WormRailTargetResolver>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormSegmentChainPresenter>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormReviveMotionCalculator>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<WormReviveAnimationController>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormReviveVisualScaler>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormSegmentChain<WormSegment>>(), Is.Not.Null);
             Assert.That(

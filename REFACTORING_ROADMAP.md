@@ -137,6 +137,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Reward pool construction/filtering, pool inspection, weighted removal, and rarity/fallback selection scenarios are isolated in `RewardPoolBuilder`, `RewardPoolInspector`, `RewardWeightedPicker`, and `RewardChoiceSelector`; `RewardRollService` is reduced from 806 lines to a 253-line orchestration boundary without changing RNG traversal order.
 - Worm head advancement is a pure `WormForwardMotionController` step returning distance, catch-up state, and path-completion data; `WormController` applies the result instead of owning speed/burst/target calculations.
 - Worm chain ownership, source copying, duplicate-safe destroyed-segment membership, removal, and first-gap lookup are isolated in the engine-independent `WormSegmentChain<TSegment>`; presentation and revive scaling consume read-only chain views.
+- Revive squash, throw, deceleration, landing, and phase completion are an explicit tick-driven `WormReviveAnimationController` state machine; `WormController` only applies its immutable frame result to the chain view and owns the Unity callback boundary.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.
 - Introduce registries/maps for identity lookup and symmetric unregister.

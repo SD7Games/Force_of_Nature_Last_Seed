@@ -64,6 +64,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<WormRailTargetResolver>().AsSingle();
             Container.Bind<WormSegmentChainPresenter>().AsSingle();
             Container.Bind<WormReviveMotionCalculator>().AsSingle();
+            Container.Bind<WormReviveAnimationController>().AsSingle();
             Container.Bind<WormReviveVisualScaler>().AsSingle();
             Container.Bind<WormSegmentChain<WormSegment>>().AsSingle();
             Container.BindInterfacesAndSelfTo<WormFaceBurstPresenter>()

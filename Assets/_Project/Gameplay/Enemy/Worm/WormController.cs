@@ -86,6 +86,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private bool _hasReachedPathEnd;
     private float _reviveVisualYOffset;
     private WormCombatBurstController _combatBurstController;
+    private WormForwardMotionController _forwardMotionController;
     private WormRailTargetResolver _railTargetResolver;
     private WormSegmentChainPresenter _segmentChainPresenter;
     private WormReviveMotionCalculator _reviveMotionCalculator;
@@ -102,6 +103,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     [Inject]
     public void Construct(
         WormCombatBurstController combatBurstController,
+        WormForwardMotionController forwardMotionController,
         WormRailTargetResolver railTargetResolver,
         WormSegmentChainPresenter segmentChainPresenter,
         WormReviveMotionCalculator reviveMotionCalculator,
@@ -109,6 +111,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         WormSectionRollbackState<WormSegment> sectionRollbackState)
     {
         _combatBurstController = combatBurstController;
+        _forwardMotionController = forwardMotionController;
         _railTargetResolver = railTargetResolver;
         _segmentChainPresenter = segmentChainPresenter;
         _reviveMotionCalculator = reviveMotionCalculator;
@@ -265,63 +268,40 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private void MoveForward(float deltaTime)
     {
-        if (deltaTime <= 0f || _rail.TotalLength <= 0f)
-            return;
-
-        float previousDistance = _headDistance;
-        float targetDistance = _rail.TotalLength;
-
-        _headDistance = Mathf.Min(
-            targetDistance,
-            _headDistance + GetForwardSpeed(deltaTime) * deltaTime);
-
-        CompletePathIfReached(previousDistance, targetDistance);
-    }
-
-    private void CompletePathIfReached(float previousDistance, float targetDistance)
-    {
-        if (_hasReachedPathEnd)
-            return;
-
-        if (previousDistance >= targetDistance || _headDistance < targetDistance)
-            return;
-
-        _hasReachedPathEnd = true;
-        PathCompleted?.Invoke();
-    }
-
-    private float GetForwardSpeed(float deltaTime)
-    {
-        IsCatchingUpToCombatStart = ShouldCatchUp();
-        WormCombatBurstSettings settings = new(
+        WormCombatBurstSettings burstSettings = new(
             _enableCombatSpeedBursts,
             _combatBurstSpeed,
             _combatBurstInterval,
             _combatBurstDuration,
             _combatBurstSlowdownDuration);
-
-        return _combatBurstController.ResolveForwardSpeed(
-            deltaTime,
+        WormForwardMotionSettings settings = new(
             _speed,
             _catchUpSpeed,
-            IsCatchingUpToCombatStart,
-            CanUseCombatBurst(deltaTime),
+            _catchUpRailPointIndex,
+            _catchUpStopOffset,
+            _catchUpExtraDistance,
+            _combatBurstDisableRailPointIndex,
+            _combatBurstDisablePathProgress,
+            burstSettings);
+        WormForwardMotionResult result = _forwardMotionController.Advance(
+            _headDistance,
+            deltaTime,
+            _rail,
             settings);
+
+        _headDistance = result.HeadDistance;
+        IsCatchingUpToCombatStart = result.IsCatchingUp;
+
+        NotifyPathCompletedIfNeeded(result.CompletedPath);
     }
 
-    private bool ShouldCatchUp()
+    private void NotifyPathCompletedIfNeeded(bool completedPath)
     {
-        if (_rail == null)
-            return false;
-
-        if (!TryGetCatchUpTargetDistance(out float targetDistance))
-            return false;
-
-        targetDistance = Mathf.Max(
-            0f,
-            targetDistance - _catchUpStopOffset + _catchUpExtraDistance);
-
-        return _headDistance < targetDistance;
+        if (completedPath && !_hasReachedPathEnd)
+        {
+            _hasReachedPathEnd = true;
+            PathCompleted?.Invoke();
+        }
     }
 
     private bool TryGetCatchUpTargetDistance(out float targetDistance)
@@ -344,26 +324,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private void ClearTargetDistanceCaches()
     {
         _railTargetResolver?.Clear();
-    }
-
-    private bool CanUseCombatBurst(float deltaTime)
-    {
-        if (!TryGetCombatBurstDisableDistance(out float disableDistance))
-            return true;
-
-        float projectedDistance = _headDistance +
-            (Mathf.Max(_speed, _combatBurstSpeed) * Mathf.Max(0f, deltaTime));
-
-        return projectedDistance < disableDistance;
-    }
-
-    private bool TryGetCombatBurstDisableDistance(out float distance)
-    {
-        return _railTargetResolver.TryGetBurstDisableDistance(
-            _rail,
-            _combatBurstDisableRailPointIndex,
-            _combatBurstDisablePathProgress,
-            out distance);
     }
 
     /// <summary>
@@ -543,7 +503,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
         _headDistance = Mathf.Min(_headDistance, _sectionRollbackState.TargetDistance);
         UpdateSegments();
-        CompletePathIfReached(_headDistance - 0.001f, _rail.TotalLength);
+        NotifyPathCompletedIfNeeded(
+            _rail != null && _headDistance >= _rail.TotalLength);
 
         _sectionRollbackState.Complete();
         _rollbackRoutine = null;

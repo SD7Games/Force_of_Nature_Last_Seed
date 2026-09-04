@@ -54,6 +54,7 @@ namespace LastSeed.Bootstrap.Installers
             Container.Bind<IWormHpScalingPolicy>().FromInstance(_hpScalingConfig).AsSingle();
             Container.Bind<IWeaponPowerProvider>().To<WeaponPowerProvider>().AsSingle();
             Container.Bind<WormCombatBurstController>().AsSingle();
+            Container.Bind<WormForwardMotionController>().AsSingle();
             Container.BindInterfacesAndSelfTo<WormCombatBurstSignalPublisher>()
                 .AsSingle()
                 .NonLazy();

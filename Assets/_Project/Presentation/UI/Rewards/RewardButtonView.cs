@@ -4,10 +4,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Single reward button view.
-/// Displays modifier info and notifies when selected.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class RewardButtonView : MonoBehaviour
 {

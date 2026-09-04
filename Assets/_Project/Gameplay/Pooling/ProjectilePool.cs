@@ -1,14 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Object pool responsible for recycling projectile instances.
-///
-/// The pool prewarms a number of projectiles during initialization
-/// to avoid runtime instantiation during gameplay.
-///
-/// Projectiles automatically return themselves to the pool when
-/// their lifecycle ends.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class ProjectilePool : MonoBehaviour
 {
@@ -19,10 +10,6 @@ public sealed class ProjectilePool : MonoBehaviour
     private ObjectPool<Projectile> _pool;
     private bool _initialized;
 
-    /// <summary>
-    /// Assigns projectile prefab used by this pool and performs prewarming.
-    /// Called once during pool initialization.
-    /// </summary>
     public void SetPrefab(Projectile prefab, IScreenBounds screenBounds)
     {
         if (_initialized) return;
@@ -34,10 +21,6 @@ public sealed class ProjectilePool : MonoBehaviour
         _initialized = true;
     }
 
-    /// <summary>
-    /// Retrieves a projectile instance from the pool.
-    /// Creates a new one if the pool is empty.
-    /// </summary>
     public Projectile Spawn(
         ProjectileConfig config,
         ProjectileRuntimeStats stats,
@@ -48,9 +31,6 @@ public sealed class ProjectilePool : MonoBehaviour
         return _pool.Rent(request, InitializeProjectile);
     }
 
-    /// <summary>
-    /// Returns a projectile instance back to the pool.
-    /// </summary>
     public void Release(Projectile projectile)
     {
         _pool?.Return(projectile);

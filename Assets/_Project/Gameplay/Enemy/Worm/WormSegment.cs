@@ -9,11 +9,6 @@ public enum WormSegmentType
     Tail
 }
 
-/// <summary>
-/// Represents a single worm segment instance.
-/// Handles rendering setup, cocoon overlay logic,
-/// collision state and lifecycle transitions.
-/// </summary>
 public sealed class WormSegment : MonoBehaviour
 {
     [field: SerializeField] public WormSegmentType Type { get; private set; }

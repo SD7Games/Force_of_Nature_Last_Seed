@@ -1,10 +1,6 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// Runtime state of weapon that accumulates all modifier effects.
-/// This state is reset per run/session.
-/// </summary>
 public sealed class WeaponRuntimeState
 {
     private const float FloatEpsilon = 0.0001f;

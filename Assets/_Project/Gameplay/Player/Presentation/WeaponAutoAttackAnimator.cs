@@ -111,7 +111,6 @@ public sealed class WeaponAutoAttackAnimator : MonoBehaviour
 
     public void ReleasePreparedAttack()
     {
-        // Kept intentionally so stale Animation Events do not release the shot early.
     }
 
     private void HandleShootingStateChanged(CombatShootingStateChangedSignal signal)

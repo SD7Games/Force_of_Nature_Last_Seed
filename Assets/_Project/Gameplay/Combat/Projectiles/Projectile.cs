@@ -1,21 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Runtime projectile entity responsible for movement, collision and lifetime.
-///
-/// The projectile is configured through ProjectileConfig and reused through
-/// ProjectilePool to avoid runtime allocations.
-///
-/// Behaviour is split into small components:
-/// - ProjectileMovement controls trajectory
-/// - ProjectileBounce handles bounce logic
-///
-/// The projectile releases itself back to the pool when:
-/// • lifetime expires
-/// • allowed hit count reaches zero
-/// • collision occurs with a valid damageable target
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class Projectile : MonoBehaviour
 {
@@ -63,10 +48,6 @@ public sealed class Projectile : MonoBehaviour
             _visualRotationOffset = _renderer.transform.localRotation;
     }
 
-    /// <summary>
-    /// Handles projectile lifetime and per-frame behaviour.
-    /// Movement and optional bounce logic are updated here.
-    /// </summary>
     private void Update()
     {
         if (!_active)
@@ -102,10 +83,6 @@ public sealed class Projectile : MonoBehaviour
         _bounce?.Init(screenBounds);
     }
 
-    /// <summary>
-    /// Applies projectile configuration coming from a ScriptableObject.
-    /// This defines damage, speed, penetration and visual behaviour.
-    /// </summary>
     public void ApplyConfig(ProjectileConfig config, ProjectileRuntimeStats stats)
     {
         _lifeTime = Mathf.Max(0.05f, config.LifeTime);
@@ -126,10 +103,6 @@ public sealed class Projectile : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Activates projectile from the pool and initializes its direction.
-    /// Called by weapon systems when spawning a new shot.
-    /// </summary>
     public void Activate(Vector3 position, Quaternion shotRotation)
     {
         _hasLastHit = false;
@@ -170,11 +143,6 @@ public sealed class Projectile : MonoBehaviour
             Quaternion.Euler(0f, 0f, angle) * _visualRotationOffset;
     }
 
-    /// <summary>
-    /// Handles projectile collision with damageable targets.
-    /// Supports penetration allowing the projectile to pass through
-    /// multiple enemies before being released back to the pool.
-    /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (!_active)
@@ -287,9 +255,6 @@ public sealed class Projectile : MonoBehaviour
         return WeaponRuntimeState.ClampDamage(_damage * (double)_criticalDamageMultiplier);
     }
 
-    /// <summary>
-    /// Returns projectile back to the pool and disables runtime logic.
-    /// </summary>
     private void ReleaseSelf()
     {
         if (!_active)

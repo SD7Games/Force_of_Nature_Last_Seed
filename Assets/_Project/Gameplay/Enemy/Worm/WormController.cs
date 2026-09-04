@@ -3,19 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-/// <summary>
-/// Controls movement and positioning of the worm segments along a rail path.
-///
-/// The worm is represented as a chain of segments that follow the head
-/// using a fixed spacing distance.
-///
-/// Movement is rail-based which allows efficient positioning without
-/// physics simulation.
-///
-/// The controller also handles the rollback mechanic which occurs when
-/// a group of segments is destroyed. In this case the worm head moves
-/// backwards until the remaining segments reconnect.
-/// </summary>
 public sealed partial class WormController : MonoBehaviour, IWormPathProgressProvider
 {
     [Header("Rail")]
@@ -143,10 +130,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         _reviveSequence?.Cancel();
     }
 
-    /// <summary>
-    /// Initializes worm movement with the generated segment list.
-    /// Called by WormSpawner after all segments are created.
-    /// </summary>
     public void Init(List<WormSegment> segments)
     {
         _reviveSequence.Cancel();
@@ -237,11 +220,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         _railTargetResolver?.Clear();
     }
 
-    /// <summary>
-    /// Updates position and rotation of all worm segments.
-    /// Each segment samples a position along the rail using
-    /// its offset distance relative to the head.
-    /// </summary>
     private void UpdateSegments()
     {
         WormSegmentChainLayout layout = new(
@@ -271,10 +249,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
             : Time.time) * _waveSpeed;
     }
 
-    /// <summary>
-    /// Removes destroyed segments from the internal segment list
-    /// and returns how many segments were removed.
-    /// </summary>
     public int RemoveDestroyedSectionSegments(List<WormSegment> destroyed, out int firstRemovedIndex)
     {
         firstRemovedIndex = -1;
@@ -287,10 +261,6 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
         return removed;
     }
 
-    /// <summary>
-    /// Starts rollback movement after a section of segments
-    /// has been destroyed.
-    /// </summary>
     public void RollbackDestroyedGap(int destroyedCount, int splitIndex)
     {
         if (destroyedCount <= 0)

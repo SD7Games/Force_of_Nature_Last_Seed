@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Creates and initializes worm segment views from pattern data.
-/// Does not contain gameplay logic.
-/// </summary>
 public sealed class WormFactory
 {
     private readonly WormSegmentPool _pool;

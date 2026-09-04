@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Builds the final projectile shot pattern from accumulated runtime modifiers.
-/// Pure calculation only: no spawning, no MonoBehaviour lifecycle.
-/// </summary>
 public sealed class ProjectileShotPatternBuilder
 {
     public void Build(

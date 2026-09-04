@@ -3,10 +3,6 @@ using LastSeed.Gameplay.Signals;
 using UnityEngine;
 using Zenject;
 
-/// <summary>
-/// Applies damage to worm sections and coordinates section removal
-/// with the movement chain once a section is destroyed.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class WormCombatController : MonoBehaviour
 {

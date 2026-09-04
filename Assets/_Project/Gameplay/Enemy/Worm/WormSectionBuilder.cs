@@ -1,10 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Builds fixed-size sections and handles cocoon + reward generation.
-/// Section is the single source of truth for gameplay.
-/// </summary>
 public static class WormSectionBuilder
 {
     public static List<WormSection> BuildSections(
@@ -82,10 +78,6 @@ public static class WormSectionBuilder
         sections.Add(section);
     }
 
-    /// <summary>
-    /// Determines if this section should have a cocoon.
-    /// If yes — places it in center and assigns reward to the section.
-    /// </summary>
     private static void TryPlaceCocoon(
         List<WormSegment> buffer,
         WormSection section,

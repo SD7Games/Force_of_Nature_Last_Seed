@@ -3,10 +3,6 @@ using LastSeed.Gameplay.Signals;
 using UnityEngine;
 using Zenject;
 
-/// <summary>
-/// Handles projectile spawning and applies modifier pipeline.
-/// Modifiers are aggregated into a final shot pattern (no exponential growth).
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 {
@@ -83,9 +79,6 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
             StartAttackCycle();
     }
 
-    /// <summary>
-    /// Rebuilds fire rate using runtime multipliers.
-    /// </summary>
     private void RebuildModifiers(bool resetFiringCycle)
     {
         if (_config == null) return;
@@ -269,7 +262,6 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         _shots.Clear();
         _shotPatternBuilder.Build(_firePoint.position, _firePoint.rotation, _runtimeState, _shots);
 
-        //  Safety clamp
         if (_shots.Count > _maxShots)
         {
             Debug.LogWarning($"Shot limit exceeded: {_shots.Count} → clamped to {_maxShots}");

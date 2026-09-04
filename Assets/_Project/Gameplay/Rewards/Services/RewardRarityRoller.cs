@@ -68,7 +68,7 @@ public static class RewardRarityRoller
         if (slotRarities == null ||
             slotRarities.Length == 0 ||
             secondaryLegendaryChance <= 0f ||
-            !HasRewardsForRarity(pools, RewardRarity.Legendary))
+            !RewardPoolInspector.HasRewards(pools, RewardRarity.Legendary))
         {
             return;
         }
@@ -93,7 +93,7 @@ public static class RewardRarityRoller
         ref float rareWeight,
         ref float legendaryWeight)
     {
-        if (weight <= 0f || !HasRewardsForRarity(pools, rarity))
+        if (weight <= 0f || !RewardPoolInspector.HasRewards(pools, rarity))
             return;
 
         switch (rarity)
@@ -168,13 +168,4 @@ public static class RewardRarityRoller
         }
     }
 
-    private static bool HasRewardsForRarity(
-        Dictionary<RewardRarity, List<RewardModifierEntry>> pools,
-        RewardRarity rarity)
-    {
-        return pools != null &&
-            pools.TryGetValue(rarity, out List<RewardModifierEntry> pool) &&
-            pool != null &&
-            pool.Count > 0;
-    }
 }

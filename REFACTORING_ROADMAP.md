@@ -134,6 +134,7 @@ Installers are introduced only when their domain is migrated. Empty speculative 
 - Reward slot rarity generation, guaranteed-slot weighting, and secondary legendary promotion are isolated in `RewardRarityRoller`, preserving the existing RNG call order while reducing `RewardRollService` responsibilities.
 - Weapon DPS imbalance estimation and its immutable weighting policy are isolated in `RewardWeaponDpsBiasCalculator`/`RewardWeaponDpsBias`; reward selection consumes the result without owning weapon-power formulas.
 - Reward eligibility, category/weapon classification, assist-DPS preference, and effective weight calculation are centralized in `RewardSelectionPolicy` so all selection paths share one rule implementation.
+- Reward pool construction/filtering, pool inspection, weighted removal, and rarity/fallback selection scenarios are isolated in `RewardPoolBuilder`, `RewardPoolInspector`, `RewardWeightedPicker`, and `RewardChoiceSelector`; `RewardRollService` is reduced from 806 lines to a 253-line orchestration boundary without changing RNG traversal order.
 - Worm head advancement is a pure `WormForwardMotionController` step returning distance, catch-up state, and path-completion data; `WormController` applies the result instead of owning speed/burst/target calculations.
 - Split generation, movement, combat, adaptive HP, lifecycle, and world presentation.
 - Replace direct reward/revive knowledge with contracts and signals.

@@ -42,6 +42,8 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(sceneContext.Container.Resolve<IRewardedAdService>(), Is.Not.Null);
             Assert.That(sceneContext.Container.Resolve<RewardFlowController>(), Is.Not.Null);
             Assert.That(sceneContext.Container.Resolve<RewardSessionController>(), Is.Not.Null);
+            Assert.That(sceneContext.Container.Resolve<RewardAttemptState>(), Is.Not.Null);
+            Assert.That(sceneContext.Container.Resolve<RewardRequestQueue>(), Is.Not.Null);
 
             AssertPlayerServices(sceneContext.Container);
             AssertWormServices(sceneContext.Container);

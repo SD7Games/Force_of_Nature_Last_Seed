@@ -6,64 +6,9 @@ using Zenject;
 
 public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 {
-    private const float MinimumCombatBurstSlowdownDuration = 0.01f;
-
     [Header("Rail")]
     [SerializeField] private RailPath _rail;
-
-    [Header("Movement")]
-    [SerializeField] private float _speed = 1f;
-
-    [Header("Catch Up")]
-    [Tooltip("RailPath control point index. Use RailPath Scene View point labels.")]
-    [SerializeField][Min(0)] private int _catchUpRailPointIndex;
-    [SerializeField][Min(0f)] private float _catchUpSpeed = 6f;
-    [SerializeField][Min(0f)] private float _catchUpStopOffset = 0f;
-    [SerializeField][Min(0f)] private float _catchUpExtraDistance = 1.5f;
-
-    [Header("Combat Speed Bursts")]
-    [SerializeField] private bool _enableCombatSpeedBursts = true;
-    [SerializeField][Min(0f)] private float _combatBurstSpeed = 2f;
-    [SerializeField][Min(0.1f)] private float _combatBurstInterval = 10f;
-    [SerializeField][Min(0.1f)] private float _combatBurstDuration = 2.5f;
-    [Tooltip("RailPath control point index that disables combat speed bursts. Set -1 to use path progress instead.")]
-    [SerializeField][Min(-1)] private int _combatBurstDisableRailPointIndex = -1;
-    [SerializeField][Range(0f, 1f)] private float _combatBurstDisablePathProgress = 0.9f;
-    [SerializeField][Min(0.01f)] private float _combatBurstSlowdownDuration = 0.35f;
-
-    [Header("Segments")]
-    [SerializeField] private float _segmentSpacing = 0.5f;
-    [SerializeField][Min(0.01f)] private float _tailVisualSpacingMultiplier = 1f;
-
-    [Header("Head Tail Bridge")]
-    [SerializeField][Min(0.01f)] private float _headBridgeSpacingMultiplier = 1.25f;
-
-    [Header("Optimization")]
-    [SerializeField][Min(0f)] private float _activeDistancePadding = 0.5f;
-
-    [Header("Wave")]
-    [SerializeField] private float _waveAmplitude = 0.15f;
-
-    [SerializeField] private float _waveFrequency = 6f;
-    [SerializeField] private float _waveSpeed = 2f;
-
-    [Header("Rollback")]
-    [SerializeField] private float _rollbackSpeed = 8f;
-    [SerializeField][Min(0f)] private float _sectionRollbackForwardSpeedMultiplier = 4f;
-
-    [Header("Revive")]
-    [Tooltip("RailPath control point index. Set -1 to use Catch Up Rail Point Index.")]
-    [SerializeField][Min(-1)] private int _reviveRollbackRailPointIndex = -1;
-    [SerializeField][Min(0.01f)] private float _reviveSquashDuration = 0.14f;
-    [SerializeField][Min(0.01f)] private float _reviveThrowDuration = 0.75f;
-    [SerializeField][Min(0.01f)] private float _reviveLandingDuration = 0.16f;
-    [Tooltip("Last part of the rollback distance where revive throw slows down to regular gameplay speed.")]
-    [SerializeField][Range(0f, 0.8f)] private float _reviveDecelerationPathFraction = 0.2f;
-    [SerializeField][Min(0f)] private float _reviveArcHeight = 0.85f;
-    [SerializeField][Range(1f, 1.8f)] private float _reviveSquashXScale = 1.22f;
-    [SerializeField][Range(0.2f, 1f)] private float _reviveSquashYScale = 0.72f;
-    [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingXScale = 1.1f;
-    [SerializeField][Range(0.6f, 1.2f)] private float _reviveLandingYScale = 0.86f;
+    [SerializeField] private WormMovementConfig _movementConfig;
 
     private WormCombatBurstController _combatBurstController;
     private WormFrameSimulation _frameSimulation;
@@ -100,6 +45,12 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _reviveSequence = reviveSequence;
         _segmentChain = segmentChain;
         _sectionRollbackState = sectionRollbackState;
+
+        if (_rail == null)
+            throw new InvalidOperationException($"{nameof(WormController)} on '{name}' requires a rail path.");
+
+        if (_movementConfig == null)
+            throw new InvalidOperationException($"{nameof(WormController)} on '{name}' requires a movement config.");
     }
 
     public float HeadPathProgressNormalized
@@ -126,40 +77,13 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private void OnValidate()
     {
-        _catchUpRailPointIndex = Mathf.Max(0, _catchUpRailPointIndex);
-        _combatBurstDisableRailPointIndex = Mathf.Max(-1, _combatBurstDisableRailPointIndex);
-        ClampRailPointIndices();
-        _combatBurstDisablePathProgress = Mathf.Clamp01(_combatBurstDisablePathProgress);
-        _combatBurstSlowdownDuration = Mathf.Max(
-            MinimumCombatBurstSlowdownDuration,
-            _combatBurstSlowdownDuration);
-        _sectionRollbackForwardSpeedMultiplier = Mathf.Max(
-            0f,
-            _sectionRollbackForwardSpeedMultiplier);
+        if (_rail == null)
+            Debug.LogError($"{nameof(WormController)} requires a rail path.", this);
+
+        if (_movementConfig == null)
+            Debug.LogError($"{nameof(WormController)} requires a movement config.", this);
+
         ClearTargetDistanceCaches();
-    }
-
-    private void ClampRailPointIndices()
-    {
-        if (_rail == null || _rail.PointCount <= 0)
-            return;
-
-        int lastPointIndex = _rail.PointCount - 1;
-        _catchUpRailPointIndex = Mathf.Min(_catchUpRailPointIndex, lastPointIndex);
-
-        if (_reviveRollbackRailPointIndex >= 0)
-        {
-            _reviveRollbackRailPointIndex = Mathf.Min(
-                _reviveRollbackRailPointIndex,
-                lastPointIndex);
-        }
-
-        if (_combatBurstDisableRailPointIndex >= 0)
-        {
-            _combatBurstDisableRailPointIndex = Mathf.Min(
-                _combatBurstDisableRailPointIndex,
-                lastPointIndex);
-        }
     }
 
     private void OnDestroy()
@@ -175,7 +99,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _segmentChainPresenter.Reset();
 
         _sectionRollbackState.Complete();
-        _combatBurstController.Reset(_speed);
+        _combatBurstController.Reset(_movementConfig.BaseSpeed);
         ClearTargetDistanceCaches();
         _pathProgress.Reset(TryGetCatchUpTargetDistance(out _));
 
@@ -188,7 +112,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _segmentChain.Clear();
         _segmentChainPresenter.Reset();
         _sectionRollbackState.Complete();
-        _combatBurstController.Reset(_speed);
+        _combatBurstController.Reset(_movementConfig.BaseSpeed);
         _pathProgress.Reset();
         ClearTargetDistanceCaches();
     }
@@ -201,29 +125,15 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     {
         _waveTime = (_sectionRollbackState.IsActive || _reviveSequence.IsActive
             ? unscaledTime
-            : time) * _waveSpeed;
-        WormCombatBurstSettings burstSettings = new(
-            _enableCombatSpeedBursts,
-            _combatBurstSpeed,
-            _combatBurstInterval,
-            _combatBurstDuration,
-            _combatBurstSlowdownDuration);
-        WormForwardMotionSettings settings = new(
-            _speed,
-            _catchUpSpeed,
-            _catchUpRailPointIndex,
-            _catchUpStopOffset,
-            _catchUpExtraDistance,
-            _combatBurstDisableRailPointIndex,
-            _combatBurstDisablePathProgress,
-            burstSettings);
+            : time) * _movementConfig.WaveSpeed;
+        WormForwardMotionSettings settings = _movementConfig.CreateForwardMotionSettings();
         WormFrameContext context = new(
             _rail,
             settings,
             BuildSegmentLayout(),
-            _speed,
-            _sectionRollbackForwardSpeedMultiplier,
-            _rollbackSpeed,
+            _movementConfig.BaseSpeed,
+            _movementConfig.SectionRollbackForwardSpeedMultiplier,
+            _movementConfig.RollbackSpeed,
             deltaTime,
             unscaledDeltaTime);
 
@@ -237,7 +147,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     {
         return _railTargetResolver.TryGetCatchUpDistance(
             _rail,
-            _catchUpRailPointIndex,
+            _movementConfig.CatchUpRailPointIndex,
             out targetDistance);
     }
 
@@ -245,8 +155,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     {
         return _railTargetResolver.TryGetReviveDistance(
             _rail,
-            _reviveRollbackRailPointIndex,
-            _catchUpRailPointIndex,
+            _movementConfig.ReviveRollbackRailPointIndex,
+            _movementConfig.CatchUpRailPointIndex,
             out targetDistance);
     }
 
@@ -262,14 +172,8 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 
     private WormSegmentChainLayout BuildSegmentLayout()
     {
-        return new WormSegmentChainLayout(
+        return _movementConfig.CreateSegmentLayout(
             _pathProgress.HeadDistance,
-            _segmentSpacing,
-            _tailVisualSpacingMultiplier,
-            _headBridgeSpacingMultiplier,
-            _activeDistancePadding,
-            _waveAmplitude,
-            _waveFrequency,
             _waveTime,
             _reviveSequence.VisualYOffset,
             _sectionRollbackState.IsActive,
@@ -304,7 +208,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             splitIndex,
             destroyedCount,
             _pathProgress.HeadDistance,
-            _segmentSpacing);
+            _movementConfig.SegmentSpacing);
         _segmentChainPresenter.Reset();
     }
 
@@ -332,25 +236,10 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         _reviveSequence.Begin(
             _pathProgress.HeadDistance,
             target,
-            BuildReviveAnimationSettings(),
+            _movementConfig.CreateReviveAnimationSettings(),
             _segmentChain.Items,
             onComplete);
         return true;
-    }
-
-    private WormReviveAnimationSettings BuildReviveAnimationSettings()
-    {
-        return new WormReviveAnimationSettings(
-            _speed,
-            _reviveSquashDuration,
-            _reviveThrowDuration,
-            _reviveLandingDuration,
-            _reviveDecelerationPathFraction,
-            _reviveArcHeight,
-            _reviveSquashXScale,
-            _reviveSquashYScale,
-            _reviveLandingXScale,
-            _reviveLandingYScale);
     }
 
     private float GetReviveRollbackTargetDistance()

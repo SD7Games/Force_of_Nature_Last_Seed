@@ -7,23 +7,23 @@ internal static class WormControllerEditorSnapshotReader
     {
         SerializedObject serializedController = new(controller);
         RailPath rail = serializedController.FindProperty("_rail").objectReferenceValue as RailPath;
-        int catchUpRailPointIndex = serializedController
-            .FindProperty("_catchUpRailPointIndex")
-            .intValue;
-        int reviveRollbackRailPointIndex = serializedController
-            .FindProperty("_reviveRollbackRailPointIndex")
-            .intValue;
+        WormMovementConfig movementConfig = serializedController
+            .FindProperty("_movementConfig")
+            .objectReferenceValue as WormMovementConfig;
+
+        if (movementConfig == null)
+            return new WormControllerEditorSnapshot(rail, 0f, 0f, 0f, 0f, 0f);
 
         return new WormControllerEditorSnapshot(
             rail,
-            serializedController.FindProperty("_speed").floatValue,
-            serializedController.FindProperty("_segmentSpacing").floatValue,
-            serializedController.FindProperty("_rollbackSpeed").floatValue,
-            serializedController.FindProperty("_sectionRollbackForwardSpeedMultiplier").floatValue,
+            movementConfig.BaseSpeed,
+            movementConfig.SegmentSpacing,
+            movementConfig.RollbackSpeed,
+            movementConfig.SectionRollbackForwardSpeedMultiplier,
             GetReviveRollbackProgress(
                 rail,
-                reviveRollbackRailPointIndex,
-                catchUpRailPointIndex));
+                movementConfig.ReviveRollbackRailPointIndex,
+                movementConfig.CatchUpRailPointIndex));
     }
 
     private static float GetReviveRollbackProgress(

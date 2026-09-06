@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ec6a25cb04bf5448ab28550cd1b603f, type: 3}
+  m_Name: WormMovementConfig_Default
+  m_EditorClassIdentifier: LastSeed.Gameplay::WormMovementConfig
+  _baseSpeed: 1.2
+  _catchUpRailPointIndex: 3
+  _catchUpSpeed: 3
+  _catchUpStopOffset: 0
+  _catchUpExtraDistance: 1.5
+  _enableCombatSpeedBursts: 1
+  _combatBurstSpeed: 2.5
+  _combatBurstInterval: 10
+  _combatBurstDuration: 2.5
+  _combatBurstDisableRailPointIndex: -1
+  _combatBurstDisablePathProgress: 0.9
+  _combatBurstSlowdownDuration: 0.35
+  _segmentSpacing: 0.6
+  _tailVisualSpacingMultiplier: 1
+  _headBridgeSpacingMultiplier: 1.25
+  _activeDistancePadding: 0.5
+  _waveAmplitude: 0.05
+  _waveFrequency: 4
+  _waveSpeed: 1
+  _rollbackSpeed: 9
+  _sectionRollbackForwardSpeedMultiplier: 4
+  _reviveRollbackRailPointIndex: 8
+  _reviveSquashDuration: 0.08
+  _reviveThrowDuration: 0.38
+  _reviveLandingDuration: 0.09
+  _reviveDecelerationPathFraction: 0.2
+  _reviveArcHeight: 1.1
+  _reviveSquashXScale: 1.22
+  _reviveSquashYScale: 0.72
+  _reviveLandingXScale: 1.1
+  _reviveLandingYScale: 0.86

@@ -13,6 +13,7 @@ public sealed class RewardFlowController : IDisposable
     private readonly IRandomSource _randomSource;
     private readonly RewardAttemptState _attempts;
     private readonly RewardRequestQueue _requestQueue;
+    private readonly RewardPopupStateFactory _popupStateFactory;
 
     private List<RewardChoiceData> _currentChoices;
     private CocoonRewardProfile _currentCocoonProfile;
@@ -30,7 +31,8 @@ public sealed class RewardFlowController : IDisposable
         RewardAdOperation rewardAdOperation,
         IRandomSource randomSource,
         RewardAttemptState attempts,
-        RewardRequestQueue requestQueue)
+        RewardRequestQueue requestQueue,
+        RewardPopupStateFactory popupStateFactory)
     {
         _rollService = rollService;
         _applyService = applyService;
@@ -42,6 +44,8 @@ public sealed class RewardFlowController : IDisposable
             ?? throw new ArgumentNullException(nameof(randomSource));
         _attempts = attempts ?? throw new ArgumentNullException(nameof(attempts));
         _requestQueue = requestQueue ?? throw new ArgumentNullException(nameof(requestQueue));
+        _popupStateFactory = popupStateFactory
+            ?? throw new ArgumentNullException(nameof(popupStateFactory));
 
         if (_popup == null)
         {
@@ -314,23 +318,13 @@ public sealed class RewardFlowController : IDisposable
             return false;
         }
 
-        bool canTakeAll = _attempts.HasTakeAll
-            && !_rewardAdOperation.IsPending
-            && RewardAdRerollPolicy.CanOfferTakeAll(_currentRollContext);
-
         bool isBound = _popup.Bind(
             _currentChoices,
-            new RewardPopupState(
-                _attempts.FreeRerollsLeft,
-                _attempts.AdRerollsLeft,
-                _attempts.TakeAllLeft,
+            _popupStateFactory.Create(
                 _currentGuaranteeRarity,
-                RewardAdRerollPolicy.GetDisplayedGuaranteeRarity(_currentCocoonProfile),
-                _attempts.HasFreeReroll && !_rewardAdOperation.IsPending,
-                !_attempts.HasFreeReroll
-                    && _attempts.HasAdReroll
-                    && !_rewardAdOperation.IsPending,
-                canTakeAll),
+                _currentCocoonProfile,
+                _currentRollContext,
+                _rewardAdOperation.IsPending),
             animateChoiceChanges);
 
         if (!isBound)

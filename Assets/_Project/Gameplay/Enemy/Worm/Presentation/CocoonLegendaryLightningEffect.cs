@@ -6,8 +6,6 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
     private const int DefaultLineCount = 3;
     private const int DefaultPointCount = 4;
 
-    private static Material _sharedLineMaterial;
-
     [SerializeField, Min(1)] private int _lineCount = DefaultLineCount;
     [SerializeField, Min(2)] private int _pointCount = DefaultPointCount;
     [SerializeField, Min(0.01f)] private float _radius = 0.38f;
@@ -22,26 +20,33 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
     private int _sortingLayerId;
     private int _sortingOrder;
     private bool _hasSorting;
+    private Material _lineMaterial;
 
-    private static Material SharedLineMaterial
+    private Material LineMaterial
     {
         get
         {
-            if (_sharedLineMaterial != null)
-                return _sharedLineMaterial;
+            if (_lineMaterial != null)
+                return _lineMaterial;
 
             Shader shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
 
             if (shader == null)
                 shader = Shader.Find("Sprites/Default");
 
-            _sharedLineMaterial = new Material(shader)
+            if (shader == null)
+            {
+                Debug.LogError("CocoonLegendaryLightningEffect: line shader is missing.", this);
+                return null;
+            }
+
+            _lineMaterial = new Material(shader)
             {
                 hideFlags = HideFlags.DontSave,
                 name = "Cocoon Legendary Lightning Runtime"
             };
 
-            return _sharedLineMaterial;
+            return _lineMaterial;
         }
     }
 
@@ -55,6 +60,14 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
     private void OnDisable()
     {
         SetLinesVisible(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (_lineMaterial != null)
+            Destroy(_lineMaterial);
+
+        _lineMaterial = null;
     }
 
     private void Update()
@@ -110,8 +123,14 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
         if (_lines != null && _lines.Length == _lineCount)
             return;
 
+        Material lineMaterial = LineMaterial;
+
+        if (lineMaterial == null)
+            return;
+
         _lineCount = Mathf.Max(1, _lineCount);
         _pointCount = Mathf.Max(2, _pointCount);
+        DestroyLineObjects();
         _lines = new LineState[_lineCount];
 
         for (int i = 0; i < _lineCount; i++)
@@ -126,7 +145,7 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
             lineRenderer.widthMultiplier = _lineWidth;
             lineRenderer.numCapVertices = 2;
             lineRenderer.numCornerVertices = 2;
-            lineRenderer.material = SharedLineMaterial;
+            lineRenderer.sharedMaterial = lineMaterial;
             lineRenderer.textureMode = LineTextureMode.Stretch;
             lineRenderer.alignment = LineAlignment.View;
 
@@ -142,6 +161,10 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
     private void RefreshLines()
     {
         EnsureLines();
+
+        if (_lines == null)
+            return;
+
         SetLinesVisible(true);
 
         for (int i = 0; i < _lines.Length; i++)
@@ -199,6 +222,22 @@ public sealed class CocoonLegendaryLightningEffect : MonoBehaviour
             if (lineRenderer != null && lineRenderer.enabled != visible)
                 lineRenderer.enabled = visible;
         }
+    }
+
+    private void DestroyLineObjects()
+    {
+        if (_lines == null)
+            return;
+
+        for (int index = 0; index < _lines.Length; index++)
+        {
+            LineRenderer lineRenderer = _lines[index].Renderer;
+
+            if (lineRenderer != null)
+                Destroy(lineRenderer.gameObject);
+        }
+
+        _lines = null;
     }
 
     private sealed class LineState

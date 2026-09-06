@@ -13,8 +13,8 @@ public sealed class WormSection : IWormSectionHpTarget
         _health.Destroyed += HandleDestroyed;
     }
 
-    public event Action<WormSection> HpChanged;
-    public event Action<WormSection> Destroyed;
+    public event Action<WormSectionHealthChanged> HpChanged;
+    public event Action<WormSectionDestroyed> Destroyed;
 
     public int MaxHp => _health.MaxHp;
     public int CurrentHp => _health.CurrentHp;
@@ -117,13 +117,13 @@ public sealed class WormSection : IWormSectionHpTarget
         return released;
     }
 
-    private void HandleHealthChanged()
+    private void HandleHealthChanged(WormSectionHealthChange change)
     {
-        HpChanged?.Invoke(this);
+        HpChanged?.Invoke(new WormSectionHealthChanged(this, change));
     }
 
-    private void HandleDestroyed()
+    private void HandleDestroyed(WormSectionHealthChange finalChange)
     {
-        Destroyed?.Invoke(this);
+        Destroyed?.Invoke(new WormSectionDestroyed(this, finalChange));
     }
 }

@@ -2,8 +2,8 @@ using System;
 
 public sealed class WormSectionHealth
 {
-    public event Action Changed;
-    public event Action Destroyed;
+    public event Action<WormSectionHealthChange> Changed;
+    public event Action<WormSectionHealthChange> Destroyed;
 
     public int MaxHp { get; private set; }
     public int CurrentHp { get; private set; }
@@ -25,20 +25,35 @@ public sealed class WormSectionHealth
         if (IsDestroyed || damage <= 0)
             return;
 
+        int previousHp = CurrentHp;
         CurrentHp = Math.Max(0, CurrentHp - damage);
-        Changed?.Invoke();
+        WormSectionHealthChange change = new(
+            previousHp,
+            CurrentHp,
+            MaxHp,
+            previousHp - CurrentHp,
+            isReset: false);
+        Changed?.Invoke(change);
 
         if (IsDestroyed)
-            Destroyed?.Invoke();
+            Destroyed?.Invoke(change);
     }
 
     private void SetHp(int hp, bool notify)
     {
+        int previousHp = CurrentHp;
         int clampedHp = Math.Max(1, hp);
         MaxHp = clampedHp;
         CurrentHp = clampedHp;
 
         if (notify)
-            Changed?.Invoke();
+        {
+            Changed?.Invoke(new WormSectionHealthChange(
+                previousHp,
+                CurrentHp,
+                MaxHp,
+                appliedDamage: 0,
+                isReset: true));
+        }
     }
 }

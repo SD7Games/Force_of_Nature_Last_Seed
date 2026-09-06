@@ -53,16 +53,20 @@ public sealed class WormSectionHpPresenter : MonoBehaviour
         _views.Add(section, view);
     }
 
-    private void OnHpChanged(WormSection section)
+    private void OnHpChanged(WormSectionHealthChanged healthChanged)
     {
-        if (!_views.TryGetValue(section, out var view)) return;
+        if (!_views.TryGetValue(healthChanged.Section, out WormSectionHpView view))
+            return;
 
-        view.SetValue(section.CurrentHp);
+        view.SetValue(healthChanged.Change.CurrentHp);
     }
 
-    private void OnSectionDestroyed(WormSection section)
+    private void OnSectionDestroyed(WormSectionDestroyed destroyed)
     {
-        if (!_views.TryGetValue(section, out var view)) return;
+        WormSection section = destroyed.Section;
+
+        if (!_views.TryGetValue(section, out WormSectionHpView view))
+            return;
 
         Destroy(view.gameObject);
 

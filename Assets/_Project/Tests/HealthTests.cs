@@ -1,20 +1,22 @@
+using System;
+using LastSeed.Core.Combat;
 using NUnit.Framework;
 
 namespace LastSeed.Tests
 {
-    public sealed class WormSectionHealthTests
+    public sealed class HealthTests
     {
         [Test]
-        public void ApplyDamage_ClampsAtZeroAndRaisesDestroyedOnce()
+        public void ApplyDamage_ClampsAtZeroAndRaisesDepletedOnce()
         {
-            WormSectionHealth health = new WormSectionHealth();
+            Health health = new();
             int changedCount = 0;
-            int destroyedCount = 0;
-            WormSectionHealthChange finalChange = default;
+            int depletedCount = 0;
+            HealthChange finalChange = default;
             health.Changed += _ => changedCount++;
-            health.Destroyed += change =>
+            health.Depleted += change =>
             {
-                destroyedCount++;
+                depletedCount++;
                 finalChange = change;
             };
             health.Initialize(10);
@@ -23,23 +25,23 @@ namespace LastSeed.Tests
             health.ApplyDamage(1);
 
             Assert.That(health.CurrentHp, Is.Zero);
-            Assert.That(health.IsDestroyed, Is.True);
+            Assert.That(health.IsDepleted, Is.True);
             Assert.That(changedCount, Is.EqualTo(1));
-            Assert.That(destroyedCount, Is.EqualTo(1));
+            Assert.That(depletedCount, Is.EqualTo(1));
             Assert.That(finalChange.PreviousHp, Is.EqualTo(10));
             Assert.That(finalChange.CurrentHp, Is.Zero);
             Assert.That(finalChange.MaxHp, Is.EqualTo(10));
             Assert.That(finalChange.AppliedDamage, Is.EqualTo(10));
             Assert.That(finalChange.IsReset, Is.False);
-            Assert.That(finalChange.IsDestroyed, Is.True);
+            Assert.That(finalChange.IsDepleted, Is.True);
         }
 
         [Test]
-        public void ResetHp_RestoresFullHealthAndNotifiesObservers()
+        public void Reset_RestoresFullHealthAndNotifiesObservers()
         {
-            WormSectionHealth health = new WormSectionHealth();
+            Health health = new();
             int changedCount = 0;
-            WormSectionHealthChange lastChange = default;
+            HealthChange lastChange = default;
             health.Changed += change =>
             {
                 changedCount++;
@@ -48,7 +50,7 @@ namespace LastSeed.Tests
             health.Initialize(10);
             health.ApplyDamage(4);
 
-            health.ResetHp(20);
+            health.Reset(20);
 
             Assert.That(health.MaxHp, Is.EqualTo(20));
             Assert.That(health.CurrentHp, Is.EqualTo(20));
@@ -64,7 +66,7 @@ namespace LastSeed.Tests
         [Test]
         public void ApplyDamage_IgnoresNonPositiveDamage()
         {
-            WormSectionHealth health = new WormSectionHealth();
+            Health health = new();
             health.Initialize(10);
 
             health.ApplyDamage(0);

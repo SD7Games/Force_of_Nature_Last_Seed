@@ -1,13 +1,15 @@
+using LastSeed.Core.Combat;
+
 public readonly struct WormSectionDestroyed
 {
     public WormSectionDestroyed(
         WormSection section,
-        in WormSectionHealthChange finalChange)
+        in HealthChange finalChange)
     {
         Section = section;
         FinalChange = finalChange;
     }
 
     public WormSection Section { get; }
-    public WormSectionHealthChange FinalChange { get; }
+    public HealthChange FinalChange { get; }
 }

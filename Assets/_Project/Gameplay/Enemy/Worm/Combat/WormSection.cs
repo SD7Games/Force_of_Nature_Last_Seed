@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
+using LastSeed.Core.Combat;
 using UnityEngine;
 
 public sealed class WormSection : IWormSectionHpTarget
 {
-    private readonly WormSectionHealth _health = new();
+    private readonly Health _health = new();
     private readonly List<WormSegment> _segments = new();
 
     public WormSection()
     {
         _health.Changed += HandleHealthChanged;
-        _health.Destroyed += HandleDestroyed;
+        _health.Depleted += HandleDestroyed;
     }
 
     public event Action<WormSectionHealthChanged> HpChanged;
@@ -26,7 +27,7 @@ public sealed class WormSection : IWormSectionHpTarget
     public bool HasReward => HasCocoon;
 
     public IReadOnlyList<WormSegment> Segments => _segments;
-    public bool IsDestroyed => _health.IsDestroyed;
+    public bool IsDestroyed => _health.IsDepleted;
     public bool HasTakenDamage => _health.HasTakenDamage;
     public bool HasVisibleAliveSegment => ContainsVisibleAliveSegment();
 
@@ -37,7 +38,7 @@ public sealed class WormSection : IWormSectionHpTarget
 
     public void ResetHp(int hp)
     {
-        _health.ResetHp(hp);
+        _health.Reset(hp);
     }
 
     private bool ContainsVisibleAliveSegment()
@@ -117,12 +118,12 @@ public sealed class WormSection : IWormSectionHpTarget
         return released;
     }
 
-    private void HandleHealthChanged(WormSectionHealthChange change)
+    private void HandleHealthChanged(HealthChange change)
     {
         HpChanged?.Invoke(new WormSectionHealthChanged(this, change));
     }
 
-    private void HandleDestroyed(WormSectionHealthChange finalChange)
+    private void HandleDestroyed(HealthChange finalChange)
     {
         Destroyed?.Invoke(new WormSectionDestroyed(this, finalChange));
     }

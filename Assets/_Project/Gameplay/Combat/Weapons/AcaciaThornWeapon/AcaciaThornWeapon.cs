@@ -1,3 +1,4 @@
+using LastSeed.Core.Timing;
 using LastSeed.Gameplay.Signals;
 using UnityEngine;
 using Zenject;
@@ -12,12 +13,10 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
     private Transform _firePoint;
     private float _cooldownTimer;
     private float _currentCooldown;
-    private float _salvoTimer;
-    private int _salvoShotsRemaining;
-    private bool _isSalvoActive;
     private bool _initialized;
     private SignalBus _signalBus;
     private AcaciaThornProjectilePool _pool;
+    private readonly TimedBurst _salvo = new();
 
     public AcaciaThornWeaponConfig Config => _config;
     public AcaciaThornRuntimeState RuntimeState => _runtimeState;
@@ -83,7 +82,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         if (!_initialized || !_runtimeState.IsUnlocked || !_pool.IsInitialized)
             return;
 
-        if (_isSalvoActive)
+        if (_salvo.IsActive)
         {
             TickSalvo(deltaTime);
             return;
@@ -105,9 +104,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         int fallbackBaseDamage = _config != null ? _config.Damage : 1;
         _runtimeState.Unlock(Mathf.Max(fallbackBaseDamage, baseDamage));
         _cooldownTimer = 0f;
-        _salvoTimer = 0f;
-        _salvoShotsRemaining = 0;
-        _isSalvoActive = false;
+        _salvo.Reset();
         PublishRuntimeStatsChanged();
     }
 
@@ -169,9 +166,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
     public void ClearTransientState()
     {
         _pool.ReleaseAllActive();
-        _isSalvoActive = false;
-        _salvoTimer = 0f;
-        _salvoShotsRemaining = 0;
+        _salvo.Reset();
     }
 
     public void ResetRuntimeState()
@@ -202,15 +197,15 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
 
     private void StartSalvo()
     {
-        _salvoShotsRemaining = 1 + Mathf.Max(0, _runtimeState.SalvoExtraShots);
+        _salvo.Begin(1 + Mathf.Max(0, _runtimeState.SalvoExtraShots));
         FireSalvoShot();
     }
 
     private void TickSalvo(float deltaTime)
     {
-        _salvoTimer -= deltaTime;
+        _salvo.Advance(deltaTime);
 
-        if (_salvoTimer > 0f)
+        if (!_salvo.IsShotReady)
             return;
 
         FireSalvoShot();
@@ -219,17 +214,10 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
     private void FireSalvoShot()
     {
         Fire();
-        _salvoShotsRemaining--;
+        _salvo.CommitShot(GetSalvoInterval());
 
-        if (_salvoShotsRemaining <= 0)
-        {
-            _isSalvoActive = false;
+        if (!_salvo.IsActive)
             _cooldownTimer = _currentCooldown;
-            return;
-        }
-
-        _isSalvoActive = true;
-        _salvoTimer = GetSalvoInterval();
     }
 
     private void Fire()

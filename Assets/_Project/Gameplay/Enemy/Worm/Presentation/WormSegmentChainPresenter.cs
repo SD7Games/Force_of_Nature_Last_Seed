@@ -63,6 +63,7 @@ public sealed class WormSegmentChainPresenter
 
             UpdateTailVisualChain(segments, rail, index, segment, distance, layout);
             segment.SetRuntimeVisible(true);
+            segment.UpdateCocoonPresentation();
         }
 
         _activeStartIndex = start;
@@ -105,6 +106,7 @@ public sealed class WormSegmentChainPresenter
 
             UpdateTailVisualChain(segments, rail, index, segment, distance, layout);
             segment.SetRuntimeVisible(true);
+            segment.UpdateCocoonPresentation();
         }
 
         Reset();

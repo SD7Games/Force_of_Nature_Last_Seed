@@ -22,22 +22,18 @@ public sealed class WormSegment : MonoBehaviour
     [SerializeField, Min(0f)] private float _cocoonShakeAngle = 10f;
 
     private Collider2D _cachedCollider;
-    private SpriteRenderer _cocoonRenderer;
-    private CocoonVisualController _cocoonVisualController;
     private WormSegmentDamageReceiver[] _damageReceivers =
         Array.Empty<WormSegmentDamageReceiver>();
 
-    private Transform _cocoonTransform;
+    private WormSegmentCocoonPresenter _cocoonPresenter;
     private WormSegmentVisualRig _visualRig;
-    private IWormCocoonShakeClock _cocoonShakeClock;
-    private bool _usesSyncedCocoonShake;
 
     public Transform CachedTransform { get; private set; }
     public WormFaceVisualController FaceVisual { get; private set; }
     public WormSection Section { get; internal set; }
     public int Index { get; set; }
 
-    public bool HasCocoon { get; private set; }
+    public bool HasCocoon => _cocoonPresenter?.IsVisible == true;
     public bool IsAlive { get; private set; } = true;
     public bool HasTailVisualChain => _visualRig?.HasTailVisualChain == true;
     public int TailVisualPartCount => _visualRig?.TailVisualPartCount ?? 0;
@@ -56,63 +52,39 @@ public sealed class WormSegment : MonoBehaviour
             ? VisualRoot.GetComponentInChildren<SpriteRenderer>()
             : null;
 
-        if (_cocoonVisual != null)
-        {
-            _cocoonRenderer = _cocoonVisual.GetComponentInChildren<SpriteRenderer>(true);
-            _cocoonVisualController = _cocoonVisual.GetComponentInChildren<CocoonVisualController>(true);
-            _cocoonTransform = _cocoonVisual.transform;
-        }
+        _cocoonPresenter = new WormSegmentCocoonPresenter(
+            CachedTransform,
+            _cocoonVisual,
+            _cocoonShakeInterval,
+            _cocoonShakeAngle);
 
         _visualRig = new WormSegmentVisualRig(
             Type,
             CachedTransform,
             VisualRoot,
-            _cocoonTransform,
+            _cocoonPresenter.VisualTransform,
             anchorRenderer);
     }
 
     private void OnEnable()
     {
-        if (!HasCocoon)
-            return;
-
-        RegisterSyncedCocoonShake();
+        _cocoonPresenter?.OnOwnerEnabled();
     }
 
     private void OnDisable()
     {
-        UnregisterSyncedCocoonShake();
+        _cocoonPresenter?.OnOwnerDisabled();
     }
 
     private void OnDestroy()
     {
-        UnregisterSyncedCocoonShake();
-    }
-
-    private void LateUpdate()
-    {
-        if (HasCocoon && _cocoonTransform != null)
-        {
-            float shakeOffset = _usesSyncedCocoonShake
-                ? _cocoonShakeClock.RotationOffset
-                : 0f;
-
-            _cocoonTransform.localEulerAngles =
-                new Vector3(0f, 0f, -transform.eulerAngles.z + shakeOffset);
-        }
+        _cocoonPresenter?.OnOwnerDisabled();
     }
 
     public void SetSortingOrder(int order)
     {
         _visualRig?.SetSortingOrder(order);
-
-        if (_cocoonRenderer != null)
-        {
-            _cocoonRenderer.sortingOrder = order + 100;
-            _cocoonVisualController?.SetEffectSorting(
-                _cocoonRenderer.sortingLayerID,
-                _cocoonRenderer.sortingOrder + 1);
-        }
+        _cocoonPresenter?.SetSortingOrder(order);
     }
 
     public void ResetTailVisualRootRotation()
@@ -154,33 +126,12 @@ public sealed class WormSegment : MonoBehaviour
         if (Type != WormSegmentType.Body)
             return;
 
-        HasCocoon = true;
-
-        if (_cocoonVisual != null)
-            _cocoonVisual.SetActive(true);
-
-        if (_cocoonVisualController != null)
-            _cocoonVisualController.Apply(rewardProfile);
-        else if (_cocoonRenderer != null)
-            _cocoonRenderer.color = Color.white;
-
-        if (isActiveAndEnabled)
-            RegisterSyncedCocoonShake();
+        _cocoonPresenter?.Show(rewardProfile, isActiveAndEnabled);
     }
 
     public void DisableCocoon()
     {
-        UnregisterSyncedCocoonShake();
-        HasCocoon = false;
-
-        if (_cocoonRenderer != null)
-            _cocoonRenderer.color = Color.white;
-
-        if (_cocoonVisualController != null)
-            _cocoonVisualController.ResetVisual();
-
-        if (_cocoonVisual != null)
-            _cocoonVisual.SetActive(false);
+        _cocoonPresenter?.Hide();
     }
 
     public void Activate()
@@ -217,8 +168,14 @@ public sealed class WormSegment : MonoBehaviour
 
     public void InitializePresentation(IWormCocoonShakeClock cocoonShakeClock)
     {
-        _cocoonShakeClock = cocoonShakeClock ??
-            throw new ArgumentNullException(nameof(cocoonShakeClock));
+        _cocoonPresenter.BindShakeClock(
+            cocoonShakeClock,
+            isActiveAndEnabled);
+    }
+
+    public void UpdateCocoonPresentation()
+    {
+        _cocoonPresenter?.UpdateOrientation();
     }
 
     public void BindDamageReceivers(WormCombatController combat)
@@ -280,26 +237,4 @@ public sealed class WormSegment : MonoBehaviour
             throw new InvalidOperationException($"Worm segment '{name}' has no damage receiver.");
     }
 
-    private void RegisterSyncedCocoonShake()
-    {
-        if (_usesSyncedCocoonShake)
-            return;
-
-        if (_cocoonTransform == null ||
-            _cocoonShakeClock == null ||
-            _cocoonShakeAngle <= 0f)
-            return;
-
-        _usesSyncedCocoonShake = true;
-        _cocoonShakeClock.Register(_cocoonShakeInterval, _cocoonShakeAngle);
-    }
-
-    private void UnregisterSyncedCocoonShake()
-    {
-        if (!_usesSyncedCocoonShake)
-            return;
-
-        _usesSyncedCocoonShake = false;
-        _cocoonShakeClock?.Unregister();
-    }
 }

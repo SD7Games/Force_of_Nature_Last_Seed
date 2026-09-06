@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LastSeed.Core.Collections;
 using UnityEngine;
 using Zenject;
 
@@ -70,7 +71,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private WormPathProgressState _pathProgress;
     private WormSegmentChainPresenter _segmentChainPresenter;
     private WormReviveSequence _reviveSequence;
-    private WormSegmentChain<WormSegment> _segmentChain;
+    private OrderedReferenceSet<WormSegment> _segmentChain;
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
     private float _waveTime;
 
@@ -90,7 +91,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         WormPathProgressState pathProgress,
         WormSegmentChainPresenter segmentChainPresenter,
         WormReviveSequence reviveSequence,
-        WormSegmentChain<WormSegment> segmentChain,
+        OrderedReferenceSet<WormSegment> segmentChain,
         WormSectionRollbackState<WormSegment> sectionRollbackState)
     {
         _combatBurstController = combatBurstController;
@@ -299,7 +300,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             return;
 
         _sectionRollbackState.BeginOrExtend(
-            _segmentChain.Segments,
+            _segmentChain.Items,
             splitIndex,
             destroyedCount,
             _pathProgress.HeadDistance,
@@ -332,7 +333,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             _pathProgress.HeadDistance,
             target,
             BuildReviveAnimationSettings(),
-            _segmentChain.Segments,
+            _segmentChain.Items,
             onComplete);
         return true;
     }

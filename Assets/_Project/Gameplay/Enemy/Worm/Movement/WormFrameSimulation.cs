@@ -1,4 +1,5 @@
 using System;
+using LastSeed.Core.Collections;
 
 public sealed class WormFrameSimulation
 {
@@ -6,7 +7,7 @@ public sealed class WormFrameSimulation
     private readonly WormPathProgressState _pathProgress;
     private readonly WormSegmentChainPresenter _segmentPresenter;
     private readonly WormReviveSequence _reviveSequence;
-    private readonly WormSegmentChain<WormSegment> _segmentChain;
+    private readonly OrderedReferenceSet<WormSegment> _segmentChain;
     private readonly WormSectionRollbackMotionController<WormSegment> _rollbackMotion;
     private readonly WormSectionRollbackState<WormSegment> _rollbackState;
     private RailPath _finalRenderRail;
@@ -17,7 +18,7 @@ public sealed class WormFrameSimulation
         WormPathProgressState pathProgress,
         WormSegmentChainPresenter segmentPresenter,
         WormReviveSequence reviveSequence,
-        WormSegmentChain<WormSegment> segmentChain,
+        OrderedReferenceSet<WormSegment> segmentChain,
         WormSectionRollbackMotionController<WormSegment> rollbackMotion,
         WormSectionRollbackState<WormSegment> rollbackState)
     {
@@ -43,7 +44,7 @@ public sealed class WormFrameSimulation
     public void Render(RailPath rail, in WormSegmentChainLayout layout)
     {
         _segmentPresenter.Render(
-            _segmentChain.Segments,
+            _segmentChain.Items,
             rail,
             _rollbackState.AnchoredDistances,
             layout);
@@ -77,7 +78,7 @@ public sealed class WormFrameSimulation
     {
         WormSectionRollbackMotionResult result = _rollbackMotion.Advance(
             _pathProgress.HeadDistance,
-            _segmentChain.Segments,
+            _segmentChain.Items,
             context.Rail.TotalLength,
             context.BaseSpeed,
             context.RollbackForwardSpeedMultiplier,

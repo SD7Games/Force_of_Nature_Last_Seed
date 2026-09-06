@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LastSeed.Core.Collections;
 
 namespace LastSeed.Core.Pooling
 {
@@ -12,7 +13,8 @@ namespace LastSeed.Core.Pooling
         private readonly Action<T> _onReturn;
         private readonly Queue<T> _available = new();
         private readonly List<T> _activeItems = new();
-        private readonly Dictionary<T, int> _activeIndices = new();
+        private readonly Dictionary<T, int> _activeIndices =
+            new(ReferenceEqualityComparer<T>.Instance);
 
         public ObjectPool(Func<T> create, Action<T> onReturn)
         {

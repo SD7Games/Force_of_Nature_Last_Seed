@@ -11,7 +11,9 @@ namespace LastSeed.Core.Collections
             if (items == null)
                 throw new ArgumentNullException(parameterName);
 
-            HashSet<T> uniqueItems = new(items.Count);
+            HashSet<T> uniqueItems = new(
+                items.Count,
+                ReferenceEqualityComparer<T>.Instance);
 
             for (int index = 0; index < items.Count; index++)
             {

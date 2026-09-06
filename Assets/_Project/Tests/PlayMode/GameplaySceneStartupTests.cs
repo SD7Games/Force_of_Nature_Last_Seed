@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using LastSeed.Bootstrap.GameplayLoop;
+using LastSeed.Core.Collections;
 using LastSeed.Gameplay.Combat;
 using LastSeed.Gameplay.Signals;
 using LastSeed.Infrastructure.Input;
@@ -68,7 +69,7 @@ namespace LastSeed.Tests.PlayMode
             Assert.That(sceneContainer.Resolve<WormReviveMotionCalculator>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormReviveAnimationController>(), Is.Not.Null);
             Assert.That(sceneContainer.Resolve<WormReviveVisualScaler>(), Is.Not.Null);
-            Assert.That(sceneContainer.Resolve<WormSegmentChain<WormSegment>>(), Is.Not.Null);
+            Assert.That(sceneContainer.Resolve<OrderedReferenceSet<WormSegment>>(), Is.Not.Null);
             Assert.That(
                 sceneContainer.Resolve<WormSectionRollbackState<WormSegment>>(),
                 Is.Not.Null);

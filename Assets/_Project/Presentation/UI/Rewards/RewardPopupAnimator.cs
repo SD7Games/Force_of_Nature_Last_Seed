@@ -5,19 +5,21 @@ using UnityEngine;
 
 public sealed class RewardPopupAnimator
 {
+    private const float ShowSettleTimeSeconds = 0.28f;
+    private const float CardRevealTimeSeconds = 0.14f;
+    private const float RefreshRevealPaddingSeconds = 0.02f;
+
     private readonly CanvasGroup _canvasGroup;
-    private readonly RectTransform[] _topSlideGroups;
     private readonly RewardPopupChoiceBinder _choiceBinder;
     private readonly RewardPopupActionControls _actionControls;
     private readonly RewardPopupAnimationSettings _settings;
     private readonly RewardPopupAudioPlayer _audioPlayer;
     private readonly Action _onTransitionStarted;
+    private readonly RewardPopupAnimatedLayout _animatedLayout;
 
-    private RewardPopupRectTransformState[] _topGroupStates;
     private Sequence _showSequence;
     private Sequence _refreshSequence;
     private Sequence _dismissSequence;
-    private bool _hasCachedAnimationState;
 
     public RewardPopupAnimator(
         CanvasGroup canvasGroup,
@@ -29,19 +31,22 @@ public sealed class RewardPopupAnimator
         Action onTransitionStarted)
     {
         _canvasGroup = canvasGroup;
-        _topSlideGroups = topSlideGroups;
         _choiceBinder = choiceBinder;
         _actionControls = actionControls;
         _settings = settings;
         _audioPlayer = audioPlayer;
         _onTransitionStarted = onTransitionStarted;
+        _animatedLayout = new RewardPopupAnimatedLayout(
+            topSlideGroups,
+            choiceBinder,
+            actionControls,
+            settings);
     }
 
     public bool IsTransitioning { get; private set; }
 
     public void PlayShow(Action onComplete)
     {
-        EnsureAnimationStateCached();
         BeginTransition();
         ResetAnimatedLayout();
 
@@ -51,9 +56,7 @@ public sealed class RewardPopupAnimator
             _canvasGroup.blocksRaycasts = true;
         }
 
-        PrepareTopGroupsForEnter();
-        PrepareRewardButtonsForEnter();
-        _actionControls.PrepareForEnter(_settings.ActionEnterOffset);
+        _animatedLayout.PrepareForShow();
 
         _showSequence?.Kill(false);
         _showSequence = DOTween.Sequence().SetUpdate(true);
@@ -62,12 +65,10 @@ public sealed class RewardPopupAnimator
         if (_canvasGroup != null)
             _showSequence.Insert(0f, _canvasGroup.DOFade(1f, _settings.RootFadeDuration).SetEase(Ease.OutSine));
 
-        InsertTopEnterTweens(_showSequence, 0.02f);
-        InsertRewardEnterTweens(_showSequence, 0.1f);
-        _actionControls.InsertEnterTweens(_showSequence, 0.3f, _settings.ActionEnterDuration);
+        _animatedLayout.InsertShowTweens(_showSequence);
 
-        _showSequence.InsertCallback(0.28f, _audioPlayer.PlayShowSettle);
-        _showSequence.InsertCallback(0.14f, _audioPlayer.PlayCardReveal);
+        _showSequence.InsertCallback(ShowSettleTimeSeconds, _audioPlayer.PlayShowSettle);
+        _showSequence.InsertCallback(CardRevealTimeSeconds, _audioPlayer.PlayCardReveal);
         _showSequence.OnComplete(() => CompleteTransition(onComplete));
     }
 
@@ -77,7 +78,6 @@ public sealed class RewardPopupAnimator
         Action<RewardPopupState> applyRefreshedState,
         Action onComplete)
     {
-        EnsureAnimationStateCached();
         BeginTransition();
 
         _refreshSequence?.Kill(false);
@@ -119,7 +119,7 @@ public sealed class RewardPopupAnimator
         }
 
         _refreshSequence.InsertCallback(
-            lastDelay + _settings.RefreshOutDuration + 0.02f,
+            lastDelay + _settings.RefreshOutDuration + RefreshRevealPaddingSeconds,
             _audioPlayer.PlayCardReveal);
         _refreshSequence.AppendCallback(() => applyRefreshedState?.Invoke(state));
         _refreshSequence.OnComplete(() => CompleteTransition(onComplete));
@@ -129,7 +129,6 @@ public sealed class RewardPopupAnimator
         RewardChoiceData selectedChoice,
         Action requestClose)
     {
-        EnsureAnimationStateCached();
         BeginTransition();
         KillActiveSequences();
 
@@ -148,7 +147,7 @@ public sealed class RewardPopupAnimator
 
         float actionExitStart = 0f;
         float rewardExitStart = Mathf.Max(0f, _settings.ActionEnterDuration * 0.5f);
-        float selectedExitStart = InsertRewardDismissTweens(
+        float selectedExitStart = _animatedLayout.InsertRewardDismissTweens(
             _dismissSequence,
             selectedButton,
             rewardExitStart);
@@ -160,7 +159,7 @@ public sealed class RewardPopupAnimator
             _settings.ActionExitOffset,
             _settings.ActionEnterDuration,
             _settings.UnselectedExitEase);
-        InsertTopExitTweens(_dismissSequence, topExitStart);
+        _animatedLayout.InsertTopExitTweens(_dismissSequence, topExitStart);
 
         if (_canvasGroup != null)
         {
@@ -186,19 +185,13 @@ public sealed class RewardPopupAnimator
 
     public void ResetAnimatedLayout()
     {
-        EnsureAnimationStateCached();
-
         if (_canvasGroup != null)
         {
             _canvasGroup.alpha = 1f;
             _canvasGroup.blocksRaycasts = true;
         }
 
-        for (int i = 0; i < _topGroupStates.Length; i++)
-            _topGroupStates[i].Reset();
-
-        _actionControls.ResetLayout();
-        _choiceBinder.ResetAnimatedState();
+        _animatedLayout.Reset();
     }
 
     private void BeginTransition()
@@ -214,130 +207,6 @@ public sealed class RewardPopupAnimator
         onComplete?.Invoke();
     }
 
-    private void EnsureAnimationStateCached()
-    {
-        if (_hasCachedAnimationState)
-            return;
-
-        _topGroupStates = CreateStates(_topSlideGroups);
-        _hasCachedAnimationState = true;
-    }
-
-    private void PrepareTopGroupsForEnter()
-    {
-        for (int i = 0; i < _topGroupStates.Length; i++)
-        {
-            _topGroupStates[i].Kill();
-            _topGroupStates[i].Prepare(_settings.TopEnterOffset, 0.98f);
-        }
-    }
-
-    private void PrepareRewardButtonsForEnter()
-    {
-        for (int i = 0; i < _choiceBinder.ButtonCount; i++)
-        {
-            RewardButtonView button = _choiceBinder.GetButton(i);
-
-            if (button != null && button.gameObject.activeSelf)
-                button.PrepareEnter(_settings.RewardEnterOffset, 0.96f);
-        }
-    }
-
-    private void InsertTopEnterTweens(Sequence sequence, float startTime)
-    {
-        for (int i = 0; i < _topGroupStates.Length; i++)
-        {
-            sequence.Insert(
-                startTime,
-                _topGroupStates[i].CreateEnterTween(
-                    _settings.TopEnterDuration,
-                    _settings.TopEnterEase,
-                    Ease.OutBack));
-        }
-    }
-
-    private void InsertRewardEnterTweens(Sequence sequence, float startTime)
-    {
-        for (int i = 0; i < _choiceBinder.ButtonCount; i++)
-        {
-            RewardButtonView button = _choiceBinder.GetButton(i);
-
-            if (button == null || !button.gameObject.activeSelf)
-                continue;
-
-            sequence.Insert(
-                startTime + i * _settings.RewardEnterStagger,
-                button.CreateEnterTween(
-                    _settings.RewardEnterDuration,
-                    _settings.RewardEnterEase,
-                    _settings.RewardScaleEase));
-        }
-    }
-
-    private float InsertRewardDismissTweens(
-        Sequence sequence,
-        RewardButtonView selectedButton,
-        float startTime)
-    {
-        int unselectedIndex = 0;
-        float lastUnselectedExitEnd = startTime;
-
-        for (int i = _choiceBinder.ButtonCount - 1; i >= 0; i--)
-        {
-            RewardButtonView button = _choiceBinder.GetButton(i);
-
-            if (button == null || !button.gameObject.activeSelf)
-                continue;
-
-            if (button == selectedButton)
-                continue;
-
-            float delay = startTime + unselectedIndex * _settings.UnselectedExitStagger;
-            sequence.Insert(
-                delay,
-                button.CreateUnselectedDismissTween(
-                    _settings.UnselectedExitDuration,
-                    _settings.UnselectedExitOffset,
-                    _settings.UnselectedExitScaleMultiplier,
-                    _settings.UnselectedExitEase));
-            lastUnselectedExitEnd = Mathf.Max(lastUnselectedExitEnd, delay + _settings.UnselectedExitDuration);
-            unselectedIndex++;
-        }
-
-        float selectedExitStart = Mathf.Max(
-            _settings.SelectionFocusDuration,
-            lastUnselectedExitEnd + _settings.UnselectedExitStagger);
-
-        sequence.Insert(
-            0f,
-            selectedButton.CreateSelectedDismissTween(
-                selectedExitStart,
-                _settings.SelectionGrowDuration,
-                _settings.SelectionExitDuration,
-                _settings.SelectionExitOffset,
-                _settings.SelectionScaleMultiplier,
-                _settings.SelectionExitScaleMultiplier,
-                _settings.SelectionFocusEase,
-                _settings.SelectionExitEase));
-
-        return selectedExitStart;
-    }
-
-    private void InsertTopExitTweens(Sequence sequence, float startTime)
-    {
-        for (int i = 0; i < _topGroupStates.Length; i++)
-        {
-            sequence.Insert(
-                startTime,
-                _topGroupStates[i].CreateExitTween(
-                    _settings.TopExitOffset,
-                    0.98f,
-                    _settings.TopEnterDuration,
-                    _settings.UnselectedExitEase,
-                    _settings.UnselectedExitEase));
-        }
-    }
-
     private void KillAnimations()
     {
         if (_canvasGroup != null)
@@ -345,14 +214,7 @@ public sealed class RewardPopupAnimator
 
         KillActiveSequences();
 
-        if (_topGroupStates != null)
-        {
-            for (int i = 0; i < _topGroupStates.Length; i++)
-                _topGroupStates[i].Kill();
-        }
-
-        _actionControls.KillAnimations();
-        _choiceBinder.KillAnimations();
+        _animatedLayout.KillAnimations();
     }
 
     private void KillActiveSequences()
@@ -365,31 +227,6 @@ public sealed class RewardPopupAnimator
 
         _dismissSequence?.Kill(false);
         _dismissSequence = null;
-    }
-
-    private static RewardPopupRectTransformState[] CreateStates(RectTransform[] rects)
-    {
-        if (rects == null || rects.Length == 0)
-            return Array.Empty<RewardPopupRectTransformState>();
-
-        int count = 0;
-
-        for (int i = 0; i < rects.Length; i++)
-        {
-            if (rects[i] != null)
-                count++;
-        }
-
-        RewardPopupRectTransformState[] states = new RewardPopupRectTransformState[count];
-        int index = 0;
-
-        for (int i = 0; i < rects.Length; i++)
-        {
-            if (rects[i] != null)
-                states[index++] = new RewardPopupRectTransformState(rects[i]);
-        }
-
-        return states;
     }
 
 }

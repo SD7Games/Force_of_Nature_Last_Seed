@@ -2,31 +2,24 @@ using System;
 using LastSeed.Gameplay.Signals;
 using Zenject;
 
-public sealed class WormCombatBurstSignalPublisher : IInitializable, IDisposable
+public sealed class WormCombatBurstSignalPublisher
 {
-    private readonly WormCombatBurstController _burstController;
     private readonly SignalBus _signalBus;
+    private bool _hasPublishedState;
+    private bool _lastPublishedState;
 
-    public WormCombatBurstSignalPublisher(
-        WormCombatBurstController burstController,
-        SignalBus signalBus)
+    public WormCombatBurstSignalPublisher(SignalBus signalBus)
     {
-        _burstController = burstController;
-        _signalBus = signalBus;
+        _signalBus = signalBus ?? throw new ArgumentNullException(nameof(signalBus));
     }
 
-    public void Initialize()
+    public void PublishIfChanged(bool isActive)
     {
-        _burstController.ActiveStateChanged += PublishStateChanged;
-    }
+        if (_hasPublishedState && _lastPublishedState == isActive)
+            return;
 
-    public void Dispose()
-    {
-        _burstController.ActiveStateChanged -= PublishStateChanged;
-    }
-
-    private void PublishStateChanged(bool isActive)
-    {
+        _hasPublishedState = true;
+        _lastPublishedState = isActive;
         _signalBus.Fire(new WormCombatBurstStateChangedSignal(isActive));
     }
 }

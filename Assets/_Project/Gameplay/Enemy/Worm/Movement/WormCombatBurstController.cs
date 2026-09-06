@@ -9,8 +9,6 @@ public sealed class WormCombatBurstController
     private float _currentForwardSpeed;
     private bool _hasReachedCombatStart;
 
-    public event Action<bool> ActiveStateChanged;
-
     public bool IsActive { get; private set; }
 
     public void Reset(float baseSpeed)
@@ -140,7 +138,6 @@ public sealed class WormCombatBurstController
             return;
 
         IsActive = active;
-        ActiveStateChanged?.Invoke(active);
     }
 
     private static float MoveTowards(float current, float target, float maxDelta)

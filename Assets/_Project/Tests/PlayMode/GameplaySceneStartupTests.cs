@@ -94,6 +94,8 @@ namespace LastSeed.Tests.PlayMode
             SignalBus signalBus = sceneContainer.Resolve<SignalBus>();
             WormCombatBurstController burstController =
                 sceneContainer.Resolve<WormCombatBurstController>();
+            WormCombatBurstSignalPublisher publisher =
+                sceneContainer.Resolve<WormCombatBurstSignalPublisher>();
             bool receivedActiveState = false;
             Action<WormCombatBurstStateChangedSignal> handler = signal =>
                 receivedActiveState = signal.IsActive;
@@ -106,8 +108,11 @@ namespace LastSeed.Tests.PlayMode
 
             signalBus.Subscribe(handler);
             burstController.Reset(baseSpeed: 1f);
+            publisher.PublishIfChanged(burstController.IsActive);
             burstController.ResolveForwardSpeed(0.1f, 1f, 1f, false, true, settings);
+            publisher.PublishIfChanged(burstController.IsActive);
             burstController.ResolveForwardSpeed(0.1f, 1f, 1f, false, true, settings);
+            publisher.PublishIfChanged(burstController.IsActive);
 
             Assert.That(receivedActiveState, Is.True);
 

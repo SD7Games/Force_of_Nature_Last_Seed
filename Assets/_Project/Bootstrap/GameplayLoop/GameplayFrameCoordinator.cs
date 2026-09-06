@@ -10,6 +10,7 @@ namespace LastSeed.Bootstrap.GameplayLoop
         private readonly PlayerMovementController _playerMovementController;
         private readonly PlayerWeaponController _playerWeaponController;
         private readonly WormController _wormController;
+        private readonly WormCombatBurstSignalPublisher _wormCombatBurstPublisher;
         private readonly WormPathCompletedSignalPublisher _wormPathCompletedPublisher;
         private readonly WormPressureDirector _wormPressureDirector;
 
@@ -19,6 +20,7 @@ namespace LastSeed.Bootstrap.GameplayLoop
             PlayerMovementController playerMovementController,
             PlayerWeaponController playerWeaponController,
             WormController wormController,
+            WormCombatBurstSignalPublisher wormCombatBurstPublisher,
             WormPathCompletedSignalPublisher wormPathCompletedPublisher,
             WormPressureDirector wormPressureDirector)
         {
@@ -27,6 +29,7 @@ namespace LastSeed.Bootstrap.GameplayLoop
             _playerMovementController = playerMovementController;
             _playerWeaponController = playerWeaponController;
             _wormController = wormController;
+            _wormCombatBurstPublisher = wormCombatBurstPublisher;
             _wormPathCompletedPublisher = wormPathCompletedPublisher;
             _wormPressureDirector = wormPressureDirector;
         }
@@ -72,6 +75,8 @@ namespace LastSeed.Bootstrap.GameplayLoop
                 unscaledDeltaTime,
                 time,
                 unscaledTime);
+            _wormCombatBurstPublisher.PublishIfChanged(
+                _wormController.IsCombatBurstActive);
             _wormPathCompletedPublisher.Publish(result);
         }
 

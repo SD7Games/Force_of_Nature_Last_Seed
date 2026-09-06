@@ -398,23 +398,26 @@ public sealed class WormBalanceLabWindow : EditorWindow
         WormController controller = FindOpenSceneObject<WormController>();
         if (controller != null)
         {
+            WormControllerEditorSnapshot snapshot =
+                WormControllerEditorSnapshotReader.Read(controller);
+
             if (force || _railPath == null)
-                _railPath = controller.EditorRail;
+                _railPath = snapshot.Rail;
 
             if (force || Mathf.Approximately(_wormSpeed, DefaultWormSpeed))
-                _wormSpeed = controller.EditorSpeed;
+                _wormSpeed = snapshot.Speed;
 
             if (force || Mathf.Approximately(_segmentSpacing, DefaultSegmentSpacing))
-                _segmentSpacing = controller.EditorSegmentSpacing;
+                _segmentSpacing = snapshot.SegmentSpacing;
 
             if (force || Mathf.Approximately(_rollbackSpeed, DefaultRollbackSpeed))
-                _rollbackSpeed = controller.EditorRollbackSpeed;
+                _rollbackSpeed = snapshot.RollbackSpeed;
 
             if (force || Mathf.Approximately(_sectionRollbackForwardSpeedMultiplier, DefaultSectionRollbackForwardSpeedMultiplier))
-                _sectionRollbackForwardSpeedMultiplier = controller.EditorSectionRollbackForwardSpeedMultiplier;
+                _sectionRollbackForwardSpeedMultiplier = snapshot.SectionRollbackForwardSpeedMultiplier;
 
             if (force || Mathf.Approximately(_reviveRollbackProgress, DefaultReviveRollbackProgress))
-                _reviveRollbackProgress = controller.EditorReviveRollbackProgressNormalized;
+                _reviveRollbackProgress = snapshot.ReviveRollbackProgressNormalized;
         }
 
         WormPressureDirector pressureDirector = FindOpenSceneObject<WormPressureDirector>();

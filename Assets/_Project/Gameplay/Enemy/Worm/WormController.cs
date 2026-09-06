@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public sealed partial class WormController : MonoBehaviour, IWormPathProgressProvider
+public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
 {
+    private const float MinimumCombatBurstSlowdownDuration = 0.01f;
+
     [Header("Rail")]
     [SerializeField] private RailPath _rail;
 
@@ -120,6 +122,44 @@ public sealed partial class WormController : MonoBehaviour, IWormPathProgressPro
                 return HeadPathProgressNormalized;
 
             return _rail.GetControlPointProgressNormalized(_pathProgress.HeadDistance);
+        }
+    }
+
+    private void OnValidate()
+    {
+        _catchUpRailPointIndex = Mathf.Max(0, _catchUpRailPointIndex);
+        _combatBurstDisableRailPointIndex = Mathf.Max(-1, _combatBurstDisableRailPointIndex);
+        ClampRailPointIndices();
+        _combatBurstDisablePathProgress = Mathf.Clamp01(_combatBurstDisablePathProgress);
+        _combatBurstSlowdownDuration = Mathf.Max(
+            MinimumCombatBurstSlowdownDuration,
+            _combatBurstSlowdownDuration);
+        _sectionRollbackForwardSpeedMultiplier = Mathf.Max(
+            0f,
+            _sectionRollbackForwardSpeedMultiplier);
+        ClearTargetDistanceCaches();
+    }
+
+    private void ClampRailPointIndices()
+    {
+        if (_rail == null || _rail.PointCount <= 0)
+            return;
+
+        int lastPointIndex = _rail.PointCount - 1;
+        _catchUpRailPointIndex = Mathf.Min(_catchUpRailPointIndex, lastPointIndex);
+
+        if (_reviveRollbackRailPointIndex >= 0)
+        {
+            _reviveRollbackRailPointIndex = Mathf.Min(
+                _reviveRollbackRailPointIndex,
+                lastPointIndex);
+        }
+
+        if (_combatBurstDisableRailPointIndex >= 0)
+        {
+            _combatBurstDisableRailPointIndex = Mathf.Min(
+                _combatBurstDisableRailPointIndex,
+                lastPointIndex);
         }
     }
 

@@ -1,3 +1,4 @@
+using LastSeed.Core.Pooling;
 using UnityEngine;
 
 [DisallowMultipleComponent]

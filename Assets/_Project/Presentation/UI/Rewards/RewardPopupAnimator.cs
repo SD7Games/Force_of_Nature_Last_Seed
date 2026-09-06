@@ -7,7 +7,6 @@ public sealed class RewardPopupAnimator
 {
     private const float ShowSettleTimeSeconds = 0.28f;
     private const float CardRevealTimeSeconds = 0.14f;
-    private const float RefreshRevealPaddingSeconds = 0.02f;
 
     private readonly CanvasGroup _canvasGroup;
     private readonly RewardPopupChoiceBinder _choiceBinder;
@@ -16,6 +15,7 @@ public sealed class RewardPopupAnimator
     private readonly RewardPopupAudioPlayer _audioPlayer;
     private readonly Action _onTransitionStarted;
     private readonly RewardPopupAnimatedLayout _animatedLayout;
+    private readonly RewardPopupRefreshAnimationBuilder _refreshAnimationBuilder;
 
     private Sequence _showSequence;
     private Sequence _refreshSequence;
@@ -41,6 +41,10 @@ public sealed class RewardPopupAnimator
             choiceBinder,
             actionControls,
             settings);
+        _refreshAnimationBuilder = new RewardPopupRefreshAnimationBuilder(
+            choiceBinder,
+            settings,
+            audioPlayer);
     }
 
     public bool IsTransitioning { get; private set; }
@@ -82,46 +86,11 @@ public sealed class RewardPopupAnimator
 
         _refreshSequence?.Kill(false);
         _refreshSequence = DOTween.Sequence().SetUpdate(true);
-        _refreshSequence.InsertCallback(0f, _audioPlayer.PlayRefresh);
-
-        int choiceCount = choices != null ? choices.Count : 0;
-        float lastDelay = 0f;
-
-        for (int i = 0; i < _choiceBinder.ButtonCount; i++)
-        {
-            RewardButtonView button = _choiceBinder.GetButton(i);
-
-            if (button == null)
-                continue;
-
-            if (i >= choiceCount)
-            {
-                button.gameObject.SetActive(false);
-                continue;
-            }
-
-            RewardChoiceData choice = choices[i];
-            button.gameObject.SetActive(true);
-
-            float delay = i * _settings.RefreshCardStagger;
-            lastDelay = delay;
-            Tween tween = button.CreateRefreshTween(
-                choice,
-                _choiceBinder.GetPresentation(choice),
-                _choiceBinder.OnClicked,
-                delay,
-                _settings.RefreshOutDuration,
-                _settings.RefreshInDuration,
-                _settings.RefreshOutEase,
-                _settings.RefreshInEase);
-
-            _refreshSequence.Join(tween);
-        }
-
-        _refreshSequence.InsertCallback(
-            lastDelay + _settings.RefreshOutDuration + RefreshRevealPaddingSeconds,
-            _audioPlayer.PlayCardReveal);
-        _refreshSequence.AppendCallback(() => applyRefreshedState?.Invoke(state));
+        _refreshAnimationBuilder.Populate(
+            _refreshSequence,
+            choices,
+            state,
+            applyRefreshedState);
         _refreshSequence.OnComplete(() => CompleteTransition(onComplete));
     }
 

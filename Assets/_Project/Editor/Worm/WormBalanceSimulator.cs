@@ -8,10 +8,6 @@ using Random = UnityEngine.Random;
 
 internal static class WormBalanceSimulator
 {
-    private const int ThousandHp = 1000;
-    private const int TenThousandHp = 10000;
-    private const int MillionHp = 1000000;
-    private const int TenMillionHp = 10000000;
 
     public static WormBalanceSimulationReport Run(WormBalanceSimulationSettings settings)
     {
@@ -71,7 +67,7 @@ internal static class WormBalanceSimulator
         IRandomSource randomSource = new UnityRandomSource();
         RewardRollService rewardRollService = new(settings.RewardDatabase, randomSource);
         WormSectionHpResolver hpResolver = new(settings.HpConfig);
-        WormBalanceSectionState[] sections = BuildSections(settings);
+        WormBalanceSectionState[] sections = WormBalanceSectionSimulator.BuildSections(settings);
         WormBalanceAdSessionState adSession = WormBalanceAdSessionState.Create(settings, scenario);
 
         float time = 0f;
@@ -89,7 +85,7 @@ internal static class WormBalanceSimulator
         bool hasRevivedThisRun = false;
         StringBuilder rewardLog = new();
 
-        RebuildSectionHp(
+        WormBalanceSectionSimulator.RebuildSectionHp(
             settings,
             hpResolver,
             sections,
@@ -101,7 +97,7 @@ internal static class WormBalanceSimulator
             hasRevivedThisRun,
             allowHpDecrease: true);
 
-        int totalProgressSegments = CountProgressSegments(sections);
+        int totalProgressSegments = WormBalanceSectionSimulator.CountProgressSegments(sections);
 
         for (int i = 0; i < sections.Length; i++)
         {
@@ -115,7 +111,7 @@ internal static class WormBalanceSimulator
                     runIndex,
                     "No DPS",
                     time,
-                    GetDestructionProgress(destroyedSegments, totalProgressSegments),
+                    WormBalanceSectionSimulator.GetDestructionProgress(destroyedSegments, totalProgressSegments),
                     headProgress,
                     i,
                     lastSectionIndex,
@@ -134,7 +130,7 @@ internal static class WormBalanceSimulator
             float killTime = section.Hp / dps;
             float timeBeforeSectionDamage = time;
 
-            if (!AdvanceTime(
+            if (!WormBalanceTimelineSimulator.AdvanceTime(
                     settings,
                     killTime,
                     ref time,
@@ -146,18 +142,18 @@ internal static class WormBalanceSimulator
                     ref playerX,
                     ref maxPlayerXError))
             {
-                int remainingSectionHp = CalculateRemainingSectionHp(
+                int remainingSectionHp = WormBalanceSectionSimulator.CalculateRemainingSectionHp(
                     section.Hp,
                     dps,
                     time - timeBeforeSectionDamage);
-                float endpointSectionDamageProgress = CalculateSectionDamageProgress(
+                float endpointSectionDamageProgress = WormBalanceSectionSimulator.CalculateSectionDamageProgress(
                     section.Hp,
                     remainingSectionHp);
-                float endpointDestructionProgress = GetDestructionProgress(
+                float endpointDestructionProgress = WormBalanceSectionSimulator.GetDestructionProgress(
                     destroyedSegments + (section.SegmentCount * endpointSectionDamageProgress),
                     totalProgressSegments);
 
-                if (TryUseRevive(
+                if (WormBalanceTimelineSimulator.TryUseRevive(
                         settings,
                         adSession,
                         ref hasRevivedThisRun,
@@ -170,7 +166,7 @@ internal static class WormBalanceSimulator
                         ref maxPlayerXError))
                 {
                     section.Hp = remainingSectionHp;
-                    RebuildSectionHp(
+                    WormBalanceSectionSimulator.RebuildSectionHp(
                         settings,
                         hpResolver,
                         sections,
@@ -191,7 +187,7 @@ internal static class WormBalanceSimulator
                     runIndex,
                     "Path completed",
                     time,
-                    GetDestructionProgress(destroyedSegments, totalProgressSegments),
+                    WormBalanceSectionSimulator.GetDestructionProgress(destroyedSegments, totalProgressSegments),
                     headProgress,
                     i,
                     lastSectionIndex,
@@ -213,13 +209,17 @@ internal static class WormBalanceSimulator
 
             if (settings.ApplySectionRollback)
             {
-                headProgress = ApplyRollback(settings, section.SegmentCount, headProgress);
-                AlignPlayerXWithHead(settings, ref playerX, headProgress, ref maxPlayerXError);
+                headProgress = WormBalanceSectionSimulator.ApplyRollback(settings, section.SegmentCount, headProgress);
+                WormBalanceTimelineSimulator.AlignPlayerXWithHead(
+                    settings,
+                    ref playerX,
+                    headProgress,
+                    ref maxPlayerXError);
             }
 
             if (pressureChanged)
             {
-                RebuildSectionHp(
+                WormBalanceSectionSimulator.RebuildSectionHp(
                     settings,
                     hpResolver,
                     sections,
@@ -237,7 +237,7 @@ internal static class WormBalanceSimulator
 
             RewardRollContext rollContext = new(
                 headProgress,
-                GetDestructionProgress(destroyedSegments, totalProgressSegments),
+                WormBalanceSectionSimulator.GetDestructionProgress(destroyedSegments, totalProgressSegments),
                 hasRevivedThisRun);
             WormBalanceRewardSelection rewardSelection = WormBalanceRewardSimulator.ResolveRewardPopup(
                 rewardRollService,
@@ -252,7 +252,7 @@ internal static class WormBalanceSimulator
 
             if (rewardSelection.Rewards == null || rewardSelection.Rewards.Count == 0)
             {
-                AppendRewardLog(
+                WormBalanceRewardLogFormatter.AppendRewardLog(
                     rewardLog,
                     time,
                     section.CocoonProfile,
@@ -277,7 +277,7 @@ internal static class WormBalanceSimulator
                 if (firstRewardTime < 0f)
                     firstRewardTime = time;
 
-                AppendRewardLog(
+                WormBalanceRewardLogFormatter.AppendRewardLog(
                     rewardLog,
                     time,
                     section.CocoonProfile,
@@ -285,7 +285,7 @@ internal static class WormBalanceSimulator
                     rewardSelection.GetDpsGain(selectedReward));
             }
 
-            RebuildSectionHp(
+            WormBalanceSectionSimulator.RebuildSectionHp(
                 settings,
                 hpResolver,
                 sections,
@@ -303,7 +303,7 @@ internal static class WormBalanceSimulator
             scenario,
             runIndex,
             time,
-            GetDestructionProgress(destroyedSegments, totalProgressSegments),
+            WormBalanceSectionSimulator.GetDestructionProgress(destroyedSegments, totalProgressSegments),
             headProgress,
             sections.Length,
             lastSectionIndex,
@@ -318,404 +318,4 @@ internal static class WormBalanceSimulator
             rewardLog.ToString());
     }
 
-    private static WormBalanceSectionState[] BuildSections(
-        WormBalanceSimulationSettings settings)
-    {
-        int bodySegmentCount = WormPatternBuilder.GetBodySegmentCount(settings.SectionCount);
-        int totalSections = WormCocoonRules.CountGameplaySections(bodySegmentCount);
-        var sections = new WormBalanceSectionState[totalSections];
-        int remainingSegments = bodySegmentCount;
-        int sectionsWithoutCocoon = 0;
-
-        for (int i = 0; i < totalSections; i++)
-        {
-            int segmentCount = Mathf.Min(
-                WormCocoonRules.SectionSize,
-                remainingSegments);
-            float progress = WormCocoonRules.GetSectionProgress(i, totalSections);
-            CocoonRewardProfile cocoonProfile = null;
-
-            if (WormCocoonRules.ShouldPlaceCocoon(
-                    i,
-                    totalSections,
-                    progress,
-                    sectionsWithoutCocoon))
-            {
-                cocoonProfile = WormCocoonRules.RollCocoonProfile(
-                    settings.RewardDatabase.CocoonProfiles,
-                    progress);
-                sectionsWithoutCocoon = 0;
-            }
-            else
-            {
-                sectionsWithoutCocoon++;
-            }
-
-            sections[i] = new WormBalanceSectionState(
-                i,
-                Mathf.Max(1, segmentCount),
-                cocoonProfile);
-            remainingSegments -= segmentCount;
-        }
-
-        return sections;
-    }
-
-    private static void RebuildSectionHp(
-        WormBalanceSimulationSettings settings,
-        WormSectionHpResolver hpResolver,
-        WormBalanceSectionState[] sections,
-        int startIndex,
-        WeaponRuntimeState mainState,
-        AcaciaThornRuntimeState acaciaState,
-        float runtimePressureMultiplier,
-        float headProgress,
-        bool hasRevivedThisRun,
-        bool allowHpDecrease = false)
-    {
-        if (sections == null || sections.Length == 0)
-            return;
-
-        WeaponPowerSnapshot power = WormBalanceWeaponSimulation.EstimatePower(settings, mainState, acaciaState);
-        int previousHp = 0;
-
-        for (int i = 0; i < sections.Length; i++)
-        {
-            int baseHp = WormSectionHPGenerator.GetHP(i, settings.LevelNumber);
-            int resolvedHp = hpResolver.ResolveHp(
-                baseHp,
-                i,
-                sections.Length,
-                settings.LevelNumber,
-                power,
-                runtimePressureMultiplier,
-                GetHeadPressureMultiplier(settings, headProgress),
-                hasRevivedThisRun);
-            int hp = EnsureHpAbovePrevious(resolvedHp, previousHp);
-
-            if (i >= startIndex)
-            {
-                if (!allowHpDecrease)
-                    hp = Mathf.Max(hp, sections[i].Hp);
-
-                sections[i].Hp = hp;
-            }
-
-            previousHp = GetPreviousHpForSection(
-                previousHp,
-                hp,
-                sections[i],
-                i,
-                startIndex,
-                i >= startIndex,
-                allowHpDecrease);
-        }
-    }
-
-    private static int GetPreviousHpForSection(
-        int previousHp,
-        int resolvedHp,
-        WormBalanceSectionState section,
-        int sectionIndex,
-        int startIndex,
-        bool canRebalance,
-        bool allowHpDecrease)
-    {
-        if (canRebalance)
-            return resolvedHp;
-
-        if (!allowHpDecrease || sectionIndex == startIndex - 1)
-            return Mathf.Max(previousHp, resolvedHp, section != null ? section.Hp : 0);
-
-        return Mathf.Max(previousHp, resolvedHp);
-    }
-
-    private static bool AdvanceTime(
-        WormBalanceSimulationSettings settings,
-        float duration,
-        ref float time,
-        ref float pressureElapsedTime,
-        ref float headProgress,
-        ref float pressureSampleTimer,
-        ref float runtimePressureMultiplier,
-        ref bool pressureChanged,
-        ref float playerX,
-        ref float maxPlayerXError)
-    {
-        float remaining = Mathf.Max(0f, duration);
-        int maximumStepCount = 1;
-
-        if (settings.UseRuntimePressure && settings.PressureConfig != null)
-        {
-            float minimumStep = Mathf.Max(
-                0.0001f,
-                settings.PressureConfig.SampleInterval);
-            maximumStepCount = Mathf.CeilToInt(remaining / minimumStep) + 1;
-        }
-
-        for (int stepIndex = 0;
-             stepIndex < maximumStepCount && remaining > 0f;
-             stepIndex++)
-        {
-            float step = remaining;
-
-            if (settings.UseRuntimePressure && settings.PressureConfig != null)
-            {
-                float timeToPressureSample = Mathf.Max(
-                    0.0001f,
-                    settings.PressureConfig.SampleInterval - pressureSampleTimer);
-                step = Mathf.Min(step, timeToPressureSample);
-            }
-
-            if (settings.PathTimeLimitSeconds > 0f)
-            {
-                float timeToPathEnd = (1f - headProgress) * settings.PathTimeLimitSeconds;
-
-                if (step >= timeToPathEnd)
-                {
-                    time += Mathf.Max(0f, timeToPathEnd);
-                    headProgress = 1f;
-                    AlignPlayerXWithHead(settings, ref playerX, headProgress, ref maxPlayerXError);
-                    return false;
-                }
-            }
-
-            time += step;
-            pressureElapsedTime += step;
-            headProgress = Mathf.Clamp01(headProgress + step / settings.PathTimeLimitSeconds);
-            AlignPlayerXWithHead(settings, ref playerX, headProgress, ref maxPlayerXError);
-            remaining -= step;
-
-            if (!settings.UseRuntimePressure || settings.PressureConfig == null)
-                continue;
-
-            pressureSampleTimer += step;
-
-            if (pressureSampleTimer + Mathf.Epsilon < settings.PressureConfig.SampleInterval)
-                continue;
-
-            pressureSampleTimer = 0f;
-            float nextPressure = CalculateRuntimePressure(
-                settings.PressureConfig,
-                pressureElapsedTime,
-                headProgress,
-                runtimePressureMultiplier);
-
-            if (Mathf.Approximately(nextPressure, runtimePressureMultiplier))
-                continue;
-
-            runtimePressureMultiplier = nextPressure;
-            pressureChanged = true;
-        }
-
-        return true;
-    }
-
-    private static void AlignPlayerXWithHead(
-        WormBalanceSimulationSettings settings,
-        ref float playerX,
-        float headProgress,
-        ref float maxPlayerXError)
-    {
-        if (!settings.SimulatePlayerXFollow)
-            return;
-
-        float headX = settings.PathMetrics.GetHeadX(headProgress);
-        playerX = headX;
-        maxPlayerXError = Mathf.Max(maxPlayerXError, Mathf.Abs(playerX - headX));
-    }
-
-    private static float CalculateRuntimePressure(
-        WormPressureConfig config,
-        float elapsedTime,
-        float headProgress,
-        float currentPressure)
-    {
-        float expectedProgress = config.GetExpectedProgress(elapsedTime);
-        float deadZone = config.ProgressDeadZone;
-
-        if (headProgress + deadZone < expectedProgress)
-            return Mathf.Min(config.MaxMultiplier, currentPressure + config.IncreasePerSample);
-
-        if (headProgress > expectedProgress + deadZone)
-            return Mathf.Max(1f, currentPressure - config.RecoveryPerSample);
-
-        return currentPressure;
-    }
-
-    private static bool TryUseRevive(
-        WormBalanceSimulationSettings settings,
-        WormBalanceAdSessionState adSession,
-        ref bool hasRevivedThisRun,
-        ref float headProgress,
-        ref float pressureElapsedTime,
-        ref float pressureSampleTimer,
-        ref float runtimePressureMultiplier,
-        ref bool pressureChanged,
-        ref float playerX,
-        ref float maxPlayerXError)
-    {
-        if (adSession == null || !adSession.TryUseRevive())
-            return false;
-
-        hasRevivedThisRun = true;
-        headProgress = settings.ReviveRollbackProgress;
-        pressureElapsedTime = settings.PressureConfig != null
-            ? settings.PressureConfig.GetElapsedTimeForExpectedProgress(headProgress)
-            : 0f;
-        pressureSampleTimer = 0f;
-        runtimePressureMultiplier = 1f;
-        pressureChanged = true;
-        AlignPlayerXWithHead(settings, ref playerX, headProgress, ref maxPlayerXError);
-        return true;
-    }
-
-    private static float GetHeadPressureMultiplier(
-        WormBalanceSimulationSettings settings,
-        float headProgress)
-    {
-        return settings.HpConfig != null
-            ? settings.HpConfig.GetHeadPathPressureMultiplier(headProgress)
-            : 1f;
-    }
-
-    private static float ApplyRollback(
-        WormBalanceSimulationSettings settings,
-        int destroyedSegmentCount,
-        float headProgress)
-    {
-        float pathLength = settings.PathMetrics.PathLength;
-
-        if (pathLength <= 0f)
-            return headProgress;
-
-        float rollbackDistance = destroyedSegmentCount * settings.SegmentSpacing;
-        float rollbackSpeed = Mathf.Max(0.01f, settings.RollbackSpeed);
-        float forwardSpeed = Mathf.Max(0f, settings.WormSpeed * settings.SectionRollbackForwardSpeedMultiplier);
-        float effectiveRollbackDistance = rollbackDistance *
-            (rollbackSpeed / Mathf.Max(0.01f, rollbackSpeed + forwardSpeed));
-        float rollbackProgress = effectiveRollbackDistance / pathLength;
-        return Mathf.Clamp01(headProgress - rollbackProgress);
-    }
-
-    private static int EnsureHpAbovePrevious(int hp, int previousHp)
-    {
-        if (previousHp <= 0)
-            return Mathf.Max(1, hp);
-
-        if (previousHp >= WeaponRuntimeState.MaxProjectileDamage)
-            return WeaponRuntimeState.MaxProjectileDamage;
-
-        int minimumIncrease = GetMinimumVisibleHpIncrease(previousHp);
-
-        return Mathf.Min(
-            WeaponRuntimeState.MaxProjectileDamage,
-            Mathf.Max(hp, previousHp + minimumIncrease));
-    }
-
-    private static int CalculateRemainingSectionHp(
-        int currentHp,
-        float dps,
-        float elapsedDamageTime)
-    {
-        if (currentHp <= 1 || dps <= 0f || elapsedDamageTime <= 0f)
-            return Mathf.Max(1, currentHp);
-
-        float remainingHp = currentHp - (dps * elapsedDamageTime);
-        return Mathf.Max(1, Mathf.CeilToInt(remainingHp));
-    }
-
-    private static float CalculateSectionDamageProgress(
-        int currentHp,
-        int remainingHp)
-    {
-        if (currentHp <= 0)
-            return 0f;
-
-        return Mathf.Clamp01((currentHp - remainingHp) / (float)currentHp);
-    }
-
-    private static int GetMinimumVisibleHpIncrease(int previousHp)
-    {
-        if (previousHp < ThousandHp)
-            return 1;
-
-        if (previousHp < TenThousandHp)
-            return 100;
-
-        if (previousHp < MillionHp)
-            return 1000;
-
-        if (previousHp < TenMillionHp)
-            return 100000;
-
-        return 1000000;
-    }
-
-    private static int CountProgressSegments(WormBalanceSectionState[] sections)
-    {
-        if (sections == null)
-            return 0;
-
-        int count = 0;
-
-        for (int i = 0; i < sections.Length; i++)
-            count += sections[i].SegmentCount;
-
-        return count;
-    }
-
-    private static float GetDestructionProgress(
-        float destroyedSegments,
-        int totalSegments)
-    {
-        return totalSegments > 0
-            ? Mathf.Clamp01(destroyedSegments / (float)totalSegments)
-            : 0f;
-    }
-
-    private static void AppendRewardLog(
-        StringBuilder builder,
-        float time,
-        CocoonRewardProfile cocoonProfile,
-        RewardChoiceData reward,
-        float dpsGain)
-    {
-        if (builder == null)
-            return;
-
-        if (builder.Length > 0)
-            builder.Append(" | ");
-
-        string profileName = cocoonProfile != null
-            ? cocoonProfile.DisplayName
-            : "NoProfile";
-
-        if (reward == null)
-        {
-            builder.AppendFormat(
-                CultureInfo.InvariantCulture,
-                "{0:0.0}s {1}: no reward",
-                time,
-                profileName);
-            return;
-        }
-
-        builder.AppendFormat(
-            CultureInfo.InvariantCulture,
-            "{0:0.0}s {1}: {2} {3} {4}",
-            time,
-            profileName,
-            reward.Rarity,
-            reward.Title,
-            reward.ValueText);
-
-        if (dpsGain > 0f)
-        {
-            builder.AppendFormat(
-                CultureInfo.InvariantCulture,
-                " (+{0:0.00} DPS)",
-                dpsGain);
-        }
-    }
 }

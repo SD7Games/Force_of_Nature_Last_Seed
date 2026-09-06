@@ -232,8 +232,11 @@ public sealed class PopupRoot : MonoBehaviour
 
     private bool TryShowNextQueuedPopup()
     {
-        while (_queuedPopups.TryDequeue(out PopupView popup))
+        for (int remaining = _queuedPopups.Count; remaining > 0; remaining--)
         {
+            if (!_queuedPopups.TryDequeue(out PopupView popup))
+                return false;
+
             if (popup == null)
                 continue;
 

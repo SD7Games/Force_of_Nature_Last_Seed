@@ -16,10 +16,13 @@ namespace LastSeed.Infrastructure.Navigation
             _operation = operation ?? throw new ArgumentNullException(nameof(operation));
         }
 
-        public async UniTask WaitUntilReadyAsync(CancellationToken cancellationToken)
+        public UniTask WaitUntilReadyAsync(CancellationToken cancellationToken)
         {
-            while (_operation.progress < ReadyForActivationProgress)
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+            return UniTask.WaitUntil(
+                _operation,
+                static operation => operation.progress >= ReadyForActivationProgress,
+                PlayerLoopTiming.Update,
+                cancellationToken);
         }
 
         public void Activate()
@@ -27,10 +30,13 @@ namespace LastSeed.Infrastructure.Navigation
             _operation.allowSceneActivation = true;
         }
 
-        public async UniTask WaitUntilCompletedAsync(CancellationToken cancellationToken)
+        public UniTask WaitUntilCompletedAsync(CancellationToken cancellationToken)
         {
-            while (!_operation.isDone)
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+            return UniTask.WaitUntil(
+                _operation,
+                static operation => operation.isDone,
+                PlayerLoopTiming.Update,
+                cancellationToken);
         }
     }
 }

@@ -21,11 +21,11 @@ public sealed class WormSegment : MonoBehaviour
     [SerializeField, Min(0f)] private float _cocoonShakeInterval = 3f;
     [SerializeField, Min(0f)] private float _cocoonShakeAngle = 10f;
 
-    private Collider2D _cachedCollider;
     private WormSegmentDamageReceiver[] _damageReceivers =
         Array.Empty<WormSegmentDamageReceiver>();
 
     private WormSegmentCocoonPresenter _cocoonPresenter;
+    private WormSegmentPooledViewLifecycle _pooledViewLifecycle;
     private WormSegmentVisualRig _visualRig;
 
     public Transform CachedTransform { get; private set; }
@@ -34,7 +34,7 @@ public sealed class WormSegment : MonoBehaviour
     public int Index { get; set; }
 
     public bool HasCocoon => _cocoonPresenter?.IsVisible == true;
-    public bool IsAlive { get; private set; } = true;
+    public bool IsAlive => _pooledViewLifecycle?.IsAlive ?? true;
     public bool HasTailVisualChain => _visualRig?.HasTailVisualChain == true;
     public int TailVisualPartCount => _visualRig?.TailVisualPartCount ?? 0;
     public bool HasHeadFollowChain => _visualRig?.HasHeadFollowChain == true;
@@ -43,7 +43,7 @@ public sealed class WormSegment : MonoBehaviour
     private void Awake()
     {
         CachedTransform = transform;
-        _cachedCollider = GetComponent<Collider2D>();
+        TryGetComponent(out Collider2D cachedCollider);
 
         if (Type == WormSegmentType.Head)
             FaceVisual = GetComponentInChildren<WormFaceVisualController>(true);
@@ -57,6 +57,10 @@ public sealed class WormSegment : MonoBehaviour
             _cocoonVisual,
             _cocoonShakeInterval,
             _cocoonShakeAngle);
+        _pooledViewLifecycle = new WormSegmentPooledViewLifecycle(
+            gameObject,
+            VisualRoot,
+            cachedCollider);
 
         _visualRig = new WormSegmentVisualRig(
             Type,
@@ -136,34 +140,16 @@ public sealed class WormSegment : MonoBehaviour
 
     public void Activate()
     {
-        gameObject.SetActive(true);
-        IsAlive = true;
-
-        if (VisualRoot != null && !VisualRoot.gameObject.activeSelf)
-            VisualRoot.gameObject.SetActive(true);
-
-        if (_cachedCollider != null && !_cachedCollider.enabled)
-            _cachedCollider.enabled = true;
-
+        _pooledViewLifecycle.Activate();
         DisableCocoon();
         Section = null;
     }
 
     public void PrepareForWorm()
     {
-        IsAlive = true;
         Section = null;
-
-        if (VisualRoot != null && !VisualRoot.gameObject.activeSelf)
-            VisualRoot.gameObject.SetActive(true);
-
-        if (_cachedCollider != null && !_cachedCollider.enabled)
-            _cachedCollider.enabled = true;
-
         DisableCocoon();
-
-        if (gameObject.activeSelf)
-            gameObject.SetActive(false);
+        _pooledViewLifecycle.PrepareForPool();
     }
 
     public void InitializePresentation(IWormCocoonShakeClock cocoonShakeClock)
@@ -191,36 +177,13 @@ public sealed class WormSegment : MonoBehaviour
 
     public void SetRuntimeVisible(bool visible)
     {
-        if (!IsAlive)
-            return;
-
-        if (gameObject.activeSelf != visible)
-            gameObject.SetActive(visible);
-
-        if (!visible)
-            return;
-
-        if (VisualRoot != null && !VisualRoot.gameObject.activeSelf)
-            VisualRoot.gameObject.SetActive(true);
-
-        if (_cachedCollider != null && !_cachedCollider.enabled)
-            _cachedCollider.enabled = true;
+        _pooledViewLifecycle.SetRuntimeVisible(visible);
     }
 
     public void KillVisualAndCollision()
     {
-        IsAlive = false;
-
-        if (VisualRoot != null && VisualRoot.gameObject.activeSelf)
-            VisualRoot.gameObject.SetActive(false);
-
-        if (_cachedCollider != null && _cachedCollider.enabled)
-            _cachedCollider.enabled = false;
-
         DisableCocoon();
-
-        if (gameObject.activeSelf)
-            gameObject.SetActive(false);
+        _pooledViewLifecycle.Kill();
     }
 
     private void EnsureDamageReceiversCached()

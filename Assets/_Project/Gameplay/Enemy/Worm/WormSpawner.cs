@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using LastSeed.Gameplay.Signals;
 using UnityEngine;
 using Zenject;
@@ -41,7 +42,7 @@ public sealed class WormSpawner : MonoBehaviour
         _spawnLifecycle?.UnbindFacePresentation();
     }
 
-    private async void Start()
+    private async UniTaskVoid Start()
     {
         try
         {

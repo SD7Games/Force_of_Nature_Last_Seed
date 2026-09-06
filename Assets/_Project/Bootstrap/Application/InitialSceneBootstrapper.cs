@@ -1,50 +1,28 @@
+using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using LastSeed.Infrastructure.Navigation;
-using UnityEngine;
 
 namespace LastSeed.Bootstrap.Application
 {
     public sealed class InitialSceneBootstrapper
     {
-        private readonly UnitySceneLoader _sceneLoader;
-        private readonly SceneLoadReadinessMonitor _readinessMonitor;
+        private readonly ISceneNavigator<GameSceneId> _sceneNavigator;
 
-        public InitialSceneBootstrapper(
-            UnitySceneLoader sceneLoader,
-            SceneLoadReadinessMonitor readinessMonitor)
+        public InitialSceneBootstrapper(ISceneNavigator<GameSceneId> sceneNavigator)
         {
-            _sceneLoader = sceneLoader;
-            _readinessMonitor = readinessMonitor;
+            _sceneNavigator = sceneNavigator ??
+                throw new ArgumentNullException(nameof(sceneNavigator));
         }
 
-        public async Awaitable LoadInitialLobbyAsync(
-            BootstrapLoadingView loadingView,
+        public UniTask<bool> LoadInitialSceneAsync(
+            ISceneTransition transition,
             CancellationToken cancellationToken)
         {
-            AsyncOperation loadOperation = _sceneLoader.LoadLobbyAsync(
-                allowSceneActivation: false);
-
-            if (loadOperation == null)
-                return;
-
-            if (loadingView != null)
-                await loadingView.PlayAsync();
-
-            await _readinessMonitor.WaitAsync(
-                loadOperation,
+            return _sceneNavigator.TryNavigateAsync(
+                GameSceneId.Lobby,
+                transition,
                 cancellationToken);
-
-            _sceneLoader.Activate(loadOperation);
-        }
-
-        public void Tick()
-        {
-            _readinessMonitor.Tick();
-        }
-
-        public void Cancel()
-        {
-            _readinessMonitor.Cancel();
         }
     }
 }

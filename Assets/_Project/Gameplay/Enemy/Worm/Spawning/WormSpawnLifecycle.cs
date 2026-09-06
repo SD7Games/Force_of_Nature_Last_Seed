@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public sealed class WormSpawnLifecycle
@@ -42,7 +43,7 @@ public sealed class WormSpawnLifecycle
 
     public bool IsSpawned { get; private set; }
 
-    public Awaitable PrewarmAsync(CancellationToken cancellationToken)
+    public UniTask PrewarmAsync(CancellationToken cancellationToken)
     {
         return _segmentPool.PrewarmAsync(
             _settings.BodyPoolCapacity,

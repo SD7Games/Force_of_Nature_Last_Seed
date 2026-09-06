@@ -1,4 +1,5 @@
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using LastSeed.Core.Pooling;
 using UnityEngine;
 
@@ -39,7 +40,7 @@ public sealed class WormSegmentPool
         _bodyPool?.Prewarm(bodyCapacity);
     }
 
-    public async Awaitable PrewarmAsync(
+    public async UniTask PrewarmAsync(
         int bodyCapacity,
         int batchSize,
         CancellationToken cancellationToken)
@@ -73,7 +74,7 @@ public sealed class WormSegmentPool
         GetPool(segment.Type)?.Return(segment);
     }
 
-    private async Awaitable PrewarmPoolAsync(
+    private async UniTask PrewarmPoolAsync(
         ObjectPool<WormSegment> pool,
         int count,
         int batchSize,
@@ -94,7 +95,7 @@ public sealed class WormSegmentPool
             if (_prewarmCreatedThisFrame >= batchSize)
             {
                 _prewarmCreatedThisFrame = 0;
-                await Awaitable.NextFrameAsync(cancellationToken);
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
             }
         }
     }

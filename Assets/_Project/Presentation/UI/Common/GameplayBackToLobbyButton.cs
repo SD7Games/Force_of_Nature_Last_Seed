@@ -1,3 +1,5 @@
+using System;
+using Cysharp.Threading.Tasks;
 using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,13 +13,13 @@ namespace _Project.App.Presentation
     {
         [SerializeField] private Button _button;
 
-        private ISceneNavigationService _sceneNavigationService;
+        private ISceneNavigator<GameSceneId> _sceneNavigator;
         private bool _isReturnRequested;
 
         [Inject]
-        public void Construct(ISceneNavigationService sceneNavigationService)
+        public void Construct(ISceneNavigator<GameSceneId> sceneNavigator)
         {
-            _sceneNavigationService = sceneNavigationService;
+            _sceneNavigator = sceneNavigator;
         }
 
         private void Awake()
@@ -56,8 +58,33 @@ namespace _Project.App.Presentation
             _isReturnRequested = true;
             SetInteractable(false);
 
-            if (!_sceneNavigationService.TryLoadLobbyScene())
+            NavigateAsync().Forget();
+        }
+
+        private async UniTask NavigateAsync()
+        {
+            try
             {
+                bool started = await _sceneNavigator.TryNavigateAsync(
+                    GameSceneId.Lobby,
+                    destroyCancellationToken);
+
+                if (started || this == null)
+                    return;
+
+                _isReturnRequested = false;
+                SetInteractable(true);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+
+                if (this == null)
+                    return;
+
                 _isReturnRequested = false;
                 SetInteractable(true);
             }

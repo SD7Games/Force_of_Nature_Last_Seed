@@ -4,6 +4,7 @@
   "references": [
     "LastSeed.Core",
     "LastSeed.Infrastructure",
+    "UniTask",
     "LastSeed.DOTween.Modules",
     "Unity.TextMeshPro",
     "Zenject"

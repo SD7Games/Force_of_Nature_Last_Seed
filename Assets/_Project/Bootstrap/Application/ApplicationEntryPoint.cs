@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -18,7 +19,7 @@ namespace LastSeed.Bootstrap.Application
             _initialSceneBootstrapper = initialSceneBootstrapper;
         }
 
-        private async void Start()
+        private async UniTaskVoid Start()
         {
             if (_hasStarted)
                 return;
@@ -35,7 +36,7 @@ namespace LastSeed.Bootstrap.Application
             _hasStarted = true;
             try
             {
-                await _initialSceneBootstrapper.LoadInitialLobbyAsync(
+                await _initialSceneBootstrapper.LoadInitialSceneAsync(
                     _loadingView,
                     destroyCancellationToken);
             }
@@ -49,14 +50,5 @@ namespace LastSeed.Bootstrap.Application
             }
         }
 
-        private void Update()
-        {
-            _initialSceneBootstrapper?.Tick();
-        }
-
-        private void OnDestroy()
-        {
-            _initialSceneBootstrapper?.Cancel();
-        }
     }
 }

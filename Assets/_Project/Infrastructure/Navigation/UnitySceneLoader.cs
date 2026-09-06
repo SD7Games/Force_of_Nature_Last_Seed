@@ -4,49 +4,25 @@ using UnityEngine.SceneManagement;
 
 namespace LastSeed.Infrastructure.Navigation
 {
-    public sealed class UnitySceneLoader
+    public sealed class UnitySceneLoader : ISceneLoader
     {
-        private const float ReadyForActivationProgress = 0.9f;
-
-        public AsyncOperation LoadLobbyAsync(bool allowSceneActivation)
+        public ISceneLoadOperation BeginLoad(string sceneName)
         {
-            return LoadAsync(GameSceneNames.Lobby, allowSceneActivation);
+            if (string.IsNullOrWhiteSpace(sceneName))
+                throw new ArgumentException("Scene name cannot be empty.", nameof(sceneName));
+
+            Time.timeScale = 1f;
+
+            AsyncOperation loadOperation = SceneManager.LoadSceneAsync(
+                sceneName,
+                LoadSceneMode.Single);
+
+            if (loadOperation == null)
+                throw new InvalidOperationException(
+                    $"Unity failed to start loading scene '{sceneName}'.");
+
+            loadOperation.allowSceneActivation = false;
+            return new UnitySceneLoadOperation(loadOperation);
         }
-
-        public AsyncOperation LoadGameplayAsync(bool allowSceneActivation)
-        {
-            return LoadAsync(GameSceneNames.Gameplay, allowSceneActivation);
-        }
-
-        public AsyncOperation LoadAsync(string sceneName, bool allowSceneActivation)
-        {
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                Debug.LogError("UnitySceneLoader: scene name is empty.");
-                return null;
-            }
-
-            AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName);
-
-            if (loadOperation != null)
-                loadOperation.allowSceneActivation = allowSceneActivation;
-            else
-                Debug.LogError($"UnitySceneLoader: failed to start loading scene '{sceneName}'.");
-
-            return loadOperation;
-        }
-
-        public void Activate(AsyncOperation loadOperation)
-        {
-            if (loadOperation != null)
-                loadOperation.allowSceneActivation = true;
-        }
-
-        public bool IsReadyToActivate(AsyncOperation loadOperation)
-        {
-            return loadOperation != null &&
-                loadOperation.progress >= ReadyForActivationProgress;
-        }
-
     }
 }

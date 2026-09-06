@@ -6,6 +6,7 @@
     "LastSeed.Gameplay",
     "LastSeed.Infrastructure",
     "LastSeed.Presentation",
+    "UniTask",
     "Zenject"
   ],
   "includePlatforms": [],

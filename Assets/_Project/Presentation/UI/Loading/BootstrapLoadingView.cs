@@ -1,10 +1,13 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using LastSeed.Infrastructure.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 [DisallowMultipleComponent]
-public sealed class BootstrapLoadingView : MonoBehaviour
+public sealed class BootstrapLoadingView : MonoBehaviour, ISceneTransition
 {
     [Header("Progress")]
     [SerializeField] private Image _loadingProgressImage;
@@ -49,18 +52,23 @@ public sealed class BootstrapLoadingView : MonoBehaviour
     [SerializeField, Min(0f)] private float _angryOpenEndTime = 2.85f;
 
     private Sequence _sequence;
-    private AwaitableCompletionSource _completionSource;
+    private UniTaskCompletionSource _completionSource;
+    private CancellationTokenRegistration _cancellationRegistration;
     private int _lastStatusPhraseIndex = -1;
 
     public bool IsComplete { get; private set; }
 
-    public Awaitable PlayAsync()
+    public UniTask PlayAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         CancelAnimation();
         ApplyInitialState();
 
         IsComplete = false;
-        _completionSource = new AwaitableCompletionSource();
+        _completionSource = new UniTaskCompletionSource();
+        _cancellationRegistration = cancellationToken.RegisterWithoutCaptureExecutionContext(
+            static state => ((BootstrapLoadingView)state).CancelAnimation(),
+            this);
         _sequence = DOTween.Sequence()
             .SetTarget(this)
             .SetUpdate(true);
@@ -75,7 +83,7 @@ public sealed class BootstrapLoadingView : MonoBehaviour
 
         _sequence.InsertCallback(_loadingDuration, DoNothing);
         _sequence.OnComplete(Complete);
-        return _completionSource.Awaitable;
+        return _completionSource.Task;
     }
 
     private void OnDestroy()
@@ -240,8 +248,7 @@ public sealed class BootstrapLoadingView : MonoBehaviour
         _sequence?.Kill();
         _sequence = null;
 
-        AwaitableCompletionSource completionSource = _completionSource;
-        _completionSource = null;
+        UniTaskCompletionSource completionSource = ReleaseCompletionSource();
         completionSource?.TrySetCanceled();
     }
 
@@ -250,9 +257,18 @@ public sealed class BootstrapLoadingView : MonoBehaviour
         IsComplete = true;
         _sequence = null;
 
-        AwaitableCompletionSource completionSource = _completionSource;
-        _completionSource = null;
+        UniTaskCompletionSource completionSource = ReleaseCompletionSource();
         completionSource?.TrySetResult();
+    }
+
+    private UniTaskCompletionSource ReleaseCompletionSource()
+    {
+        _cancellationRegistration.Dispose();
+        _cancellationRegistration = default;
+
+        UniTaskCompletionSource completionSource = _completionSource;
+        _completionSource = null;
+        return completionSource;
     }
 
     private static void SetImagesFill(Image[] images, float fillAmount)

@@ -7,12 +7,18 @@ namespace LastSeed.Bootstrap.Installers
     {
         public override void InstallBindings()
         {
-            Container.Bind<UnitySceneLoader>().AsSingle();
-            Container.Bind<SceneLoadReadinessMonitor>().AsSingle();
+            Container
+                .Bind<SceneRouteCatalog<GameSceneId>>()
+                .FromInstance(GameSceneRoutes.CreateCatalog());
 
             Container
-                .Bind<ISceneNavigationService>()
-                .To<SceneNavigationService>()
+                .Bind<ISceneLoader>()
+                .To<UnitySceneLoader>()
+                .AsSingle();
+
+            Container
+                .Bind<ISceneNavigator<GameSceneId>>()
+                .To<SceneNavigator<GameSceneId>>()
                 .AsSingle();
         }
     }

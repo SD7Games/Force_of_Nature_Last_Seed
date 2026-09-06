@@ -6,6 +6,7 @@
     "LastSeed.Gameplay",
     "LastSeed.Infrastructure",
     "LastSeed.DOTween.Modules",
+    "UniTask",
     "Unity.InputSystem",
     "Unity.TextMeshPro",
     "Unity.ugui",

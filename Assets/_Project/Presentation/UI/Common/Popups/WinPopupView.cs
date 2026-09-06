@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
@@ -34,12 +35,12 @@ public sealed class WinPopupView : PopupView
     private bool _hasContentBaseScale;
     private Sequence _showSequence;
     private Sequence _restartSequence;
-    private ISceneNavigationService _sceneNavigationService;
+    private ISceneNavigator<GameSceneId> _sceneNavigator;
 
     [Inject]
-    public void Construct(ISceneNavigationService sceneNavigationService)
+    public void Construct(ISceneNavigator<GameSceneId> sceneNavigator)
     {
-        _sceneNavigationService = sceneNavigationService;
+        _sceneNavigator = sceneNavigator;
     }
 
     private void OnEnable()
@@ -101,8 +102,25 @@ public sealed class WinPopupView : PopupView
             if (closeOnComplete)
                 RequestClose();
 
-            _sceneNavigationService.TryLoadLobbyScene();
+            NavigateToLobbyAsync().Forget();
         });
+    }
+
+    private async UniTask NavigateToLobbyAsync()
+    {
+        try
+        {
+            await _sceneNavigator.TryNavigateAsync(
+                GameSceneId.Lobby,
+                destroyCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception, this);
+        }
     }
 
     private void PlayRestartAnimation(Action onComplete)

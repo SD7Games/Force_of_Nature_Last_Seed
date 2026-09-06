@@ -3,6 +3,7 @@
   "rootNamespace": "LastSeed.Infrastructure",
   "references": [
     "LastSeed.Core",
+    "UniTask",
     "Unity.InputSystem"
   ],
   "includePlatforms": [],

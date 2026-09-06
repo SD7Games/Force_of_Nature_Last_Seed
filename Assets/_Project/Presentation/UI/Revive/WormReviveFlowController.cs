@@ -1,3 +1,5 @@
+using System;
+using Cysharp.Threading.Tasks;
 using LastSeed.Gameplay.Signals;
 using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
@@ -30,14 +32,14 @@ public sealed class WormReviveFlowController : MonoBehaviour
     private bool _isReviving;
     private bool _isRevivePopupClosePending;
     private bool _isReviveRollbackPending;
-    private ISceneNavigationService _sceneNavigationService;
+    private ISceneNavigator<GameSceneId> _sceneNavigator;
     private SignalBus _signalBus;
     private bool _isSubscribedToSignals;
 
     [Inject]
-    public void Construct(ISceneNavigationService sceneNavigationService, SignalBus signalBus)
+    public void Construct(ISceneNavigator<GameSceneId> sceneNavigator, SignalBus signalBus)
     {
-        _sceneNavigationService = sceneNavigationService;
+        _sceneNavigator = sceneNavigator;
         _signalBus = signalBus;
         SubscribeToSignals();
     }
@@ -229,7 +231,24 @@ public sealed class WormReviveFlowController : MonoBehaviour
     private void RequestLobbyLoad()
     {
         _popupRoot?.HideActive();
-        _sceneNavigationService.TryLoadLobbyScene();
+        NavigateToLobbyAsync().Forget();
+    }
+
+    private async UniTask NavigateToLobbyAsync()
+    {
+        try
+        {
+            await _sceneNavigator.TryNavigateAsync(
+                GameSceneId.Lobby,
+                destroyCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception, this);
+        }
     }
 
     private void PlayPopupCloseAnimation(System.Action onComplete)

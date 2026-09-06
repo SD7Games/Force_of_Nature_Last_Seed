@@ -1,3 +1,5 @@
+using System;
+using Cysharp.Threading.Tasks;
 using LastSeed.Infrastructure.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,13 +11,13 @@ public sealed class LobbyStartBattleButton : MonoBehaviour
 {
     [SerializeField] private Button _button;
 
-    private ISceneNavigationService _sceneNavigationService;
+    private ISceneNavigator<GameSceneId> _sceneNavigator;
     private bool _isLoadingRequested;
 
     [Inject]
-    public void Construct(ISceneNavigationService sceneNavigationService)
+    public void Construct(ISceneNavigator<GameSceneId> sceneNavigator)
     {
-        _sceneNavigationService = sceneNavigationService;
+        _sceneNavigator = sceneNavigator;
     }
 
     private void Awake()
@@ -54,8 +56,33 @@ public sealed class LobbyStartBattleButton : MonoBehaviour
         _isLoadingRequested = true;
         SetInteractable(false);
 
-        if (!_sceneNavigationService.TryLoadGameplayScene())
+        NavigateAsync().Forget();
+    }
+
+    private async UniTask NavigateAsync()
+    {
+        try
         {
+            bool started = await _sceneNavigator.TryNavigateAsync(
+                GameSceneId.Gameplay,
+                destroyCancellationToken);
+
+            if (started || this == null)
+                return;
+
+            _isLoadingRequested = false;
+            SetInteractable(true);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception, this);
+
+            if (this == null)
+                return;
+
             _isLoadingRequested = false;
             SetInteractable(true);
         }

@@ -5,7 +5,8 @@
     "LastSeed.Core",
     "LastSeed.Gameplay",
     "LastSeed.Infrastructure",
-    "LastSeed.Presentation"
+    "LastSeed.Presentation",
+    "UniTask"
   ],
   "includePlatforms": [
     "Editor"

@@ -60,7 +60,7 @@ public sealed class WormCombatController : MonoBehaviour
         NotifyDestructionProgressChanged();
     }
 
-    public void RegisterHit(WormSegment segment, in DamageInfo damageInfo)
+    public void RegisterHit(WormSegment segment, in DamageHit hit)
     {
         if (_isWormDead)
             return;
@@ -70,9 +70,9 @@ public sealed class WormCombatController : MonoBehaviour
         if (section == null || section.IsDestroyed)
             return;
 
-        section.Damage(damageInfo.Amount);
+        section.Damage(hit.Damage.Amount);
         _signalBus.Fire(new WormDamageDealtSignal(
-            DamageViewRequest.FromDamageInfo(damageInfo)));
+            DamageViewRequest.FromDamageHit(hit)));
 
         if (!section.IsDestroyed)
             return;

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public sealed class WormSegmentDamageReceiver : MonoBehaviour, IDamageable
+public sealed class WormSegmentDamageReceiver : MonoBehaviour, IDamageable<DamageHit>
 {
     private WormCombatController _combat;
     private WormSegment _segment;
@@ -25,7 +25,7 @@ public sealed class WormSegmentDamageReceiver : MonoBehaviour, IDamageable
         return _combat.ResolveDamageSection(_segment);
     }
 
-    public void TakeDamage(in DamageInfo damageInfo)
+    public void TakeDamage(in DamageHit hit)
     {
         if (_combat == null || _segment == null)
             return;
@@ -33,6 +33,6 @@ public sealed class WormSegmentDamageReceiver : MonoBehaviour, IDamageable
         if (!_segment.IsAlive)
             return;
 
-        _combat.RegisterHit(_segment, damageInfo);
+        _combat.RegisterHit(_segment, hit);
     }
 }

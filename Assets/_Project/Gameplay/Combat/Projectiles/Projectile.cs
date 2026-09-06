@@ -184,15 +184,13 @@ public sealed class Projectile : MonoBehaviour
 
         int damage = RollDamage(out DamageKind damageKind, out bool isCritical);
 
-        var damageInfo = new DamageInfo(
+        DamageInfo damageInfo = new(
             damage,
-            hitPosition,
             damageKind,
-            this,
             isCritical
         );
 
-        receiver.TakeDamage(damageInfo);
+        receiver.TakeDamage(new DamageHit(damageInfo, hitPosition));
 
         _lastHitPosition = hitPosition;
         _hasLastHit = true;

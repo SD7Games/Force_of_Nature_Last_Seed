@@ -144,12 +144,8 @@ public sealed class AcaciaThornProjectile : MonoBehaviour
         Vector3 hitPosition = collision.ClosestPoint(transform.position);
         _hasHitWorm = true;
 
-        receiver.TakeDamage(new DamageInfo(
-            _damage,
-            hitPosition,
-            _damageKind,
-            this,
-            _isCritical));
+        DamageInfo damageInfo = new(_damage, _damageKind, _isCritical);
+        receiver.TakeDamage(new DamageHit(damageInfo, hitPosition));
 
         _hitCooldownTimer = _hitCooldown;
 

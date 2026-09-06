@@ -1,5 +1,6 @@
 using DG.Tweening;
 using System;
+using LastSeed.Gameplay.Signals;
 using TMPro;
 using UnityEngine;
 

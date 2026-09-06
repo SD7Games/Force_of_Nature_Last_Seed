@@ -236,142 +236,27 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
 
     private Vector3[] BuildPathPoints()
     {
-        if (_interpolationMode != RailPathInterpolationMode.Smooth ||
-            _worldPoints.Length < 3 ||
-            _cornerRadius <= MinSegmentLength)
-        {
-            return _worldPoints;
-        }
-
-        return BuildSmoothedPathPoints();
-    }
-
-    private Vector3[] BuildSmoothedPathPoints()
-    {
-        var points = new List<Vector3>(_worldPoints.Length * (_cornerSamples + 1));
-        AddPointIfSeparated(points, _worldPoints[0]);
-
-        for (int i = 1; i < _worldPoints.Length - 1; i++)
-        {
-            Vector3 previous = _worldPoints[i - 1];
-            Vector3 corner = _worldPoints[i];
-            Vector3 next = _worldPoints[i + 1];
-
-            float previousLength = Vector3.Distance(previous, corner);
-            float nextLength = Vector3.Distance(corner, next);
-            float cornerDistance = Mathf.Min(
-                _cornerRadius,
-                previousLength * 0.45f,
-                nextLength * 0.45f);
-
-            if (cornerDistance <= MinSegmentLength)
-            {
-                AddPointIfSeparated(points, corner);
-                continue;
-            }
-
-            Vector3 entry = corner + (previous - corner).normalized * cornerDistance;
-            Vector3 exit = corner + (next - corner).normalized * cornerDistance;
-
-            AddPointIfSeparated(points, entry);
-
-            for (int sample = 1; sample <= _cornerSamples; sample++)
-            {
-                float t = sample / (float)_cornerSamples;
-                AddPointIfSeparated(points, EvaluateQuadraticBezier(entry, corner, exit, t));
-            }
-        }
-
-        AddPointIfSeparated(points, _worldPoints[^1]);
-        return points.ToArray();
-    }
-
-    private static Vector3 EvaluateQuadraticBezier(
-        Vector3 start,
-        Vector3 control,
-        Vector3 end,
-        float t)
-    {
-        float inverseT = 1f - t;
-
-        return inverseT * inverseT * start +
-               2f * inverseT * t * control +
-               t * t * end;
-    }
-
-    private static void AddPointIfSeparated(List<Vector3> points, Vector3 point)
-    {
-        if (points.Count > 0 &&
-            Vector3.SqrMagnitude(points[^1] - point) <= MinSegmentLength * MinSegmentLength)
-        {
-            return;
-        }
-
-        points.Add(point);
+        return RailPathGeometry.BuildPathPoints(
+            _worldPoints,
+            _interpolationMode,
+            _cornerRadius,
+            _cornerSamples,
+            MinSegmentLength);
     }
 
     private void CalculateDistances(Vector3[] pathPoints)
     {
-        _distances = new float[pathPoints.Length];
-        _distances[0] = 0f;
-
-        for (int i = 1; i < pathPoints.Length; i++)
-        {
-            float distance = Vector3.Distance(
-                pathPoints[i - 1],
-                pathPoints[i]);
-
-            _distances[i] = _distances[i - 1] + distance;
-        }
-
-        _totalLength = _distances[^1];
+        _distances = RailPathGeometry.CalculateDistances(pathPoints, out _totalLength);
     }
 
     private void BuildSamples(Vector3[] pathPoints)
     {
-        if (_totalLength <= MinSegmentLength)
-        {
-            _samples = new[]
-            {
-                pathPoints[0],
-                pathPoints[^1]
-            };
-
-            return;
-        }
-
-        int count = Mathf.Max(2, Mathf.CeilToInt(_totalLength / _sampleStep) + 1);
-        _samples = new Vector3[count];
-
-        for (int i = 0; i < count; i++)
-        {
-            float distance = Mathf.Min(i * _sampleStep, _totalLength);
-            _samples[i] = GetPointRaw(pathPoints, distance);
-        }
-    }
-
-    private Vector3 GetPointRaw(Vector3[] pathPoints, float distance)
-    {
-        distance = Mathf.Clamp(distance, 0f, _totalLength);
-
-        for (int i = 1; i < _distances.Length; i++)
-        {
-            if (distance > _distances[i])
-                continue;
-
-            float segmentLength = _distances[i] - _distances[i - 1];
-            if (segmentLength <= MinSegmentLength)
-                return pathPoints[i];
-
-            float t = (distance - _distances[i - 1]) / segmentLength;
-
-            return Vector3.Lerp(
-                pathPoints[i - 1],
-                pathPoints[i],
-                t);
-        }
-
-        return pathPoints[^1];
+        _samples = RailPathGeometry.BuildSamples(
+            pathPoints,
+            _distances,
+            _totalLength,
+            _sampleStep,
+            MinSegmentLength);
     }
 
     private int CountValidLegacyWaypoints()

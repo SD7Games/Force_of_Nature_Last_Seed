@@ -27,6 +27,7 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
     private Vector3[] _worldPoints;
     private Vector3[] _samples;
     private float[] _distances;
+    private float[] _controlPointDistances;
     private float _totalLength;
 
     public int PointCount => _localPoints != null ? _localPoints.Count : 0;
@@ -96,6 +97,11 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
         if (!EnsureBuilt() || _samples == null || _samples.Length == 0)
             return 0f;
 
+        return FindClosestSampleDistance(worldPosition);
+    }
+
+    private float FindClosestSampleDistance(Vector3 worldPosition)
+    {
         int closestIndex = 0;
         float closestSqrDistance = float.MaxValue;
 
@@ -116,10 +122,14 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
     {
         distance = 0f;
 
-        if (!TryGetControlPointWorldPosition(pointIndex, out Vector3 worldPosition))
+        if (pointIndex < 0 || !EnsureBuilt() ||
+            _controlPointDistances == null ||
+            pointIndex >= _controlPointDistances.Length)
+        {
             return false;
+        }
 
-        distance = GetClosestDistance(worldPosition);
+        distance = _controlPointDistances[pointIndex];
         return true;
     }
 
@@ -198,6 +208,7 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
         _sampleStep = Mathf.Max(MinSampleStep, _sampleStep);
         CalculateDistances(pathPoints);
         BuildSamples(pathPoints);
+        BuildControlPointDistances();
 
         return _samples != null && _samples.Length > 0;
     }
@@ -259,6 +270,25 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
             MinSegmentLength);
     }
 
+    private void BuildControlPointDistances()
+    {
+        int controlPointCount = GetAvailableControlPointCount();
+        _controlPointDistances = new float[controlPointCount];
+
+        for (int i = 0; i < controlPointCount; i++)
+        {
+            if (TryGetControlPointWorldPosition(i, out Vector3 worldPosition))
+                _controlPointDistances[i] = FindClosestSampleDistance(worldPosition);
+        }
+    }
+
+    private int GetAvailableControlPointCount()
+    {
+        return _localPoints != null && _localPoints.Count >= 2
+            ? _localPoints.Count
+            : CountValidLegacyWaypoints();
+    }
+
     private int CountValidLegacyWaypoints()
     {
         if (_waypoints == null)
@@ -279,6 +309,7 @@ public sealed partial class RailPath : MonoBehaviour, IWormRailPath
         _worldPoints = null;
         _samples = null;
         _distances = null;
+        _controlPointDistances = null;
         _totalLength = 0f;
     }
 

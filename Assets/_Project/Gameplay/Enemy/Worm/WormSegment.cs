@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public enum WormSegmentType
@@ -21,10 +20,8 @@ public sealed class WormSegment : MonoBehaviour
     [SerializeField, Min(0f)] private float _cocoonShakeInterval = 3f;
     [SerializeField, Min(0f)] private float _cocoonShakeAngle = 10f;
 
-    private WormSegmentDamageReceiver[] _damageReceivers =
-        Array.Empty<WormSegmentDamageReceiver>();
-
     private WormSegmentCocoonPresenter _cocoonPresenter;
+    private WormSegmentDamageBinding _damageBinding;
     private WormSegmentPooledViewLifecycle _pooledViewLifecycle;
     private WormSegmentVisualRig _visualRig;
 
@@ -57,6 +54,7 @@ public sealed class WormSegment : MonoBehaviour
             _cocoonVisual,
             _cocoonShakeInterval,
             _cocoonShakeAngle);
+        _damageBinding = new WormSegmentDamageBinding(gameObject, this);
         _pooledViewLifecycle = new WormSegmentPooledViewLifecycle(
             gameObject,
             VisualRoot,
@@ -166,13 +164,7 @@ public sealed class WormSegment : MonoBehaviour
 
     public void BindDamageReceivers(WormCombatController combat)
     {
-        if (combat == null)
-            throw new ArgumentNullException(nameof(combat));
-
-        EnsureDamageReceiversCached();
-
-        for (int receiverIndex = 0; receiverIndex < _damageReceivers.Length; receiverIndex++)
-            _damageReceivers[receiverIndex].Initialize(combat, this);
+        _damageBinding.Bind(combat);
     }
 
     public void SetRuntimeVisible(bool visible)
@@ -184,20 +176,6 @@ public sealed class WormSegment : MonoBehaviour
     {
         DisableCocoon();
         _pooledViewLifecycle.Kill();
-    }
-
-    private void EnsureDamageReceiversCached()
-    {
-        if (_damageReceivers.Length > 0)
-            return;
-
-        if (!TryGetComponent<WormSegmentDamageReceiver>(out _))
-            gameObject.AddComponent<WormSegmentDamageReceiver>();
-
-        _damageReceivers = GetComponentsInChildren<WormSegmentDamageReceiver>(true);
-
-        if (_damageReceivers.Length == 0)
-            throw new InvalidOperationException($"Worm segment '{name}' has no damage receiver.");
     }
 
 }

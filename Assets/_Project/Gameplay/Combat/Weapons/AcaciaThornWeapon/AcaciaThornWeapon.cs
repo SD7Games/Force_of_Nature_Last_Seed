@@ -11,11 +11,11 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
     private readonly AcaciaThornRuntimeState _runtimeState = new();
 
     private Transform _firePoint;
-    private float _cooldownTimer;
     private float _currentCooldown;
     private bool _initialized;
     private SignalBus _signalBus;
     private AcaciaThornProjectilePool _pool;
+    private readonly CountdownTimer _cooldown = new();
     private readonly TimedBurst _salvo = new();
 
     public AcaciaThornWeaponConfig Config => _config;
@@ -88,9 +88,9 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             return;
         }
 
-        _cooldownTimer -= deltaTime;
+        _cooldown.Advance(deltaTime);
 
-        if (_cooldownTimer > 0f)
+        if (!_cooldown.IsElapsed)
             return;
 
         StartSalvo();
@@ -103,7 +103,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
 
         int fallbackBaseDamage = _config != null ? _config.Damage : 1;
         _runtimeState.Unlock(Mathf.Max(fallbackBaseDamage, baseDamage));
-        _cooldownTimer = 0f;
+        _cooldown.Reset();
         _salvo.Reset();
         PublishRuntimeStatsChanged();
     }
@@ -217,7 +217,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         _salvo.CommitShot(GetSalvoInterval());
 
         if (!_salvo.IsActive)
-            _cooldownTimer = _currentCooldown;
+            _cooldown.Start(_currentCooldown);
     }
 
     private void Fire()
@@ -296,9 +296,9 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             _config.Cooldown / (1f + cappedFireRateBonus));
 
         if (resetTimer)
-            _cooldownTimer = 0f;
+            _cooldown.Reset();
         else
-            _cooldownTimer = Mathf.Min(_cooldownTimer, _currentCooldown);
+            _cooldown.LimitTo(_currentCooldown);
     }
 
     private void PublishRuntimeStatsChanged()
@@ -328,7 +328,7 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
             Unlock(_config != null ? _config.Damage : 1);
 
         Fire();
-        _cooldownTimer = _currentCooldown;
+        _cooldown.Start(_currentCooldown);
     }
 #endif
 }

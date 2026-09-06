@@ -14,7 +14,6 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
     private ProjectilePool _pool;
     private Transform _firePoint;
 
-    private float _weaponCooldownTimer;
     private float _currentShotCooldown;
     private float _preparedAttackElapsed;
     private float _lastAttackReleaseDelay;
@@ -22,6 +21,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private readonly List<ShotSpawnData> _shots = new();
     private readonly ProjectileShotPatternBuilder _shotPatternBuilder = new();
+    private readonly CountdownTimer _weaponCooldown = new();
     private readonly TimedBurst _salvo = new();
 
     private WeaponRuntimeState _runtimeState;
@@ -72,9 +72,9 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
             return;
         }
 
-        _weaponCooldownTimer -= deltaTime;
+        _weaponCooldown.Advance(deltaTime);
 
-        if (_weaponCooldownTimer <= 0f)
+        if (_weaponCooldown.IsElapsed)
             StartAttackCycle();
     }
 
@@ -97,7 +97,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         }
 
         if (!_isAttackPrepared && !_salvo.IsActive)
-            _weaponCooldownTimer = Mathf.Min(_weaponCooldownTimer, _currentShotCooldown);
+            _weaponCooldown.LimitTo(_currentShotCooldown);
     }
 
     public void ForceRebuild()
@@ -129,7 +129,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         else
         {
             ClearTransientState();
-            _weaponCooldownTimer = 0f;
+            _weaponCooldown.Reset();
         }
 
         PublishRuntimeStatsChanged();
@@ -157,7 +157,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
         _preparedAttackElapsed = 0f;
         _lastAttackReleaseDelay = 0f;
         _salvo.Reset();
-        _weaponCooldownTimer = 0f;
+        _weaponCooldown.Reset();
     }
 
     private void StartAttackCycle()
@@ -235,7 +235,7 @@ public sealed class ProjectileWeapon : MonoBehaviour, IWeapon
 
     private void StartWeaponCooldown()
     {
-        _weaponCooldownTimer = Mathf.Max(0f, _currentShotCooldown - _lastAttackReleaseDelay);
+        _weaponCooldown.Start(_currentShotCooldown - _lastAttackReleaseDelay);
     }
 
     private float GetSalvoInterval()

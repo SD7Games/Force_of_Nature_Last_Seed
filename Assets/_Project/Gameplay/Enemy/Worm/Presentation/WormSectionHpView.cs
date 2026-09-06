@@ -52,9 +52,23 @@ public sealed class WormSectionHpView : MonoBehaviour
         transform.position = _target.position;
     }
 
-    public void Bind(Transform target)
+    private void OnValidate()
+    {
+        if (_text == null)
+            Debug.LogError("WormSectionHpView: TMP_Text is not assigned.", this);
+    }
+
+    public void Bind(Transform target, int currentHp)
     {
         _target = target;
+        SetVisible(true);
+        SetValue(currentHp);
+    }
+
+    public void Unbind()
+    {
+        _target = null;
+        SetVisible(false);
     }
 
     public void SetValue(int current)

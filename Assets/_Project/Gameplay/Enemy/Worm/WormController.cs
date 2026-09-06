@@ -75,8 +75,6 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
     private WormSectionRollbackState<WormSegment> _sectionRollbackState;
     private float _waveTime;
 
-    public event Action PathCompleted;
-
     public bool HasWorm => _segmentChain != null && _segmentChain.Count > 0;
     public bool IsCatchingUpToCombatStart =>
         _pathProgress != null && _pathProgress.IsCatchingUp;
@@ -195,7 +193,7 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
         ClearTargetDistanceCaches();
     }
 
-    public void Tick(
+    public WormFrameResult Tick(
         float deltaTime,
         float unscaledDeltaTime,
         float time,
@@ -229,8 +227,10 @@ public sealed class WormController : MonoBehaviour, IWormPathProgressProvider
             deltaTime,
             unscaledDeltaTime);
 
-        if (_frameSimulation.Tick(context))
-            PathCompleted?.Invoke();
+        bool pathCompleted = _frameSimulation.Tick(context);
+        return new WormFrameResult(
+            pathCompleted,
+            pathCompleted ? HeadPathProgressNormalized : 0f);
     }
 
     private bool TryGetCatchUpTargetDistance(out float targetDistance)

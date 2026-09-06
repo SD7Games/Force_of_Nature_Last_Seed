@@ -2,32 +2,21 @@ using System;
 using LastSeed.Gameplay.Signals;
 using Zenject;
 
-public sealed class WormPathCompletedSignalPublisher : IInitializable, IDisposable
+public sealed class WormPathCompletedSignalPublisher
 {
-    private readonly WormController _wormController;
     private readonly SignalBus _signalBus;
 
-    public WormPathCompletedSignalPublisher(
-        WormController wormController,
-        SignalBus signalBus)
+    public WormPathCompletedSignalPublisher(SignalBus signalBus)
     {
-        _wormController = wormController;
-        _signalBus = signalBus;
+        _signalBus = signalBus ?? throw new ArgumentNullException(nameof(signalBus));
     }
 
-    public void Initialize()
+    public void Publish(in WormFrameResult result)
     {
-        _wormController.PathCompleted += PublishPathCompleted;
-    }
+        if (!result.PathCompleted)
+            return;
 
-    public void Dispose()
-    {
-        _wormController.PathCompleted -= PublishPathCompleted;
-    }
-
-    private void PublishPathCompleted()
-    {
         _signalBus.Fire(new WormPathCompletedSignal(
-            _wormController.HeadPathProgressNormalized));
+            result.HeadPathProgressNormalized));
     }
 }

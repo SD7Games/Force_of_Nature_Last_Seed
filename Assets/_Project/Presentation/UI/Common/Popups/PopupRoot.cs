@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LastSeed.Core.Collections;
 using LastSeed.Gameplay.Input;
 using LastSeed.Presentation.UI.Popups;
 using UnityEngine;
@@ -14,8 +15,8 @@ public sealed class PopupRoot : MonoBehaviour
     [SerializeField] private bool _pauseTimeWhileModalVisible = true;
 
     private readonly Dictionary<string, PopupView> _popupsById = new();
-    private readonly List<PopupView> _registeredPopups = new();
-    private readonly List<PopupView> _queuedPopups = new();
+    private readonly OrderedReferenceSet<PopupView> _registeredPopups = new();
+    private readonly UniqueReferenceQueue<PopupView> _queuedPopups = new();
 
     private PopupView _activePopup;
     private IGameplayInputLock _gameplayInputLock;
@@ -169,11 +170,10 @@ public sealed class PopupRoot : MonoBehaviour
         if (popup == null)
             return;
 
-        if (_registeredPopups.Contains(popup))
+        if (!_registeredPopups.Add(popup))
             return;
 
         popup.CloseRequested += HandlePopupCloseRequested;
-        _registeredPopups.Add(popup);
 
         string popupId = popup.PopupId;
 
@@ -193,8 +193,10 @@ public sealed class PopupRoot : MonoBehaviour
     {
         for (int i = 0; i < _registeredPopups.Count; i++)
         {
-            if (_registeredPopups[i] != null)
-                _registeredPopups[i].CloseRequested -= HandlePopupCloseRequested;
+            PopupView popup = _registeredPopups.Items[i];
+
+            if (popup != null)
+                popup.CloseRequested -= HandlePopupCloseRequested;
         }
 
         _registeredPopups.Clear();
@@ -225,21 +227,13 @@ public sealed class PopupRoot : MonoBehaviour
         if (popup == null)
             return;
 
-        if (_queuedPopups.Contains(popup))
-            return;
-
-        _queuedPopups.Add(popup);
+        _queuedPopups.Enqueue(popup);
     }
 
     private bool TryShowNextQueuedPopup()
     {
-        int queuedCount = _queuedPopups.Count;
-
-        for (int index = 0; index < queuedCount; index++)
+        while (_queuedPopups.TryDequeue(out PopupView popup))
         {
-            PopupView popup = _queuedPopups[0];
-            _queuedPopups.RemoveAt(0);
-
             if (popup == null)
                 continue;
 
@@ -269,8 +263,10 @@ public sealed class PopupRoot : MonoBehaviour
 
         for (int i = 0; i < _registeredPopups.Count; i++)
         {
-            if (_registeredPopups[i] != null)
-                _registeredPopups[i].Hide();
+            PopupView popup = _registeredPopups.Items[i];
+
+            if (popup != null)
+                popup.Hide();
         }
     }
 

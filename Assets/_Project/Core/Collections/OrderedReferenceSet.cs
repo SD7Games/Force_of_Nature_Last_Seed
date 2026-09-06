@@ -22,6 +22,26 @@ namespace LastSeed.Core.Collections
             return item != null && _membership.Contains(item);
         }
 
+        public bool Add(T item)
+        {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
+            if (!_membership.Add(item))
+                return false;
+
+            try
+            {
+                _items.Add(item);
+                return true;
+            }
+            catch
+            {
+                _membership.Remove(item);
+                throw;
+            }
+        }
+
         public void ReplaceWith(IReadOnlyList<T> items)
         {
             if (items == null)

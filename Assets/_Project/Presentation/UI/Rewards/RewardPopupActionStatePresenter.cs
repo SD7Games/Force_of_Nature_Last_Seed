@@ -13,6 +13,7 @@ internal sealed class RewardPopupActionStatePresenter
     private readonly TMP_Text _guaranteeText;
     private readonly TMP_Text _adRerollGuaranteeText;
     private readonly RewardPopupActionControls.TextSettings _textSettings;
+    private readonly RewardTextFormatter _textFormatter = new();
 
     private RewardPopupState _currentState;
     private bool _hasCurrentState;
@@ -84,7 +85,7 @@ internal sealed class RewardPopupActionStatePresenter
         if (_guaranteeText == null)
             return;
 
-        _guaranteeText.text = RewardTextFormatter.FormatRarityLine(
+        _guaranteeText.text = _textFormatter.FormatRarityLine(
             _textSettings.GuaranteeFormat,
             rarity,
             _textSettings.CommonRarityColor,
@@ -97,7 +98,7 @@ internal sealed class RewardPopupActionStatePresenter
         if (_adRerollGuaranteeText == null)
             return;
 
-        _adRerollGuaranteeText.text = RewardTextFormatter.FormatRarityLine(
+        _adRerollGuaranteeText.text = _textFormatter.FormatRarityLine(
             _textSettings.AdGuaranteeFormat,
             rarity,
             _textSettings.CommonRarityColor,
@@ -112,6 +113,6 @@ internal sealed class RewardPopupActionStatePresenter
             return;
 
         string value = string.Format(_textSettings.AttemptsFormat, Mathf.Max(0, attemptsLeft));
-        text.text = RewardTextFormatter.HighlightAttempts(value, _textSettings.NumberColor);
+        text.text = _textFormatter.HighlightAttempts(value, _textSettings.NumberColor);
     }
 }

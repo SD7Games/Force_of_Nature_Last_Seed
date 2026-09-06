@@ -2,27 +2,27 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-public static class RewardTextFormatter
+public sealed class RewardTextFormatter
 {
-    private static readonly List<HighlightRange> Ranges = new(8);
-    private static readonly StringBuilder Builder = new(128);
+    private readonly List<HighlightRange> _ranges = new(8);
+    private readonly StringBuilder _builder = new(128);
 
-    public static string HighlightAttempts(string text, Color32 numberColor)
+    public string HighlightAttempts(string text, Color32 numberColor)
     {
         return HighlightNumbers(text, numberColor);
     }
 
-    public static string HighlightNumbers(string text, Color32 numberColor)
+    public string HighlightNumbers(string text, Color32 numberColor)
     {
         if (string.IsNullOrEmpty(text))
             return string.Empty;
 
-        Ranges.Clear();
+        _ranges.Clear();
         AddNumberRanges(text, ToHex(numberColor));
         return BuildHighlightedText(text);
     }
 
-    public static string FormatRarityLine(
+    public string FormatRarityLine(
         string format,
         RewardRarity rarity,
         Color32 commonColor,
@@ -34,7 +34,7 @@ public static class RewardTextFormatter
         return string.Format(format, $"<color=#{color}>{rarityText}</color>");
     }
 
-    public static string FormatRarityLine(
+    public string FormatRarityLine(
         string format,
         RewardRarity rarity,
         Color32 commonColor,
@@ -52,7 +52,7 @@ public static class RewardTextFormatter
             $"<color=#{rarityColor}>{rarityText}</color>");
     }
 
-    private static void AddNumberRanges(string text, string colorHex)
+    private void AddNumberRanges(string text, string colorHex)
     {
         for (int index = 0; index < text.Length; index++)
         {
@@ -104,56 +104,56 @@ public static class RewardTextFormatter
             || c == '%';
     }
 
-    private static bool TryAddRange(int start, int length, string colorHex)
+    private bool TryAddRange(int start, int length, string colorHex)
     {
         if (length <= 0)
             return false;
 
         int end = start + length;
 
-        for (int i = 0; i < Ranges.Count; i++)
+        for (int i = 0; i < _ranges.Count; i++)
         {
-            HighlightRange range = Ranges[i];
+            HighlightRange range = _ranges[i];
             int rangeEnd = range.Start + range.Length;
 
             if (start < rangeEnd && end > range.Start)
                 return false;
         }
 
-        Ranges.Add(new HighlightRange(start, length, colorHex));
+        _ranges.Add(new HighlightRange(start, length, colorHex));
         return true;
     }
 
-    private static string BuildHighlightedText(string text)
+    private string BuildHighlightedText(string text)
     {
-        if (Ranges.Count == 0)
+        if (_ranges.Count == 0)
             return text;
 
-        Ranges.Sort(CompareRanges);
-        Builder.Clear();
+        _ranges.Sort(CompareRanges);
+        _builder.Clear();
 
         int cursor = 0;
 
-        for (int i = 0; i < Ranges.Count; i++)
+        for (int i = 0; i < _ranges.Count; i++)
         {
-            HighlightRange range = Ranges[i];
+            HighlightRange range = _ranges[i];
 
             if (range.Start > cursor)
-                Builder.Append(text, cursor, range.Start - cursor);
+                _builder.Append(text, cursor, range.Start - cursor);
 
-            Builder.Append("<color=#");
-            Builder.Append(range.ColorHex);
-            Builder.Append(">");
-            Builder.Append(text, range.Start, range.Length);
-            Builder.Append("</color>");
+            _builder.Append("<color=#");
+            _builder.Append(range.ColorHex);
+            _builder.Append(">");
+            _builder.Append(text, range.Start, range.Length);
+            _builder.Append("</color>");
 
             cursor = range.Start + range.Length;
         }
 
         if (cursor < text.Length)
-            Builder.Append(text, cursor, text.Length - cursor);
+            _builder.Append(text, cursor, text.Length - cursor);
 
-        return Builder.ToString();
+        return _builder.ToString();
     }
 
     private static int CompareRanges(HighlightRange left, HighlightRange right)

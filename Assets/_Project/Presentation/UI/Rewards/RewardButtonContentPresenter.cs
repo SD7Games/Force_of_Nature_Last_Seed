@@ -13,6 +13,7 @@ public sealed class RewardButtonContentPresenter
     private readonly Image _legendaryVisual;
     private readonly Image _unlockVisual;
     private readonly RewardButtonContentStyle _style;
+    private readonly RewardTextFormatter _textFormatter = new();
 
     public RewardButtonContentPresenter(
         Image icon,
@@ -66,7 +67,7 @@ public sealed class RewardButtonContentPresenter
 
         _value.text = isUnlock
             ? string.IsNullOrWhiteSpace(value) ? _style.UnlockValueFallback : value
-            : RewardTextFormatter.HighlightNumbers(value, _style.NumberColor);
+            : _textFormatter.HighlightNumbers(value, _style.NumberColor);
     }
 
     private void ApplyIcon(RewardIconProfile iconProfile)

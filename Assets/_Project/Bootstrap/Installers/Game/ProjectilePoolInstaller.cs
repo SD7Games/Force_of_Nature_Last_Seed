@@ -10,6 +10,7 @@ namespace LastSeed.Bootstrap.Installers
         public override void InstallBindings()
         {
             Container.Bind<PoolRegistry>().FromInstance(_projectilePoolRegistry).AsSingle();
+            Container.Bind<AcaciaThornProjectilePool>().AsSingle();
         }
     }
 }

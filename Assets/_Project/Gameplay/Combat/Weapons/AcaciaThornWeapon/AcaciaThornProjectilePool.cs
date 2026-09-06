@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public sealed class AcaciaThornProjectilePool
@@ -20,12 +21,21 @@ public sealed class AcaciaThornProjectilePool
         if (_initialized)
             return;
 
+        if (prefab == null)
+            throw new ArgumentNullException(nameof(prefab));
+
+        if (parent == null)
+            throw new ArgumentNullException(nameof(parent));
+
+        if (screenBounds == null)
+            throw new ArgumentNullException(nameof(screenBounds));
+
         _prefab = prefab;
         _parent = parent;
         _screenBounds = screenBounds;
 
         _pool = new ObjectPool<AcaciaThornProjectile>(CreateNew, Deactivate);
-        _pool.Prewarm(prewarmCount);
+        _pool.Prewarm(Math.Max(0, prewarmCount));
 
         _initialized = true;
     }
@@ -69,7 +79,7 @@ public sealed class AcaciaThornProjectilePool
 
     private AcaciaThornProjectile CreateNew()
     {
-        AcaciaThornProjectile projectile = Object.Instantiate(_prefab, _parent);
+        AcaciaThornProjectile projectile = UnityEngine.Object.Instantiate(_prefab, _parent);
         projectile.Init(this, _screenBounds);
         return projectile;
     }

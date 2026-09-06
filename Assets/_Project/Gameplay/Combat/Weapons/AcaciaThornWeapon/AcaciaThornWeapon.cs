@@ -7,7 +7,6 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
 {
     [SerializeField] private AcaciaThornWeaponConfig _config;
 
-    private readonly AcaciaThornProjectilePool _pool = new();
     private readonly AcaciaThornRuntimeState _runtimeState = new();
 
     private Transform _firePoint;
@@ -18,14 +17,18 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
     private bool _isSalvoActive;
     private bool _initialized;
     private SignalBus _signalBus;
+    private AcaciaThornProjectilePool _pool;
 
     public AcaciaThornWeaponConfig Config => _config;
     public AcaciaThornRuntimeState RuntimeState => _runtimeState;
 
     [Inject]
-    public void Construct(SignalBus signalBus)
+    public void Construct(
+        SignalBus signalBus,
+        AcaciaThornProjectilePool pool)
     {
         _signalBus = signalBus;
+        _pool = pool;
     }
 
     public void Init(
@@ -45,6 +48,12 @@ public sealed class AcaciaThornWeapon : MonoBehaviour
         if (_config.ProjectilePrefab == null)
         {
             Debug.LogError("AcaciaThornWeapon: projectile prefab is missing.", this);
+            return;
+        }
+
+        if (_pool == null)
+        {
+            Debug.LogError("AcaciaThornWeapon: projectile pool is missing.", this);
             return;
         }
 
